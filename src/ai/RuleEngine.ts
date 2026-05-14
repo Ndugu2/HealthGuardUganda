@@ -80,6 +80,8 @@ const INACCURATE_RULES: Record<string, string> = {
   "omusujja gwa malaria ewonya n'ebimera": "malaria:herbs_only",
   "omusujja gw'ensiri ewonya n'ebimera": "malaria:herbs_only",
   "katimba kaleetera okutazuula": "malaria:nets_harm",
+  "malaria ereetebwa bikajjo": "malaria:mango_myth",
+  "malaria ereetebwa musana": "malaria:mango_myth",
 
   // Maternal health myths — English
   "hospital delivery is dangerous": "maternal:hospital_danger",
@@ -140,6 +142,10 @@ const ACCURATE_RULES: Record<string, string> = {
   "seek treatment for malaria within 24 hours": "malaria:treatment",
   "malaria is caused by mosquito bites": "malaria:transmission",
   "omusujja gw'ensiri guvva ku nsiri": "malaria:transmission",
+  "ekireetera malaria": "malaria:transmission",
+  "ekileetera malaria": "malaria:transmission",
+  "eliiletera malaria": "malaria:transmission",
+  "ekireetera omusujja gw'ensiri": "malaria:transmission",
   "antimalarial drugs treat malaria": "malaria:treatment",
 
   // HIV facts
@@ -168,6 +174,28 @@ const ACCURATE_RULES: Record<string, string> = {
   "vitamin a supplements protect children": "nutrition:vitamins",
 };
 
+// ─── TOPIC KEYWORDS (for suggestive matching) ─────────────────────────────────
+const TOPIC_KEYWORDS: Record<string, string> = {
+  "malaria": "malaria",
+  "omusujja": "malaria",
+  "nsiri": "malaria",
+  "vaccine": "vaccination",
+  "nkungo": "vaccination",
+  "hiv": "hiv",
+  "aids": "hiv",
+  "pregnancy": "maternal",
+  "lubuto": "maternal",
+  "covid": "covid",
+  "corona": "covid",
+  "food": "nutrition",
+  "endiisa": "nutrition",
+  "water": "sanitation",
+  "mazzi": "sanitation",
+  "std": "stds",
+  "sti": "stds",
+  "kikaba": "stds",
+};
+
 // ─── KEYWORD SCORING (for fuzzy fallback) ─────────────────────────────────────
 // Topic signal words used by the keyword scorer when no exact rule matches
 const MYTH_SIGNAL_WORDS = [
@@ -183,6 +211,7 @@ const FACT_SIGNAL_WORDS = [
   "treat", "treatment", "recommended", "proven", "evidence",
   "tested", "approved", "WHO", "health facility", "doctor",
   "hospital", "clinic", "important", "necessary", "essential",
+  "cause", "causes", "ekireetera", "ekileetera", "kiki", "how to",
 ];
 
 export class RuleEngine {
@@ -246,6 +275,7 @@ export class RuleEngine {
     let factScore = 0;
     let matchedMyth: string | null = null;
     let matchedFact: string | null = null;
+    let detectedTopic: string | null = null;
 
     for (const signal of MYTH_SIGNAL_WORDS) {
       if (input.includes(signal)) {
@@ -261,13 +291,20 @@ export class RuleEngine {
       }
     }
 
+    for (const [kw, topic] of Object.entries(TOPIC_KEYWORDS)) {
+      if (input.includes(kw)) {
+        detectedTopic = topic;
+        break;
+      }
+    }
+
     const total = mythScore + factScore;
 
     if (total === 0) {
       return {
         label: 'UNCERTAIN',
         confidence: 0.3,
-        triggerKeyword: null,
+        triggerKeyword: detectedTopic ? `${detectedTopic}:general` : null,
         fromRule: false,
         reasoning: "No recognizable health keywords found. This claim requires expert verification.",
         isReliable: false,
@@ -280,7 +317,7 @@ export class RuleEngine {
       return {
         label: 'INACCURATE',
         confidence,
-        triggerKeyword: null,
+        triggerKeyword: detectedTopic ? `${detectedTopic}:general` : null,
         fromRule: false,
         reasoning: `Keyword analysis detected misinformation signals: "${matchedMyth}"`,
         isReliable: confidence > 0.7,
@@ -295,7 +332,7 @@ export class RuleEngine {
       return {
         label: 'ACCURATE',
         confidence,
-        triggerKeyword: null,
+        triggerKeyword: detectedTopic ? `${detectedTopic}:general` : null,
         fromRule: false,
         reasoning: `Keyword analysis detected evidence-based language: "${matchedFact}" (${factScore} fact indicators vs ${mythScore} myth indicators)`,
         isReliable: confidence > 0.7,
@@ -306,7 +343,7 @@ export class RuleEngine {
     return {
       label: 'UNCERTAIN',
       confidence: 0.5,
-      triggerKeyword: null,
+      triggerKeyword: detectedTopic ? `${detectedTopic}:general` : null,
       fromRule: false,
       reasoning: "Mixed signals detected — equal myth and fact indicators. Seek expert verification.",
       riskLevel: 'LOW',

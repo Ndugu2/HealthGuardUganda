@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import { MD3LightTheme, MD3DarkTheme } from 'react-native-paper';
-import { colors, darkColors, radii } from './theme';
+import { colors, darkColors, topicColors, darkTopicColors, radii } from './theme';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -8,6 +8,7 @@ interface ThemeContextType {
   mode: ThemeMode;
   toggleTheme: () => void;
   colors: typeof colors;
+  topicColors: typeof topicColors;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -20,12 +21,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const currentColors = useMemo(() => (mode === 'light' ? colors : darkColors), [mode]);
+  const currentTopicColors = useMemo(() => (mode === 'light' ? topicColors : darkTopicColors), [mode]);
 
   const value = useMemo(() => ({
     mode,
     toggleTheme,
     colors: currentColors,
-  }), [mode, currentColors]);
+    topicColors: currentTopicColors,
+  }), [mode, currentColors, currentTopicColors]);
 
   return (
     <ThemeContext.Provider value={value}>

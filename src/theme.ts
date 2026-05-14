@@ -5,8 +5,6 @@
  * Import `theme` anywhere to access colors, spacing, typography, etc.
  */
 
-// ── Color Palette ────────────────────────────────────────────────────────────
-
 // ── Color Palette (Refined Premium) ──────────────────────────────────────────
 
 export const colors = {
@@ -71,6 +69,13 @@ export const colors = {
 
 export const darkColors = {
   ...colors,
+  primary: {
+    ...colors.primary,
+    50:  '#064E3B', // Darker for container
+    100: '#065F46',
+    200: '#047857',
+    900: '#34D399', // Brighter for text in dark mode
+  },
   neutral: {
     0:   '#030712',
     50:  '#111827',
@@ -162,12 +167,29 @@ export const topicColors: Record<string, { bg: string; text: string; accent: str
   hiv:         { bg: '#F3E8FF', text: '#6B21A8', accent: '#8B5CF6' },
   maternal:    { bg: '#FCE7F3', text: '#9D174D', accent: '#EC4899' },
   covid:       { bg: '#FEF3C7', text: '#92400E', accent: '#F59E0B' },
+  nutrition:   { bg: '#FFEDD5', text: '#9A3412', accent: '#F97316' },
+  sanitation:  { bg: '#E0F2FE', text: '#075985', accent: '#0EA5E9' },
+  stds:        { bg: '#FEE2E2', text: '#991B1B', accent: '#EF4444' },
   general:     { bg: '#F3F4F6', text: '#374151', accent: '#6B7280' },
+};
+
+export const darkTopicColors: Record<string, { bg: string; text: string; accent: string }> = {
+  vaccination: { bg: '#1E3A8A', text: '#DBEAFE', accent: '#3B82F6' },
+  malaria:     { bg: '#064E3B', text: '#D1FAE5', accent: '#10B981' },
+  hiv:         { bg: '#581C87', text: '#F3E8FF', accent: '#8B5CF6' },
+  maternal:    { bg: '#831843', text: '#FCE7F3', accent: '#EC4899' },
+  covid:       { bg: '#78350F', text: '#FEF3C7', accent: '#F59E0B' },
+  nutrition:   { bg: '#7C2D12', text: '#FFEDD5', accent: '#F97316' },
+  sanitation:  { bg: '#0C4A6E', text: '#E0F2FE', accent: '#0EA5E9' },
+  stds:        { bg: '#7F1D1D', text: '#FEE2E2', accent: '#EF4444' },
+  general:     { bg: '#374151', text: '#F3F4F6', accent: '#9CA3AF' },
 };
 
 const theme = {
   colors,
+  darkColors,
   topicColors,
+  darkTopicColors,
   spacing,
   radii,
   shadows,

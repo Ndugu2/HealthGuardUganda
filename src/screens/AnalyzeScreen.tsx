@@ -29,7 +29,7 @@ const classifier = new HybridClassifier();
 
 const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => void }) => {
   const { t, i18n } = useTranslation();
-  const { colors, mode } = useAppTheme();
+  const { colors, mode, topicColors } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;
 
@@ -227,9 +227,14 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
 
   const getResultStyle = () => {
     if (!result) return { color: colors.primary[900], bg: colors.surface };
-    if (result.label === 'ACCURATE') return { color: colors.primary[900], bg: mode === 'light' ? '#E2F0D9' : colors.primary[900] + '20', label: t('analyze.results.accurate_label') };
-    if (result.label === 'INACCURATE') return { color: colors.danger[900], bg: mode === 'light' ? '#FDECEA' : colors.danger[900] + '20', label: t('analyze.results.misleading_label') };
-    return { color: colors.warning[900], bg: mode === 'light' ? '#FFF9C4' : colors.warning[900] + '20', label: t('analyze.results.uncertain_label') };
+    const labelKey = result.label === 'ACCURATE' ? 'accurate' : result.label === 'INACCURATE' ? 'misleading' : 'uncertain';
+    const baseColor = result.label === 'ACCURATE' ? colors.primary[900] : result.label === 'INACCURATE' ? colors.danger[900] : colors.warning[900];
+    return { 
+      color: baseColor, 
+      bg: colors.surface, 
+      label: t(`analyze.results.${labelKey}_label`),
+      badgeBg: baseColor + '15'
+    };
   };
 
   const renderAnalysisLoader = () => (
@@ -543,6 +548,22 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                   {result?.riskLevel && result.label === 'INACCURATE' && (
                     <View style={[styles.riskBadge, { backgroundColor: result.riskLevel === 'HIGH' ? colors.danger[900] : result.riskLevel === 'MEDIUM' ? colors.warning[900] : colors.neutral[500] }]}>
                       <Text style={styles.riskBadgeText}>{result.riskLevel} RISK</Text>
+                    </View>
+                  )}
+                  {result?.triggerKeyword && (
+                    <View style={[
+                      styles.topicBadge, 
+                      { 
+                        backgroundColor: (topicColors[result.triggerKeyword.split(':')[0]] || topicColors.general).bg,
+                        borderColor: (topicColors[result.triggerKeyword.split(':')[0]] || topicColors.general).accent
+                      }
+                    ]}>
+                      <Text style={[
+                        styles.topicBadgeText, 
+                        { color: (topicColors[result.triggerKeyword.split(':')[0]] || topicColors.general).text }
+                      ]}>
+                        {(result.triggerKeyword.split(':')[0]).toUpperCase()}
+                      </Text>
                     </View>
                   )}
                   {result?.culturalContext && (
@@ -1758,7 +1779,7 @@ const styles = StyleSheet.create({
   guidanceItem: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#333',
+    color: colors.neutral[800],
   },
   // XAI Styles
   xaiDashboard: {
@@ -1782,7 +1803,7 @@ const styles = StyleSheet.create({
   },
   xaiGrid: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
+    backgroundColor: colors.neutral[50],
     padding: 15,
     borderRadius: radii.lg,
     alignItems: 'center',
@@ -1805,7 +1826,7 @@ const styles = StyleSheet.create({
   verticalDivider: {
     width: 1,
     height: '100%',
-    backgroundColor: '#EEE',
+    backgroundColor: colors.neutral[200],
   },
   xaiSubhead: {
     fontSize: 12,
@@ -1825,12 +1846,12 @@ const styles = StyleSheet.create({
   chainText: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#555',
+    color: colors.neutral[600],
   },
   chainConnector: {
     width: 2,
     height: 10,
-    backgroundColor: '#DDD',
+    backgroundColor: colors.neutral[200],
     marginLeft: 7,
   },
   featuresDashboard: {
@@ -1872,6 +1893,19 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   // Cultural Styles
+  topicBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radii.sm,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  topicBadgeText: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
   culturalBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1979,7 +2013,7 @@ const styles = StyleSheet.create({
   },
   ethicsBox: {
     padding: spacing.md,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: colors.neutral[50],
     borderRadius: radii.md,
     marginTop: spacing.lg,
   },
@@ -2026,7 +2060,7 @@ const styles = StyleSheet.create({
   govVal: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#333',
+    color: colors.neutral[900],
   },
   approvalBox: {
     flexDirection: 'row',
