@@ -15,7 +15,8 @@ import { useTranslation } from 'react-i18next';
 import { getStats } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import StatusBadge from '../components/StatusBadge';
-import { colors, spacing, radii, shadows, topicColors } from '../theme';
+import { colors, spacing, radii, shadows, topicColors, gradients } from '../theme';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAppTheme } from '../ThemeContext';
 import { RiskService, RiskAlert } from '../services/RiskService';
 import { BroadcastService } from '../services/BroadcastService';
@@ -99,17 +100,31 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
       >
         {/* ── EMERGENCY BROADCAST BANNER ── */}
         {broadcasts.filter(b => b.severity === 'URGENT' && !b.isRead).map(alert => (
-          <AnimatedCard key={alert.id} delay={0} style={[styles.urgentBanner, { backgroundColor: colors.danger[900] }]}>
-            <View style={styles.bannerIcon}>
-              <Icon source="alert-decagram" size={24} color="#FFF" />
-            </View>
-            <View style={styles.bannerContent}>
-              <Text style={styles.bannerTitle}>{i18n.language === 'lg' ? alert.title_lg || alert.title : alert.title}</Text>
-              <Text style={styles.bannerMessage}>{i18n.language === 'lg' ? alert.message_lg || alert.message : alert.message}</Text>
-            </View>
-            <TouchableOpacity style={styles.bannerAction}>
-              <Text style={styles.bannerActionText}>{t('home.view_btn')}</Text>
-            </TouchableOpacity>
+          <AnimatedCard 
+            key={alert.id} 
+            delay={0} 
+            style={[styles.urgentBanner]}
+          >
+            <LinearGradient 
+              colors={gradients.danger} 
+              start={{ x: 0, y: 0 }} 
+              end={{ x: 1, y: 1 }} 
+              style={styles.bannerGradient}
+            >
+              <View style={styles.bannerIcon}>
+                <Icon source="alert-decagram" size={28} color="#FFF" />
+              </View>
+              <View style={styles.bannerContent}>
+                <Text style={styles.bannerTitle}>{i18n.language === 'lg' ? alert.title_lg || alert.title : alert.title}</Text>
+                <Text style={styles.bannerMessage} numberOfLines={2}>
+                  {i18n.language === 'lg' ? alert.message_lg || alert.message : alert.message}
+                </Text>
+              </View>
+              <TouchableOpacity style={styles.bannerAction}>
+                <Text style={styles.bannerActionText}>{t('home.view_btn')}</Text>
+                <Icon source="chevron-right" size={16} color="#FFF" />
+              </TouchableOpacity>
+            </LinearGradient>
           </AnimatedCard>
         ))}
 
@@ -218,18 +233,25 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
             <View style={isDesktop ? styles.rightSide : null}>
               {/* ── PRIMARY ACTION CARD ── */}
               <TouchableOpacity 
-                activeOpacity={0.9} 
+                activeOpacity={0.92} 
                 onPress={() => navigateToTab('analyze')}
-                style={[styles.actionCard, { backgroundColor: colors.primary[900] }]}
+                style={styles.actionCard}
               >
-                <View style={styles.actionIconCircle}>
-                  <Icon source="magnify" size={24} color="#FFF" />
-                </View>
-                <View style={styles.actionTextContent}>
-                   <Text style={styles.actionTitle}>{t('home.analyze_card_title')}</Text>
-                   <Text style={styles.actionSub}>{t('home.analyze_card_sub')}</Text>
-                </View>
-                <Icon source="arrow-right" size={24} color="#FFF" />
+                <LinearGradient
+                  colors={gradients.primary}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.actionGradient}
+                >
+                  <View style={styles.actionIconCircle}>
+                    <Icon source="magnify" size={28} color="#FFF" />
+                  </View>
+                  <View style={styles.actionTextContent}>
+                     <Text style={styles.actionTitle}>{t('home.analyze_card_title')}</Text>
+                     <Text style={styles.actionSub}>{t('home.analyze_card_sub')}</Text>
+                  </View>
+                  <Icon source="arrow-right" size={28} color="#FFF" />
+                </LinearGradient>
               </TouchableOpacity>
 
               {/* ── SECONDARY ACTIONS ── */}
@@ -258,14 +280,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
               </View>
 
               {/* ── QUICK TIPS ── */}
-              <View style={[styles.tipsSection, { backgroundColor: mode === 'light' ? '#FFF9E6' : colors.neutral[100], borderColor: colors.accent.amber + '40' }]}>
-                 <Text style={[styles.tipsHeaderTitle, { color: colors.accent.amber }]}>{t('home.tips_title')}</Text>
+              <View style={[styles.tipsSection, { backgroundColor: mode === 'light' ? '#FFF9E6' : colors.neutral[100], borderColor: colors.warning[500] + '40' }]}>
+                 <Text style={[styles.tipsHeaderTitle, { color: colors.warning[500] }]}>{t('home.tips_title')}</Text>
                  <View style={styles.tipItem}>
-                    <Icon source="lightbulb-on-outline" size={18} color={colors.accent.amber} />
+                    <Icon source="lightbulb-on-outline" size={18} color={colors.warning[500]} />
                     <Text style={[styles.tipText, { color: colors.neutral[700] }]}>{t('home.tip_1')}</Text>
                  </View>
                  <View style={styles.tipItem}>
-                    <Icon source="lightbulb-on-outline" size={18} color={colors.accent.amber} />
+                    <Icon source="lightbulb-on-outline" size={18} color={colors.warning[500]} />
                     <Text style={[styles.tipText, { color: colors.neutral[700] }]}>{t('home.tip_2')}</Text>
                  </View>
               </View>
@@ -576,19 +598,66 @@ const styles = StyleSheet.create({
      fontSize: 12,
      color: colors.neutral[500],
   },
-  actionCard: {
-    backgroundColor: colors.primary[900],
+  urgentBanner: {
     borderRadius: radii.lg,
+    marginBottom: spacing.lg,
+    ...shadows.lg,
+    overflow: 'hidden',
+  },
+  bannerGradient: {
+    flexDirection: 'row',
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  bannerIcon: {
+    marginRight: spacing.md,
+  },
+  bannerContent: {
+    flex: 1,
+  },
+  bannerTitle: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: 4,
+    letterSpacing: 0.2,
+  },
+  bannerMessage: {
+    color: 'rgba(255,255,255,0.95)',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  bannerAction: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: radii.md,
+    marginLeft: spacing.md,
+    gap: 4,
+  },
+  bannerActionText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  actionCard: {
+    borderRadius: radii.xl,
+    marginBottom: spacing.lg,
+    ...shadows.lg,
+    overflow: 'hidden',
+  },
+  actionGradient: {
     padding: spacing.xl,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: spacing.lg,
-    ...shadows.lg,
   },
   actionIconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -600,11 +669,14 @@ const styles = StyleSheet.create({
   actionTitle: {
     color: '#FFF',
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
   actionSub: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 16,
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 15,
+    fontWeight: '500',
+    marginTop: 2,
   },
   secondaryRow: {
     flexDirection: 'row',
@@ -638,17 +710,17 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
   },
   tipsSection: {
-     backgroundColor: '#FFF9E6',
+     backgroundColor: '#FFFBEB',
      padding: spacing.lg,
      borderRadius: radii.lg,
      marginBottom: spacing.xl,
      borderWidth: 1,
-     borderColor: colors.accent.amber + '40',
+     borderColor: '#FDE68A40',
   },
   tipsHeaderTitle: {
      fontSize: 16,
      fontWeight: '800',
-     color: colors.accent.amber,
+     color: '#D97706',
      marginBottom: spacing.md,
   },
   tipItem: {
@@ -694,47 +766,6 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: spacing.xxl,
-  },
-  urgentBanner: {
-    flexDirection: 'row',
-    padding: spacing.lg,
-    borderRadius: radii.md,
-    marginBottom: spacing.lg,
-    alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-  },
-  bannerIcon: {
-    marginRight: spacing.md,
-  },
-  bannerContent: {
-    flex: 1,
-  },
-  bannerTitle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '900',
-    marginBottom: 2,
-  },
-  bannerMessage: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  bannerAction: {
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 4,
-    marginLeft: spacing.md,
-  },
-  bannerActionText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '800',
   },
 });
 

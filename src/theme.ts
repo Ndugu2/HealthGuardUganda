@@ -7,93 +7,86 @@
 
 // ── Color Palette ────────────────────────────────────────────────────────────
 
+// ── Color Palette (Refined Premium) ──────────────────────────────────────────
+
 export const colors = {
   primary: {
-    50:  '#E8F5E9',
-    100: '#C8E6C9',
-    200: '#A5D6A7',
-    300: '#81C784',
-    400: '#66BB6A',
-    500: '#4CAF50',
-    600: '#43A047',
-    700: '#388E3C',
-    800: '#2E7D32',
-    900: '#1B5E20',
+    50:  '#ECFDF5',
+    100: '#D1FAE5',
+    200: '#A7F3D0',
+    300: '#6EE7B7',
+    400: '#34D399',
+    500: '#10B981',
+    600: '#059669',
+    700: '#047857',
+    800: '#065F46',
+    900: '#064E3B',
   },
   danger: {
-    50:  '#FFEBEE',
-    100: '#FFCDD2',
-    200: '#EF9A9A',
-    300: '#E57373',
-    400: '#EF5350',
-    600: '#E53935',
-    800: '#C62828',
-    900: '#B71C1C',
+    50:  '#FEF2F2',
+    100: '#FEE2E2',
+    200: '#FECACA',
+    300: '#FCA5A5',
+    400: '#F87171',
+    500: '#EF4444',
+    600: '#DC2626',
+    800: '#991B1B',
+    900: '#7F1D1D',
   },
   warning: {
-    50:  '#FFF3E0',
-    100: '#FFE0B2',
-    200: '#FFCC80',
-    300: '#FFB74D',
-    400: '#FFA726',
-    600: '#FB8C00',
-    800: '#EF6C00',
-    900: '#E65100',
+    50:  '#FFFBEB',
+    100: '#FEF3C7',
+    200: '#FDE68A',
+    300: '#FCD34D',
+    400: '#FBBF24',
+    500: '#F59E0B',
+    600: '#D97706',
+    800: '#92400E',
+    900: '#78350F',
   },
   accent: {
-    amber:  '#F9A825',
-    teal:   '#00897B',
-    purple: '#7B1FA2',
-    blue:   '#1565C0',
-    indigo: '#283593',
+    emerald: '#10B981',
+    indigo:  '#6366F1',
+    violet:  '#8B5CF6',
+    rose:    '#F43F5E',
+    sky:     '#0EA5E9',
   },
   neutral: {
     0:   '#FFFFFF',
-    50:  '#F8F9FA',
-    100: '#F1F3F5',
-    200: '#E9ECEF',
-    300: '#DEE2E6',
-    400: '#CED4DA',
-    500: '#ADB5BD',
-    600: '#868E96',
-    700: '#495057',
-    800: '#343A40',
-    900: '#212529',
+    50:  '#F9FAFB',
+    100: '#F3F4F6',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937',
+    900: '#111827',
   },
   surface: '#FFFFFF',
-  background: '#F8F9FA',
+  background: '#F9FAFB',
+  glass: 'rgba(255, 255, 255, 0.7)',
 };
 
 export const darkColors = {
   ...colors,
   neutral: {
-    0:   '#121212',
-    50:  '#1E1E1E',
-    100: '#2C2C2C',
-    200: '#383838',
-    300: '#484848',
-    400: '#5C5C5C',
-    500: '#7B8187',
-    600: '#ADB5BD',
-    700: '#DEE2E6',
-    800: '#F1F3F5',
+    0:   '#030712',
+    50:  '#111827',
+    100: '#1F2937',
+    200: '#374151',
+    300: '#4B5563',
+    400: '#6B7280',
+    500: '#9CA3AF',
+    600: '#D1D5DB',
+    700: '#E5E7EB',
+    800: '#F3F4F6',
     900: '#FFFFFF',
   },
-  surface: '#1E1E1E',
-  background: '#121212',
-};
-
-// ── Topic Colors (for Knowledge Base chips / accents) ────────────────────────
-
-export const topicColors: Record<string, { bg: string; text: string; accent: string }> = {
-  vaccination: { bg: '#E3F2FD', text: '#1565C0', accent: '#1565C0' },
-  malaria:     { bg: '#E0F2F1', text: '#00695C', accent: '#00897B' },
-  hiv:         { bg: '#F3E5F5', text: '#6A1B9A', accent: '#7B1FA2' },
-  maternal:    { bg: '#FCE4EC', text: '#AD1457', accent: '#C2185B' },
-  covid:       { bg: '#FFF3E0', text: '#E65100', accent: '#EF6C00' },
-  nutrition:   { bg: '#F1F8E9', text: '#33691E', accent: '#558B2F' },
-  sanitation:  { bg: '#E0F7FA', text: '#00838F', accent: '#0097A7' },
-  general:     { bg: '#ECEFF1', text: '#37474F', accent: '#546E7A' },
+  surface: '#111827',
+  background: '#030712',
+  glass: 'rgba(17, 24, 39, 0.7)',
 };
 
 // ── Spacing Scale ────────────────────────────────────────────────────────────
@@ -112,48 +105,65 @@ export const spacing = {
 export const radii = {
   sm:   8,
   md:   12,
-  lg:   16,
-  xl:   24,
+  lg:   20,
+  xl:   28,
   full: 9999,
 } as const;
 
-// ── Shadows ──────────────────────────────────────────────────────────────────
+// ── Shadows (Premium Multi-Layered) ──────────────────────────────────────────
 
 export const shadows = {
   sm: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   md: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
   },
   lg: {
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 10,
   },
+  glass: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  }
 } as const;
 
-// ── Gradient Presets ─────────────────────────────────────────────────────────
+// ── Gradient Presets (Ultra-Smooth) ──────────────────────────────────────────
 
 export const gradients = {
-  primaryHeader: ['#1B5E20', '#2E7D32', '#43A047'],
-  primarySoft:   ['#2E7D32', '#388E3C'],
-  dangerSoft:    ['#C62828', '#E53935'],
-  warningSoft:   ['#EF6C00', '#FB8C00'],
-  surface:       ['#FFFFFF', '#F5F5F5'],
+  primary: ['#059669', '#10B981'],
+  danger:  ['#DC2626', '#EF4444'],
+  warning: ['#D97706', '#F59E0B'],
+  info:    ['#2563EB', '#3B82F6'],
+  surface: ['#FFFFFF', '#F9FAFB'],
+  darkSurface: ['#111827', '#1F2937'],
 };
 
-// ── Bundled Theme Object ─────────────────────────────────────────────────────
+// ── Topic Colors ─────────────────────────────────────────────────────────────
+
+export const topicColors: Record<string, { bg: string; text: string; accent: string }> = {
+  vaccination: { bg: '#DBEAFE', text: '#1E40AF', accent: '#3B82F6' },
+  malaria:     { bg: '#D1FAE5', text: '#065F46', accent: '#10B981' },
+  hiv:         { bg: '#F3E8FF', text: '#6B21A8', accent: '#8B5CF6' },
+  maternal:    { bg: '#FCE7F3', text: '#9D174D', accent: '#EC4899' },
+  covid:       { bg: '#FEF3C7', text: '#92400E', accent: '#F59E0B' },
+  general:     { bg: '#F3F4F6', text: '#374151', accent: '#6B7280' },
+};
 
 const theme = {
   colors,

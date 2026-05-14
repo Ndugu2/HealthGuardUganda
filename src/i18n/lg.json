@@ -11,7 +11,7 @@
     "settings": "Enteekateeka"
   },
   "sidebar": {
-    "sync_db": "Gatta n'Ebiri ku Mutimbagano",
+    "sync_db": "Gatta Byonna",
     "private_sync": "AI ey'Ekyama",
     "dark_mode": "Enzikiza",
     "light_mode": "Ekitangaala",
@@ -21,7 +21,7 @@
   },
   "connectivity": {
     "low_bandwidth": "Omutimbagano Munafu",
-    "connected": "Okwatagana ne National Node"
+    "connected": "Okwatagana ne National"
   },
   "home": {
     "welcome": "Kulika, Muweereza w'Obulamu",

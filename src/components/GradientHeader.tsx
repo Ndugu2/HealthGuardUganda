@@ -24,7 +24,7 @@ const GradientHeader: React.FC<GradientHeaderProps> = ({
 }) => {
   return (
     <LinearGradient
-      colors={gradients.primaryHeader as unknown as [string, string, ...string[]]}
+      colors={gradients.primary as unknown as [string, string, ...string[]]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.gradient}

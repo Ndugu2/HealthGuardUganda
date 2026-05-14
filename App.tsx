@@ -188,17 +188,19 @@ function MainApp() {
                   >
                     <Icon 
                       source={index === i ? route.focusedIcon : route.unfocusedIcon} 
-                      size={24} 
-                      color={index === i ? colors.primary[900] : colors.neutral[500]} 
+                      size={22} 
+                      color={index === i ? colors.primary[600] : colors.neutral[400]} 
                     />
                     <Text style={[
                       styles.sidebarText, 
-                      { color: index === i ? colors.primary[900] : colors.neutral[500] },
-                      index === i && { fontWeight: '700' }
+                      { color: index === i ? colors.neutral[900] : colors.neutral[500] },
+                      index === i && { fontWeight: '800' }
                     ]}>
                       {route.title}
                     </Text>
-                    {index === i && <View style={[styles.activeIndicatorLine, { backgroundColor: colors.primary[900] }]} />}
+                    {index === i && (
+                      <View style={[styles.activeIndicatorBox, { backgroundColor: colors.primary[50] }]} />
+                    )}
                   </TouchableOpacity>
                 ))}
               </View>
@@ -359,41 +361,36 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   sidebarText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    marginLeft: 15,
+    marginLeft: 12,
+    letterSpacing: -0.2,
   },
-  activeIndicatorLine: {
+  activeIndicatorBox: {
     position: 'absolute',
     left: 0,
-    height: 24,
-    width: 4,
-    borderRadius: 2,
+    right: 0,
+    top: 4,
+    bottom: 4,
+    borderRadius: radii.md,
+    zIndex: -1,
+    opacity: 0.8,
   },
   sidebarFooter: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 24,
     borderTopWidth: 1,
+    gap: 4,
   },
   themeToggleSidebar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 20,
-    paddingHorizontal: 10,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
   themeToggleText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  languageToggleSidebar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-  },
-  languageToggleText: {
     fontSize: 14,
     fontWeight: '600',
   },
@@ -401,33 +398,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 20,
+    marginVertical: 16,
+    padding: 12,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    borderRadius: radii.lg,
   },
   userAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadows.sm,
   },
   avatarLabel: {
     color: '#FFF',
-    fontSize: 14,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
   },
   userName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   userRole: {
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   syncBtnSidebar: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 20,
-    paddingHorizontal: 10,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radii.md,
   },
   syncTextSidebar: {
     fontSize: 14,
@@ -441,10 +448,12 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: radii.full,
     alignSelf: 'flex-start',
+    marginTop: 8,
   },
   offlineTextSidebar: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
   },
   // Main Area
   mainArea: {

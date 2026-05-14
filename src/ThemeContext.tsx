@@ -54,7 +54,7 @@ export const getPaperTheme = (mode: ThemeMode) => {
       primaryContainer: currentColors.primary[50],
       secondary: currentColors.primary[800],
       secondaryContainer: currentColors.primary[100],
-      tertiary: currentColors.accent.amber,
+      tertiary: currentColors.accent.emerald,
       surface: currentColors.surface,
       background: currentColors.background,
       error: currentColors.danger[900],
