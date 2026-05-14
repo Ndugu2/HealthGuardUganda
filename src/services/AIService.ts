@@ -22,7 +22,11 @@ export class AIService {
   public static async consultExpert(claim: string, language: string = 'en'): Promise<ExpertAnalysis | null> {
     try {
       const apiKey = await getSetting('openrouter_api_key');
-      if (!apiKey) throw new Error('API key missing in settings');
+      
+      if (!apiKey) {
+        console.warn('AIService: OpenRouter API key is missing. Expert consultation disabled.');
+        return null;
+      }
 
       const response = await fetch(`${OPENROUTER_API_URL}/chat/completions`, {
         method: 'POST',
@@ -57,6 +61,11 @@ export class AIService {
         })
       });
 
+      if (!response.ok) {
+        console.error('OpenRouter API Error:', response.status, response.statusText);
+        return null;
+      }
+
       const data = await response.json();
       
       if (data.choices && data.choices.length > 0) {
@@ -64,7 +73,12 @@ export class AIService {
         // Basic JSON extraction in case the model adds prose
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
-          return JSON.parse(jsonMatch[0]);
+          try {
+             return JSON.parse(jsonMatch[0]);
+          } catch (e) {
+             console.error('Failed to parse expert JSON:', e);
+             return null;
+          }
         }
       }
       return null;

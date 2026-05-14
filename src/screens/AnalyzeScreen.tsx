@@ -131,18 +131,28 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
   };
 
   const handleConsultExpert = async () => {
-    if (!claim) return;
+    if (!claim) {
+      console.log('Expert Consultation: No claim found');
+      return;
+    }
+    
     setExpertLoading(true);
+    console.log('Expert Consultation: Initiated for claim:', claim);
+    
     try {
       const expert = await AIService.consultExpert(claim, i18n.language);
       if (expert) {
         setExpertAnalysis(expert);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
-        Alert.alert(t('analyze.expert_offline'), t('analyze.expert_offline_msg'));
+        Alert.alert(
+          t('analyze.expert_offline'), 
+          t('analyze.expert_offline_msg') || 'Could not reach the global expert network. Please check your settings or connection.'
+        );
       }
     } catch (e) {
-      console.error(e);
+      console.error('Expert Consultation Failed:', e);
+      Alert.alert('Consultation Error', 'An unexpected error occurred while contacting the expert network.');
     } finally {
       setExpertLoading(false);
     }
