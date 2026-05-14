@@ -16,7 +16,7 @@ import {
 } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import './src/i18n/i18n';
-import { initDatabase } from './src/db/Database';
+import { initDatabase, getSetting, saveSetting } from './src/db/Database';
 import { radii, spacing, shadows } from './src/theme';
 import { ThemeProvider, useAppTheme, getPaperTheme } from './src/ThemeContext';
 
@@ -70,12 +70,23 @@ function MainApp() {
   }, []);
 
   useEffect(() => {
-    try {
-      initDatabase();
-      checkAuth();
-    } catch (e: any) {
-      console.error("Initialization error:", e);
-    }
+    const startup = async () => {
+      try {
+        initDatabase();
+        
+        // Auto-seed knowledge on first run
+        const hasSeeded = await getSetting('knowledge_seeded');
+        if (!hasSeeded) {
+          await SyncService.seedLocalKnowledge();
+          await saveSetting('knowledge_seeded', 'true');
+        }
+        
+        checkAuth();
+      } catch (e: any) {
+        console.error("Initialization error:", e);
+      }
+    };
+    startup();
   }, [checkAuth]);
 
   useEffect(() => {

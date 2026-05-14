@@ -1,0 +1,122 @@
+[
+  {
+    "topic": "vaccination",
+    "keyword": "infertility",
+    "myth_text_en": "Vaccines cause infertility in women.",
+    "correct_text_en": "Vaccines are rigorously tested and do not affect fertility.",
+    "correct_text_lg": "Enkingo tezikosa kubeera n'abaana.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "vaccination",
+    "keyword": "microchips",
+    "myth_text_en": "Vaccines contain microchips.",
+    "correct_text_en": "Vaccines contain no microchips.",
+    "correct_text_lg": "Enkingo tezirimu chip.",
+    "source": "WHO, 2021"
+  },
+  {
+    "topic": "hiv",
+    "keyword": "witchcraft",
+    "myth_text_en": "HIV is caused by witchcraft.",
+    "correct_text_en": "HIV is caused by a virus transmitted through fluids.",
+    "correct_text_lg": "HIV ereetera omukutu gwa HIV, si obulogo.",
+    "source": "UNAIDS, 2023"
+  },
+  {
+    "topic": "malaria",
+    "keyword": "herbs_only",
+    "myth_text_en": "Herbs cure malaria.",
+    "correct_text_en": "Malaria requires approved medicines.",
+    "correct_text_lg": "Ebimera bisobola okuyamba, naye tebikomya akawuka.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "hospital_danger",
+    "myth_text_en": "Hospital delivery is dangerous.",
+    "correct_text_en": "Skilled health facility deliveries are safer.",
+    "correct_text_lg": "Okuzaala mu ddwaliro kusinga okukuuma omukazi n'omwana.",
+    "source": "WHO Safe Motherhood"
+  },
+  {
+    "topic": "covid",
+    "keyword": "hot_water",
+    "myth_text_en": "Drinking hot water kills COVID-19.",
+    "correct_text_en": "High temperatures don't kill the virus inside the body and can cause burns.",
+    "correct_text_lg": "Okunywa ebyokulya ebyokya tekutuuka mu mawuggwe gye kawangaalira era kiyinza okwosa munda.",
+    "source": "WHO, 2021"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "mangoes_malaria",
+    "myth_text_en": "Eating mangoes causes malaria.",
+    "correct_text_en": "Malaria is caused by mosquito bites, not fruit.",
+    "correct_text_lg": "Okulya emmiyembe tekuleta malaria. Malaria ereetebwa nsiri.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "sanitation",
+    "keyword": "ebola_touch",
+    "myth_text_en": "Ebola is airborne.",
+    "correct_text_en": "Ebola spreads through direct contact with body fluids.",
+    "correct_text_lg": "Ebola esaasaanyizibwa mu kukwata ku mazzi g'omubiri, si mu mpewo.",
+    "source": "CDC, 2022"
+  },
+  {
+    "topic": "malaria",
+    "keyword": "garlic",
+    "myth_text_en": "Garlic repels malaria mosquitoes.",
+    "correct_text_en": "Garlic does not provide protection against malaria.",
+    "correct_text_lg": "Katungulu kumu teriwonya malaria.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "vaccination",
+    "keyword": "dna_alter",
+    "myth_text_en": "Vaccines alter your DNA.",
+    "correct_text_en": "Vaccines do not interact with or change your DNA.",
+    "correct_text_lg": "Enkingo tezikyusa musaayi gwo (DNA).",
+    "source": "GAVI, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "plumpy_nut",
+    "myth_text_en": "Plumpy'nut is candy.",
+    "correct_text_en": "Plumpy'nut is a life-saving therapeutic food for malnutrition.",
+    "correct_text_lg": "Plumpy'nut ddagala lya kulya eri abaana abanafu.",
+    "source": "UNICEF, 2023"
+  },
+  {
+    "topic": "sanitation",
+    "keyword": "cholera_curable",
+    "myth_text_en": "Cholera is a death sentence.",
+    "correct_text_en": "Cholera is preventable and treatable with rehydration.",
+    "correct_text_lg": "Cholera ewoneka n'amazzi n'eddagala.",
+    "source": "WHO, 2022"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "anc_visit",
+    "myth_text_en": "Antenatal care is only for sick women.",
+    "correct_text_en": "ANC is vital for all pregnant women for monitoring and health.",
+    "correct_text_lg": "Okukebera nga oli lubuto kyamugaso nnyo eri buli mukazi.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "hiv",
+    "keyword": "cure_found",
+    "myth_text_en": "A secret cure for HIV exists.",
+    "correct_text_en": "No cure exists yet, but ARVs allow for a healthy life.",
+    "correct_text_lg": "Tewali ddagala lya HIV liwonya, naye waliwo eddagala erikuuma obulamu.",
+    "source": "Ministry of Health"
+  },
+  {
+    "topic": "covid",
+    "keyword": "mask_oxygen",
+    "myth_text_en": "Masks reduce oxygen intake.",
+    "correct_text_en": "Masks are safe and do not impact oxygen levels.",
+    "correct_text_lg": "Akakookolo tekazaikiriza mpewo mu mubiri.",
+    "source": "WHO, 2021"
+  }
+]

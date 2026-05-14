@@ -75,4 +75,20 @@ export class SyncService {
       return { success: false, error: 'Connection error' };
     }
   }
+
+  /**
+   * Seeds the local database from the bundled knowledge base JSON.
+   * Used as a fallback when the server is unreachable or on first run.
+   */
+  public static async seedLocalKnowledge(): Promise<void> {
+    try {
+      const localData = require('../db/knowledge_base.json');
+      if (Array.isArray(localData)) {
+        await saveKnowledge(localData);
+        console.log('Knowledge base seeded from local bundle:', localData.length, 'items');
+      }
+    } catch (error) {
+      console.error('Failed to seed local knowledge:', error);
+    }
+  }
 }
