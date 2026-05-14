@@ -16,131 +16,187 @@
     "source": "WHO, 2021"
   },
   {
+    "topic": "vaccination",
+    "keyword": "yellow_fever_sterile",
+    "myth_text_en": "The yellow fever vaccine makes you sterile.",
+    "correct_text_en": "Fact: The yellow fever vaccine is safe and required for international travel. It does not affect fertility.",
+    "correct_text_lg": "Fact: Olukingo lwa Yellow Fever lukuuma era teluleeta bugumba.",
+    "source": "MOH Uganda, 2022"
+  },
+  {
+    "topic": "vaccination",
+    "keyword": "weakness",
+    "myth_text_en": "Vaccines make children weak.",
+    "correct_text_en": "Fact: Vaccines prevent paralysis and life-threatening diseases. They build the immune system.",
+    "correct_text_lg": "Fact: Enkingo ziyiza obulwadde era tezireeta bunaafu.",
+    "source": "UNICEF, 2023"
+  },
+  {
     "topic": "hiv",
     "keyword": "witchcraft",
     "myth_text_en": "HIV is caused by witchcraft.",
-    "correct_text_en": "HIV is caused by a virus transmitted through fluids.",
-    "correct_text_lg": "HIV ereetera omukutu gwa HIV, si obulogo.",
+    "correct_text_en": "HIV is caused by a virus transmitted through fluids. It is managed by ART.",
+    "correct_text_lg": "HIV ereetera omukutu gwa HIV, si obulogo. Eddagala lya ART liyamba.",
     "source": "UNAIDS, 2023"
+  },
+  {
+    "topic": "hiv",
+    "keyword": "mosquitoes_hiv",
+    "myth_text_en": "Mosquitoes can spread HIV.",
+    "correct_text_en": "Fact: HIV cannot live inside mosquitoes; they cannot transmit the virus to humans.",
+    "correct_text_lg": "Fact: Ensiri tezikwata kawuka ka HIV.",
+    "source": "CDC, 2022"
   },
   {
     "topic": "malaria",
     "keyword": "herbs_only",
     "myth_text_en": "Herbs cure malaria.",
-    "correct_text_en": "Malaria requires approved medicines.",
-    "correct_text_lg": "Ebimera bisobola okuyamba, naye tebikomya akawuka.",
+    "correct_text_en": "Malaria requires approved medicines like ACTs. Herbs may soothe symptoms but don't kill the parasite.",
+    "correct_text_lg": "Ebimera bisobola okuyamba, naye tebikomya akawuka. Wetaagibwa eddagala ddongo.",
     "source": "MOH Uganda"
+  },
+  {
+    "topic": "malaria",
+    "keyword": "sugarcane_malaria",
+    "myth_text_en": "Eating sugarcane or too much sun causes malaria.",
+    "correct_text_en": "Fact: Malaria is only caused by the bite of an infected female Anopheles mosquito.",
+    "correct_text_lg": "Fact: Okulya ebikajjo oba omusana tekuleta malaria. Malaria ereetebwa nsiri.",
+    "source": "MOH Uganda, 2021"
+  },
+  {
+    "topic": "malaria",
+    "keyword": "fever_ebinyo",
+    "myth_text_en": "Infant fever and diarrhea are caused by 'ebinyo' (teething).",
+    "correct_text_en": "Fact: Fever is often a sign of malaria or infection. Tooth extraction (ebinyo) is dangerous and unnecessary.",
+    "correct_text_lg": "Fact: Omuyini mu baana munnana guba bubonero bwa malaria, ssi 'ebinyo'.",
+    "source": "Ministry of Health, 2022"
   },
   {
     "topic": "maternal",
     "keyword": "hospital_danger",
     "myth_text_en": "Hospital delivery is dangerous.",
-    "correct_text_en": "Skilled health facility deliveries are safer.",
+    "correct_text_en": "Skilled health facility deliveries are safer and prevent maternal death.",
     "correct_text_lg": "Okuzaala mu ddwaliro kusinga okukuuma omukazi n'omwana.",
     "source": "WHO Safe Motherhood"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "iron_big_baby",
+    "myth_text_en": "Iron tablets make the baby too big for delivery.",
+    "correct_text_en": "Fact: Iron prevents anemia in the mother and supports healthy baby development. It doesn't make babies oversized.",
+    "correct_text_lg": "Fact: Ebiweke by'ekyuma (iron) biyanba omukazi okuba n'omusaayi omumala.",
+    "source": "MOH Uganda, 2023"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "ultrasound_blind",
+    "myth_text_en": "Ultrasound scans cause baby blindness.",
+    "correct_text_en": "Fact: Ultrasound uses safe sound waves, not radiation. It is safe for the baby's eyes and development.",
+    "correct_text_lg": "Fact: Okukebera n'ekyuma (ultrasound) telumya mwana mu lubuto.",
+    "source": "WHO, 2022"
   },
   {
     "topic": "covid",
     "keyword": "hot_water",
     "myth_text_en": "Drinking hot water kills COVID-19.",
     "correct_text_en": "High temperatures don't kill the virus inside the body and can cause burns.",
-    "correct_text_lg": "Okunywa ebyokulya ebyokya tekutuuka mu mawuggwe gye kawangaalira era kiyinza okwosa munda.",
+    "correct_text_lg": "Okunywa ebyokulya ebyokya tekutuuka mu mawuggwe gye kawangaalira.",
     "source": "WHO, 2021"
+  },
+  {
+    "topic": "covid",
+    "keyword": "ginger_cure",
+    "myth_text_en": "Ginger and lemon is a cure for COVID-19.",
+    "correct_text_en": "Fact: While they support the immune system, they do not kill the virus or cure the disease.",
+    "correct_text_lg": "Fact: Tangawuzi n'ennimu biyanba emibiri naye tebiwonya COVID.",
+    "source": "WHO, 2021"
+  },
+  {
+    "topic": "covid",
+    "keyword": "steaming_kills",
+    "myth_text_en": "Steaming (Kufumbira) kills the COVID-19 virus.",
+    "correct_text_en": "Fact: Steaming can soothe symptoms like a blocked nose but it does not kill the virus and can cause severe burns.",
+    "correct_text_lg": "Fact: Okufumbira kiyinza okuyamba naye tekitta kawuka ka COVID.",
+    "source": "CDC, 2021"
   },
   {
     "topic": "nutrition",
     "keyword": "mangoes_malaria",
     "myth_text_en": "Eating mangoes causes malaria.",
     "correct_text_en": "Malaria is caused by mosquito bites, not fruit.",
-    "correct_text_lg": "Okulya emmiyembe tekuleta malaria. Malaria ereetebwa nsiri.",
+    "correct_text_lg": "Okulya emmiyembe tekuleta malaria.",
     "source": "MOH Uganda"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "salt_strength",
+    "myth_text_en": "Eating more salt makes you stronger.",
+    "correct_text_en": "Fact: Excess salt leads to high blood pressure (hypertension) and kidney issues, not physical strength.",
+    "correct_text_lg": "Fact: Munnyo mungi aleeta puleesa, ssi maanyi.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "eggs_walking",
+    "myth_text_en": "Children shouldn't eat eggs until they walk.",
+    "correct_text_en": "Fact: Eggs are an excellent source of protein and support healthy growth from 6 months of age.",
+    "correct_text_lg": "Fact: Abaana basaanidde okulya amaggi okusobola okukula obulungi.",
+    "source": "UNICEF, 2022"
   },
   {
     "topic": "sanitation",
     "keyword": "ebola_touch",
-    "myth_text_en": "Ebola is airborne.",
-    "correct_text_en": "Ebola spreads through direct contact with body fluids.",
+    "myth_text_en": "Ebola is a curse from spirits.",
+    "correct_text_en": "Ebola is a viral disease spread by contact with body fluids. It is not spiritual.",
     "correct_text_lg": "Ebola esaasaanyizibwa mu kukwata ku mazzi g'omubiri, si mu mpewo.",
     "source": "CDC, 2022"
   },
   {
-    "topic": "malaria",
-    "keyword": "garlic",
-    "myth_text_en": "Garlic repels malaria mosquitoes.",
-    "correct_text_en": "Garlic does not provide protection against malaria.",
-    "correct_text_lg": "Katungulu kumu teriwonya malaria.",
-    "source": "MOH Uganda"
-  },
-  {
-    "topic": "vaccination",
-    "keyword": "dna_alter",
-    "myth_text_en": "Vaccines alter your DNA.",
-    "correct_text_en": "Vaccines do not interact with or change your DNA.",
-    "correct_text_lg": "Enkingo tezikyusa musaayi gwo (DNA).",
-    "source": "GAVI, 2023"
-  },
-  {
-    "topic": "nutrition",
-    "keyword": "plumpy_nut",
-    "myth_text_en": "Plumpy'nut is candy.",
-    "correct_text_en": "Plumpy'nut is a life-saving therapeutic food for malnutrition.",
-    "correct_text_lg": "Plumpy'nut ddagala lya kulya eri abaana abanafu.",
-    "source": "UNICEF, 2023"
-  },
-  {
     "topic": "sanitation",
-    "keyword": "cholera_curable",
-    "myth_text_en": "Cholera is a death sentence.",
-    "correct_text_en": "Cholera is preventable and treatable with rehydration.",
-    "correct_text_lg": "Cholera ewoneka n'amazzi n'eddagala.",
+    "keyword": "clear_water_safe",
+    "myth_text_en": "Clear water is always safe to drink.",
+    "correct_text_en": "Fact: Water that looks clear can still contain invisible germs. All drinking water should be boiled.",
+    "correct_text_lg": "Fact: Amazzi gajonjo gasobola okubaamu obuwuka; gasaanidde kufumbibwa.",
     "source": "WHO, 2022"
   },
   {
-    "topic": "maternal",
-    "keyword": "anc_visit",
-    "myth_text_en": "Antenatal care is only for sick women.",
-    "correct_text_en": "ANC is vital for all pregnant women for monitoring and health.",
-    "correct_text_lg": "Okukebera nga oli lubuto kyamugaso nnyo eri buli mukazi.",
-    "source": "MOH Uganda"
-  },
-  {
-    "topic": "hiv",
-    "keyword": "cure_found",
-    "myth_text_en": "A secret cure for HIV exists.",
-    "correct_text_en": "No cure exists yet, but ARVs allow for a healthy life.",
-    "correct_text_lg": "Tewali ddagala lya HIV liwonya, naye waliwo eddagala erikuuma obulamu.",
-    "source": "Ministry of Health"
-  },
-  {
-    "topic": "covid",
-    "keyword": "mask_oxygen",
-    "myth_text_en": "Masks reduce oxygen intake.",
-    "correct_text_en": "Masks are safe and do not impact oxygen levels.",
-    "correct_text_lg": "Akakookolo tekazaikiriza mpewo mu mubiri.",
-    "source": "WHO, 2021"
+    "topic": "sanitation",
+    "keyword": "water_only_hands",
+    "myth_text_en": "Water alone is enough to clean hands.",
+    "correct_text_en": "Fact: You must use soap to break down oils and kill germs effectively.",
+    "correct_text_lg": "Fact: Amazzi gokka tegawonya buwuka; sabuni yetaagibwa.",
+    "source": "MOH Uganda, 2023"
   },
   {
     "topic": "stds",
     "keyword": "syphilis_lemon",
     "myth_text_en": "Syphilis can be cured with lemon juice.",
     "correct_text_en": "Syphilis requires antibiotic treatment from a health facility. Lemon juice is ineffective.",
-    "correct_text_lg": "Syphilis ewoneka n'eddagala ery'ekikugu (antibiotics) okuva mu ddwaliro. Amazzi g'ennimu tegawonya.",
+    "correct_text_lg": "Syphilis ewoneka n'eddagala ery'ekikugu okuva mu ddwaliro.",
     "source": "MOH Uganda, 2022"
   },
   {
     "topic": "stds",
-    "keyword": "visible_symptoms",
+    "keyword": "visible_stds",
     "myth_text_en": "You can tell if someone has an STD just by looking at them.",
-    "correct_text_en": "Many STDs have no visible symptoms; only a medical test can confirm infection.",
-    "correct_text_lg": "Endwadde z'ekikaba nnyingi teziraako bubonero bwangu kulaba; kukebera mu ddwaliro kwekukakasa.",
-    "source": "CDC, 2023"
+    "correct_text_en": "Fact: Many STDs have no visible symptoms for a long time. Only a medical test can confirm infection.",
+    "correct_text_lg": "Fact: Endwadde z'ekikaba nnyingi teziraako bubonero bwangu kulaba.",
+    "source": "WHO, 2023"
   },
   {
     "topic": "stds",
-    "keyword": "washing_prevention",
-    "myth_text_en": "Washing after sex prevents STDs.",
-    "correct_text_en": "Washing does not prevent STDs; correct use of condoms and abstinence are effective methods.",
-    "correct_text_lg": "Okunaaba mu kifo ky'ekyama luvanyuma lw'okwegatta tekuziyiza ndwadde z'ekikaba.",
-    "source": "WHO, 2022"
+    "keyword": "alcohol_gonorrhea",
+    "myth_text_en": "Strong alcohol cures Gonorrhea.",
+    "correct_text_en": "Fact: Alcohol has no effect on bacteria; only medical antibiotics prescribed by a doctor can cure it.",
+    "correct_text_lg": "Fact: Omwenge tegulwaanya nziku (Gonorrhea). Wetaagibwa eddagala.",
+    "source": "CDC, 2022"
+  },
+  {
+    "topic": "stds",
+    "keyword": "cervical_witchcraft",
+    "myth_text_en": "Cervical cancer is caused by witchcraft.",
+    "correct_text_en": "Fact: Most cervical cancer is caused by HPV infection. It can be prevented by the HPV vaccine.",
+    "correct_text_lg": "Fact: Kkookolo w'ennabaana aveera mu kawuka ka HPV, ssi bulogo.",
+    "source": "Ministry of Health, 2023"
   }
 ]
