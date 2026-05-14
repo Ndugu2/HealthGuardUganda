@@ -78,6 +78,7 @@ const INACCURATE_RULES: Record<string, string> = {
 
   // Malaria myths — Luganda
   "omusujja gwa malaria ewonya n'ebimera": "malaria:herbs_only",
+  "omusujja gw'ensiri ewonya n'ebimera": "malaria:herbs_only",
   "katimba kaleetera okutazuula": "malaria:nets_harm",
 
   // Maternal health myths — English
@@ -138,6 +139,7 @@ const ACCURATE_RULES: Record<string, string> = {
   "insecticide treated nets reduce malaria": "malaria:nets_work",
   "seek treatment for malaria within 24 hours": "malaria:treatment",
   "malaria is caused by mosquito bites": "malaria:transmission",
+  "omusujja gw'ensiri guvva ku nsiri": "malaria:transmission",
   "antimalarial drugs treat malaria": "malaria:treatment",
 
   // HIV facts

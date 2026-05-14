@@ -52,7 +52,7 @@
     "keyword": "herbs_only",
     "myth_text_en": "Herbs cure malaria.",
     "correct_text_en": "Malaria requires approved medicines like ACTs. Herbs may soothe symptoms but don't kill the parasite.",
-    "correct_text_lg": "Ebimera bisobola okuyamba, naye tebikomya akawuka. Wetaagibwa eddagala ddongo.",
+    "correct_text_lg": "Ebimera bisobola okuyamba, naye tebikomya kawuka ka musujja gw'ensiri. Wetaagibwa eddagala ddongo.",
     "source": "MOH Uganda"
   },
   {
@@ -60,7 +60,7 @@
     "keyword": "sugarcane_malaria",
     "myth_text_en": "Eating sugarcane or too much sun causes malaria.",
     "correct_text_en": "Fact: Malaria is only caused by the bite of an infected female Anopheles mosquito.",
-    "correct_text_lg": "Fact: Okulya ebikajjo oba omusana tekuleta malaria. Malaria ereetebwa nsiri.",
+    "correct_text_lg": "Fact: Okulya ebikajjo oba omusana tekuleta musujja gw'ensiri. Omusujja gw'ensiri gureetebwa nsiri.",
     "source": "MOH Uganda, 2021"
   },
   {
@@ -68,7 +68,7 @@
     "keyword": "fever_ebinyo",
     "myth_text_en": "Infant fever and diarrhea are caused by 'ebinyo' (teething).",
     "correct_text_en": "Fact: Fever is often a sign of malaria or infection. Tooth extraction (ebinyo) is dangerous and unnecessary.",
-    "correct_text_lg": "Fact: Omuyini mu baana munnana guba bubonero bwa malaria, ssi 'ebinyo'.",
+    "correct_text_lg": "Fact: Omuyini mu baana munnana guba bubonero bwa musujja gw'ensiri, ssi 'ebinyo'.",
     "source": "Ministry of Health, 2022"
   },
   {
@@ -124,7 +124,7 @@
     "keyword": "mangoes_malaria",
     "myth_text_en": "Eating mangoes causes malaria.",
     "correct_text_en": "Malaria is caused by mosquito bites, not fruit.",
-    "correct_text_lg": "Okulya emmiyembe tekuleta malaria.",
+    "correct_text_lg": "Okulya emmiyembe tekuleta musujja gw'ensiri.",
     "source": "MOH Uganda"
   },
   {
