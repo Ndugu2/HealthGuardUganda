@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+    <fragment android:id="@+id/homeFragment"
+        android:name="com.healthguard.uganda.ui.HomeFragment"
+        android:label="@string/nav_home" />
+    <fragment android:id="@+id/analyzeFragment"
+        android:name="com.healthguard.uganda.ui.AnalyzeFragment"
+        android:label="@string/nav_analyze" />
+    <fragment android:id="@+id/knowledgeFragment"
+        android:name="com.healthguard.uganda.ui.KnowledgeFragment"
+        android:label="@string/nav_knowledge" />
+    <fragment android:id="@+id/reportsFragment"
+        android:name="com.healthguard.uganda.ui.ReportFragment"
+        android:label="@string/nav_reports" />
+</navigation>

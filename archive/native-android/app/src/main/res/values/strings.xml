@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HealthGuard Uganda</string>
+    <string name="tagline">Offline Health Information Assistant</string>
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_analyze">Analyze</string>
+    <string name="nav_knowledge">Knowledge</string>
+    <string name="nav_reports">Reports</string>
+    <!-- Home -->
+    <string name="home_welcome">Welcome, Health Worker</string>
+    <string name="home_subtitle">Verify health claims instantly — no internet needed.</string>
+    <string name="home_btn_analyze">Analyze a Claim</string>
+    <string name="home_btn_knowledge">Health Knowledge Base</string>
+    <string name="home_btn_reports">View Reports</string>
+    <string name="home_lang_label">Language:</string>
+    <!-- Analyze -->
+    <string name="analyze_hint">Enter a health claim to verify…</string>
+    <string name="analyze_button">VERIFY CLAIM</string>
+    <string name="analyze_clear">Clear</string>
+    <string name="analyzing">Analyzing…</string>
+    <!-- Results -->
+    <string name="result_accurate">✅ Accurate Information</string>
+    <string name="result_inaccurate">❌ Misinformation Detected</string>
+    <string name="result_uncertain">⚠️ Uncertain — Seek Expert Advice</string>
+    <string name="result_confidence">Confidence:</string>
+    <string name="result_why_title">Why this classification?</string>
+    <string name="result_triggered_by">Triggered by:</string>
+    <string name="result_correct_title">Correct Information</string>
+    <string name="result_source">Source:</string>
+    <string name="result_speak">🔊 Read Aloud</string>
+    <string name="result_save">💾 Save Encounter</string>
+    <string name="result_flag">🚩 Flag as New Myth</string>
+    <string name="result_from_rule">Rule-based detection</string>
+    <string name="result_from_ai">AI model detection</string>
+    <string name="disclaimer">⚠️ This tool assists health workers. Always consult a qualified health professional for medical decisions.</string>
+    <!-- Knowledge -->
+    <string name="knowledge_search">Search health topics…</string>
+    <string name="filter_all">All</string>
+    <string name="filter_vaccines">Vaccines</string>
+    <string name="filter_malaria">Malaria</string>
+    <string name="filter_hiv">HIV/AIDS</string>
+    <string name="filter_maternal">Maternal</string>
+    <string name="filter_covid">COVID-19</string>
+    <!-- Reports -->
+    <string name="reports_title">Encounter Log</string>
+    <string name="reports_empty">No encounters logged yet.</string>
+    <string name="report_total">Total Checks</string>
+    <string name="report_misinformation">Misinformation</string>
+    <string name="report_accurate">Accurate</string>
+    <string name="report_uncertain">Uncertain</string>
+    <!-- Misc -->
+    <string name="btn_ok">OK</string>
+    <string name="encounter_saved">Encounter saved successfully</string>
+    <string name="myth_flagged">Flagged for review. Thank you!</string>
+    <string name="lang_en">EN</string>
+    <string name="lang_lg">LG</string>
+</resources>

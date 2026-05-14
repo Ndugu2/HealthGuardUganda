@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#1B5E20</color>
+    <color name="primary_dark">#003300</color>
+    <color name="primary_light">#4C8C4A</color>
+    <color name="accent">#F9A825</color>
+    <color name="accent_dark">#C17900</color>
+    <color name="background">#F1F8E9</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="error">#B71C1C</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_surface">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="label_accurate">#2E7D32</color>
+    <color name="label_inaccurate">#B71C1C</color>
+    <color name="label_uncertain">#E65100</color>
+    <color name="card_accurate_bg">#E8F5E9</color>
+    <color name="card_inaccurate_bg">#FFEBEE</color>
+    <color name="card_uncertain_bg">#FFF3E0</color>
+</resources>

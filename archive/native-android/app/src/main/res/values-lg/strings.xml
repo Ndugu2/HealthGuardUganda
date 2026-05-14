@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HealthGuard Uganda</string>
+    <string name="tagline">Omuyambi w\'Obulamu Atakola ku Mutimbagano</string>
+    <!-- Navigation -->
+    <string name="nav_home">Eka</string>
+    <string name="nav_analyze">Kendeeza</string>
+    <string name="nav_knowledge">Okumanya</string>
+    <string name="nav_reports">Alipoota</string>
+    <!-- Home -->
+    <string name="home_welcome">Kulika, Muweereza w\'Obulamu</string>
+    <string name="home_subtitle">Kakasa ebigambo by\'obulamu mbulijjo — tewetaaga mutimbagano.</string>
+    <string name="home_btn_analyze">Kendeeza Ekigambo</string>
+    <string name="home_btn_knowledge">Ebikwata ku Bulamu</string>
+    <string name="home_btn_reports">Laba Alipoota</string>
+    <string name="home_lang_label">Olulimi:</string>
+    <!-- Analyze -->
+    <string name="analyze_hint">Ingiza ekigambo ky\'obulamu okukikakasa…</string>
+    <string name="analyze_button">KAKASA EKIGAMBO</string>
+    <string name="analyze_clear">Ggyamu</string>
+    <string name="analyzing">Tukyekenneenya…</string>
+    <!-- Results -->
+    <string name="result_accurate">✅ Ekyo Kituufu</string>
+    <string name="result_inaccurate">❌ Kino Kitaliikirirwa</string>
+    <string name="result_uncertain">⚠️ Tetukakasa — Buuza Omukugu</string>
+    <string name="result_confidence">Obukakafu:</string>
+    <string name="result_why_title">Lwaki kino kirondeddwa?</string>
+    <string name="result_triggered_by">Kisinzidde ku:</string>
+    <string name="result_correct_title">Ekituufu kye Kino</string>
+    <string name="result_source">Gye kijjiddwa:</string>
+    <string name="result_speak">🔊 Somera waggulu</string>
+    <string name="result_save">💾 Tereka Ensisinkano</string>
+    <string name="result_flag">🚩 Teeka akabonero</string>
+    <string name="result_from_rule">Okuzuula okusinziira ku mateeka</string>
+    <string name="result_from_ai">Okuzuula okusinziira ku AI</string>
+    <string name="disclaimer">⚠️ Kino kiyamba abaweereza b\'obulamu. Bulijjo weebuuze ku musaayi omukugu ku nsonga z\'obulamu.</string>
+    <!-- Knowledge -->
+    <string name="knowledge_search">Noonya ensonga z\'obulamu…</string>
+    <string name="filter_all">Zonna</string>
+    <string name="filter_vaccines">Enkingo</string>
+    <string name="filter_malaria">Malaria</string>
+    <string name="filter_hiv">HIV/AIDS</string>
+    <string name="filter_maternal">Eby\'abazadde</string>
+    <string name="filter_covid">COVID-19</string>
+    <!-- Reports -->
+    <string name="reports_title">Ebiraga Ensisinkano</string>
+    <string name="reports_empty">Tewali nsisinkano nnene nnyo.</string>
+    <string name="report_total">Okukebera Kwonna</string>
+    <string name="report_misinformation">Ebitali bituufu</string>
+    <string name="report_accurate">Ebituufu</string>
+    <string name="report_uncertain">Ebitalambulukufu</string>
+    <!-- Misc -->
+    <string name="btn_ok">Kale</string>
+    <string name="encounter_saved">Ensisinkano terekee obulungi</string>
+    <string name="myth_flagged">Kiteekeddwako akabonero. Weebale!</string>
+    <string name="lang_en">EN</string>
+    <string name="lang_lg">LG</string>
+</resources>

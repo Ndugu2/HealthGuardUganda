@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthGuard Uganda | National Intelligence Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-mode">
+    <div id="loading-overlay">
+        <div class="loader"></div>
+        <p>Syncing with National Node...</p>
+    </div>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">HG</div>
+                <div class="logo-text">
+                    <h1>HealthGuard</h1>
+                    <span>National Intelligence</span>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active"><span class="icon">📊</span> Dashboard</a>
+                <a href="#" class="nav-item"><span class="icon">🗺️</span> Heatmap AI</a>
+                <a href="#" class="nav-item"><span class="icon">🛡️</span> Intervention Tracker</a>
+                <a href="#" class="nav-item"><span class="icon">🔬</span> Research Lab</a>
+                <a href="#" class="nav-item"><span class="icon">⚙️</span> Node Settings</a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-pill online">
+                    <span class="dot"></span> National Node: Active
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header class="top-bar">
+                <div class="page-title">
+                    <h2>Uganda Health Misinformation Analytics</h2>
+                    <p>Real-time surveillance & predictive risk monitoring</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline">Export Report</button>
+                    <button class="btn btn-primary">Push National Alert</button>
+                    <div class="user-pill">
+                        <img src="https://ui-avatars.com/api/?name=MoH+Admin&background=10B981&color=fff" alt="User">
+                        <span>Ministry Official</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Stats Row -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Claims Logged</div>
+                        <div id="total-claims" class="stat-value">---</div>
+                        <div class="stat-trend up" id="total-trend">+0.0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Myths Identified</div>
+                        <div id="myths-identified" class="stat-value">---</div>
+                        <div class="stat-trend neutral">Live Tracking</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">CHW Engagement</div>
+                        <div id="chw-engagement" class="stat-value">---</div>
+                        <div class="stat-trend up">Active</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Risk Index (National)</div>
+                        <div id="national-risk" class="stat-value high">---</div>
+                        <div class="stat-trend up">Calculated</div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="charts-row">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Misinformation Trends (90 Days)</h3>
+                            <select class="card-select">
+                                <option>National</option>
+                                <option>Wakiso</option>
+                                <option>Kampala</option>
+                            </select>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card distribution-card">
+                        <div class="card-header">
+                            <h3>Myth Categories</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Row -->
+                <div class="bottom-row">
+                    <div class="card map-card">
+                        <div class="card-header">
+                            <h3>Regional Risk Hotspots</h3>
+                        </div>
+                        <div class="map-placeholder" id="uganda-map">
+                            <!-- Simulated Map Visualization -->
+                            <div id="map-hotspots"></div>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Uganda_districts_2020.svg/800px-Uganda_districts_2020.svg.png" alt="Uganda Districts">
+                            <div id="map-tooltip" class="map-tooltip"></div>
+                        </div>
+                    </div>
+                    <div class="card recent-claims">
+                        <div class="card-header">
+                            <h3>Live Federated Claims Feed</h3>
+                            <div class="live-indicator">
+                                <span class="dot"></span> LIVE
+                            </div>
+                        </div>
+                        <div id="claims-feed" class="claims-list">
+                            <!-- Populated by script.js -->
+                            <div class="claim-placeholder">Fetching latest encounters...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

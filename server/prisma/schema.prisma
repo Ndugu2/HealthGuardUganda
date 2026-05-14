@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Encounter {
+  id             String   @id @default(uuid())
+  claimText      String
+  label          String
+  riskLevel      String?  // LOW, MEDIUM, HIGH
+  triggerPhrases String?  // Comma separated
+  confidencePct  Int
+  locationNote   String?
+  village        String?
+  district       String?
+  submittedAt    DateTime @default(now())
+  flagged        Boolean  @default(false)
+  userId         String?
+}
+
+model KnowledgeItem {
+  id            Int      @id @default(autoincrement())
+  topic         String
+  keyword       String?
+  mythTextEn    String?
+  correctTextEn String
+  correctTextLg String?
+  source        String?
+  updatedAt     DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  name      String
+  role      String   @default("HW") // HW for Health Worker, AD for Admin
+  village   String?
+  district  String?
+  password  String
+  createdAt DateTime @default(now())
+}
