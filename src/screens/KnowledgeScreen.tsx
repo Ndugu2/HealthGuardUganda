@@ -17,6 +17,7 @@ const TOPIC_FILTERS = [
   { key: 'covid',        i18nKey: 'knowledge.filter_covid' },
   { key: 'nutrition',    i18nKey: 'knowledge.filter_nutrition' },
   { key: 'sanitation',   i18nKey: 'knowledge.filter_sanitation' },
+  { key: 'stds',         i18nKey: 'knowledge.filter_stds' },
 ];
 
 const KnowledgeScreen = () => {

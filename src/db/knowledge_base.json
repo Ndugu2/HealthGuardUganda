@@ -118,5 +118,29 @@
     "correct_text_en": "Masks are safe and do not impact oxygen levels.",
     "correct_text_lg": "Akakookolo tekazaikiriza mpewo mu mubiri.",
     "source": "WHO, 2021"
+  },
+  {
+    "topic": "stds",
+    "keyword": "syphilis_lemon",
+    "myth_text_en": "Syphilis can be cured with lemon juice.",
+    "correct_text_en": "Syphilis requires antibiotic treatment from a health facility. Lemon juice is ineffective.",
+    "correct_text_lg": "Syphilis ewoneka n'eddagala ery'ekikugu (antibiotics) okuva mu ddwaliro. Amazzi g'ennimu tegawonya.",
+    "source": "MOH Uganda, 2022"
+  },
+  {
+    "topic": "stds",
+    "keyword": "visible_symptoms",
+    "myth_text_en": "You can tell if someone has an STD just by looking at them.",
+    "correct_text_en": "Many STDs have no visible symptoms; only a medical test can confirm infection.",
+    "correct_text_lg": "Endwadde z'ekikaba nnyingi teziraako bubonero bwangu kulaba; kukebera mu ddwaliro kwekukakasa.",
+    "source": "CDC, 2023"
+  },
+  {
+    "topic": "stds",
+    "keyword": "washing_prevention",
+    "myth_text_en": "Washing after sex prevents STDs.",
+    "correct_text_en": "Washing does not prevent STDs; correct use of condoms and abstinence are effective methods.",
+    "correct_text_lg": "Okunaaba mu kifo ky'ekyama luvanyuma lw'okwegatta tekuziyiza ndwadde z'ekikaba.",
+    "source": "WHO, 2022"
   }
 ]
