@@ -15,7 +15,7 @@ import { Text, Icon, Modal, Portal, Divider, ProgressBar, ActivityIndicator } fr
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { HybridClassifier } from '../ai/HybridClassifier';
-import { getResponseForKeyword, saveEncounter, updateEncounterFeedback } from '../db/Database';
+import { getResponseForKeyword, saveEncounter, updateEncounterFeedback, getSetting } from '../db/Database';
 import { ClassificationResult } from '../ai/RuleEngine';
 import AnimatedCard from '../components/AnimatedCard';
 import { colors, spacing, radii, shadows } from '../theme';
@@ -38,6 +38,11 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
   const [analysisStage, setAnalysisStage] = useState(0);
   const [result, setResult] = useState<ClassificationResult | null>(null);
   const [correctInfo, setCorrectInfo] = useState('');
+  const [directAnswer, setDirectAnswer] = useState('');
+  const [detailedGuidance, setDetailedGuidance] = useState('');
+  const [symptoms, setSymptoms] = useState('');
+  const [prevention, setPrevention] = useState('');
+  const [treatment, setTreatment] = useState('');
   const [source, setSource] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [currentEncounterId, setCurrentEncounterId] = useState<number | null>(null);
@@ -105,13 +110,35 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
     setResult(res);
     const evidence = await getResponseForKeyword(res.triggerKeyword);
     
+    let info = '';
     if (evidence) {
-      setCorrectInfo(i18n.language === 'lg' ? evidence.correct_text_lg || evidence.correct_text_en : evidence.correct_text_en);
+      info = i18n.language === 'lg' ? evidence.correct_text_lg || evidence.correct_text_en : evidence.correct_text_en;
+      setCorrectInfo(info);
+      setDetailedGuidance(i18n.language === 'lg' ? (evidence.detailed_guidance_lg || evidence.detailed_guidance_en || '') : (evidence.detailed_guidance_en || ''));
+      setSymptoms(evidence.symptoms || '');
+      setPrevention(evidence.prevention || '');
+      setTreatment(evidence.treatment || '');
       setSource(evidence.source);
     } else {
-      setCorrectInfo(t('analyze.no_evidence') || 'No specific evidence found in the local knowledge base. Please consult a health officer.');
+      info = t('analyze.no_evidence') || 'No specific evidence found in the local knowledge base. Please consult a health officer.';
+      setCorrectInfo(info);
+      setDetailedGuidance('');
+      setSymptoms('');
+      setPrevention('');
+      setTreatment('');
       setSource(t('analyze.general_guidelines') || 'General Guidelines');
     }
+
+    // Construct Direct Conversational Answer
+    let answer = '';
+    if (res.label === 'INACCURATE') {
+      answer = i18n.language === 'lg' ? `Nga, ekyo si kituufu. ${info}` : `No, that is not true. ${info}`;
+    } else if (res.label === 'ACCURATE') {
+      answer = i18n.language === 'lg' ? `Ye, ekyo kituufu. ${info}` : `Yes, that is correct. ${info}`;
+    } else {
+      answer = i18n.language === 'lg' ? `Kino tekimanyiddwa bulungi. ${info}` : `This information is unverified. ${info}`;
+    }
+    setDirectAnswer(answer);
 
     const encounterId = await saveEncounter(claim, res.label, res.confidence, 'Kampala, Central');
     setCurrentEncounterId(encounterId);
@@ -147,7 +174,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
       } else {
         Alert.alert(
           t('analyze.expert_offline'), 
-          t('analyze.expert_offline_msg') || 'Could not reach the global expert network. Please check your settings or connection.'
+          t('analyze.expert_offline_msg') || 'Could not reach the global expert network. Please check your internet connection.'
         );
       }
     } catch (e) {
@@ -616,6 +643,18 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                   </View>
                 )}
 
+                {/* NEW: Direct Answer Verdict */}
+                <View style={[styles.directAnswerCard, { backgroundColor: result?.label === 'ACCURATE' ? colors.primary[50] : colors.danger[50] }]}>
+                  <Icon 
+                    source={result?.label === 'ACCURATE' ? "check-decagram" : "alert-decagram"} 
+                    size={26} 
+                    color={result?.label === 'ACCURATE' ? colors.primary[900] : colors.danger[900]} 
+                  />
+                  <Text style={[styles.directAnswerText, { color: result?.label === 'ACCURATE' ? colors.primary[900] : colors.danger[900] }]}>
+                    {directAnswer}
+                  </Text>
+                </View>
+
                 <Text style={[styles.resultClaimText, { color: colors.neutral[900] }]}>"{claim}"</Text>
                 
                 <View style={[styles.reasoningBox, { backgroundColor: colors.neutral[50] }]}>
@@ -654,17 +693,67 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                    </View>
                 )}
 
-                <View style={[styles.factsCard, { backgroundColor: colors.surface }]}>
-                  <View style={styles.factsHeader}>
-                    <Icon source="shield-check" size={22} color={colors.primary[600]} />
-                    <Text style={[styles.factsTitle, { color: colors.neutral[900] }]}>{t('analyze.results.correct_info')}</Text>
+                  <View style={[styles.factsCard, { backgroundColor: colors.surface }]}>
+                    <View style={styles.factsHeader}>
+                      <Icon source="shield-check" size={22} color={colors.primary[600]} />
+                      <Text style={[styles.factsTitle, { color: colors.neutral[900] }]}>{t('analyze.results.correct_info')}</Text>
+                    </View>
+                    <Text style={[styles.factsText, { color: colors.neutral[700] }]}>{correctInfo}</Text>
+                    <View style={[styles.sourceBox, { borderTopColor: colors.neutral[100] }]}>
+                      <Icon source="book-open-variant" size={16} color={colors.primary[600]} />
+                      <Text style={[styles.sourceText, { color: colors.primary[700] }]}>Source: {source || 'Uganda Ministry of Health'}</Text>
+                    </View>
                   </View>
-                  <Text style={[styles.factsText, { color: colors.neutral[700] }]}>{correctInfo}</Text>
-                  <View style={[styles.sourceBox, { borderTopColor: colors.neutral[100] }]}>
-                    <Icon source="book-open-variant" size={16} color={colors.primary[600]} />
-                    <Text style={[styles.sourceText, { color: colors.primary[700] }]}>Source: {source || 'Uganda Ministry of Health'}</Text>
-                  </View>
-                </View>
+
+                  {symptoms || prevention || treatment ? (
+                    <View style={[styles.educationSection, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
+                       <Text style={[styles.educationTitle, { color: colors.primary[900] }]}>📚 DISEASE EDUCATION</Text>
+                       
+                       {symptoms ? (
+                         <View style={styles.eduItem}>
+                            <View style={[styles.eduIconWrap, { backgroundColor: colors.warning[50] }]}>
+                               <Icon source="thermometer" size={16} color={colors.warning[900]} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                               <Text style={[styles.eduLabel, { color: colors.warning[900] }]}>Symptoms</Text>
+                               <Text style={[styles.eduText, { color: colors.neutral[700] }]}>{symptoms}</Text>
+                            </View>
+                         </View>
+                       ) : null}
+
+                       {prevention ? (
+                         <View style={styles.eduItem}>
+                            <View style={[styles.eduIconWrap, { backgroundColor: colors.primary[50] }]}>
+                               <Icon source="shield-plus" size={16} color={colors.primary[900]} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                               <Text style={[styles.eduLabel, { color: colors.primary[900] }]}>How to Prevent</Text>
+                               <Text style={[styles.eduText, { color: colors.neutral[700] }]}>{prevention}</Text>
+                            </View>
+                         </View>
+                       ) : null}
+
+                       {treatment ? (
+                         <View style={styles.eduItem}>
+                            <View style={[styles.eduIconWrap, { backgroundColor: colors.danger[50] }]}>
+                               <Icon source="medication" size={16} color={colors.danger[900]} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                               <Text style={[styles.eduLabel, { color: colors.danger[900] }]}>How to Cure / Treat</Text>
+                               <Text style={[styles.eduText, { color: colors.neutral[700] }]}>{treatment}</Text>
+                            </View>
+                         </View>
+                       ) : null}
+                    </View>
+                  ) : detailedGuidance ? (
+                    <View style={[styles.detailedGuidanceCard, { backgroundColor: colors.primary[50], borderColor: colors.primary[200] }]}>
+                       <View style={styles.guidanceHeader}>
+                          <Icon source="lightbulb-on-outline" size={20} color={colors.primary[900]} />
+                          <Text style={[styles.guidanceTitle, { color: colors.primary[900] }]}>{t('analyze.detailed_guidance') || 'Detailed Guidance'}</Text>
+                       </View>
+                       <Text style={[styles.guidanceBody, { color: colors.neutral[800] }]}>{detailedGuidance}</Text>
+                    </View>
+                  ) : null}
 
                 {/* Expert AI Section */}
                 {!expertAnalysis ? (
@@ -683,15 +772,49 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                     </Text>
                   </TouchableOpacity>
                 ) : (
-                  <View style={[styles.expertResultBox, { backgroundColor: '#F0F4FF', borderColor: '#C4D7FF' }]}>
-                    <View style={styles.expertHeader}>
-                      <Icon source="certificate" size={22} color="#003DFF" />
-                      <Text style={styles.expertTitle}>{t('analyze.expert_title')}</Text>
+                  <View style={[styles.expertResultBox, { 
+                    backgroundColor: expertAnalysis.source === 'online' ? '#E8F5E9' : expertAnalysis.source === 'backend' ? '#FFF3E0' : '#F5F5F5', 
+                    borderColor: expertAnalysis.source === 'online' ? '#A5D6A7' : expertAnalysis.source === 'backend' ? '#FFE0B2' : '#E0E0E0' 
+                  }]}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
+                      <View style={[styles.expertHeader, { marginBottom: 0 }]}>
+                        <Icon source="certificate" size={22} color={expertAnalysis.source === 'online' ? '#2E7D32' : expertAnalysis.source === 'backend' ? '#E65100' : '#424242'} />
+                        <Text style={[styles.expertTitle, { color: expertAnalysis.source === 'online' ? '#2E7D32' : expertAnalysis.source === 'backend' ? '#E65100' : '#424242' }]}>
+                          {t('analyze.expert_title') || 'Global Expert Opinion'}
+                        </Text>
+                      </View>
+                      
+                      {/* Dynamic Source Indicator Badge */}
+                      <View style={{
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 6,
+                        backgroundColor: expertAnalysis.source === 'online' ? '#C8E6C9' : expertAnalysis.source === 'backend' ? '#FFE0B2' : '#E0E0E0',
+                        borderWidth: 1,
+                        borderColor: expertAnalysis.source === 'online' ? '#81C784' : expertAnalysis.source === 'backend' ? '#FFB74D' : '#BDBDBD',
+                      }}>
+                        <Text style={{
+                          fontSize: 10,
+                          fontWeight: '800',
+                          color: expertAnalysis.source === 'online' ? '#1B5E20' : expertAnalysis.source === 'backend' ? '#E65100' : '#212121',
+                          textTransform: 'uppercase',
+                        }}>
+                          {expertAnalysis.source === 'online' ? '🌐 Cloud Llama-3' : expertAnalysis.source === 'backend' ? '🏛️ National Portal' : '📴 Local Fallback'}
+                        </Text>
+                      </View>
                     </View>
+                    
                     <Text style={styles.expertExplanation}>{expertAnalysis.explanation}</Text>
-                    <View style={styles.expertRecommendation}>
-                      <Icon source="lightbulb-on" size={18} color="#FF8C00" />
-                      <Text style={styles.expertRecText}>{expertAnalysis.recommendation}</Text>
+                    
+                    <View style={[styles.expertRecommendation, { 
+                      backgroundColor: expertAnalysis.source === 'online' ? 'rgba(46, 125, 50, 0.1)' : 'rgba(230, 81, 0, 0.1)'
+                    }]}>
+                      <Icon source="lightbulb-on" size={18} color={expertAnalysis.source === 'online' ? '#2E7D32' : '#E65100'} />
+                      <Text style={[styles.expertRecText, { 
+                        color: expertAnalysis.source === 'online' ? '#2E7D32' : '#E65100' 
+                      }]}>
+                        {expertAnalysis.recommendation}
+                      </Text>
                     </View>
                   </View>
                 )}
@@ -1226,6 +1349,13 @@ const styles = StyleSheet.create({
     color: colors.neutral[600],
     letterSpacing: 0.5,
   },
+  factsText: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: colors.neutral[700],
+    marginBottom: spacing.lg,
+    fontWeight: '500',
+  },
   panelTitle: {
     fontSize: 18,
     fontWeight: '800',
@@ -1461,12 +1591,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: colors.neutral[900],
-  },
-  factsText: {
-    fontSize: 15,
-    color: colors.neutral[700],
-    lineHeight: 24,
-    marginBottom: spacing.md,
   },
   sourceBox: {
     flexDirection: 'row',
@@ -2135,6 +2259,76 @@ const styles = StyleSheet.create({
   warningText: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  detailedGuidanceCard: {
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    marginTop: spacing.lg,
+    gap: 12,
+  },
+  guidanceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  guidanceBody: {
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '600',
+  },
+  educationSection: {
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    marginTop: spacing.lg,
+    gap: 16,
+  },
+  educationTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  eduItem: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  eduIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  eduLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  eduText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '600',
+  },
+  directAnswerCard: {
+    padding: 20,
+    borderRadius: radii.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+    marginBottom: spacing.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    ...shadows.md,
+  },
+  directAnswerText: {
+    fontSize: 16,
+    fontWeight: '800',
+    flex: 1,
+    lineHeight: 22,
   },
 });
 

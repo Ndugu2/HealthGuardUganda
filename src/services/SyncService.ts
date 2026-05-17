@@ -3,7 +3,7 @@ import { getAllClaims, saveKnowledge } from '../db/Database';
 import { AuthService } from './AuthService';
 import { ConnectivityService } from './ConnectivityService';
 
-const API_URL = Platform.OS === 'web' ? 'http://localhost:3000/api' : 'http://10.136.128.21:3000/api';
+const API_URL = Platform.OS === 'web' ? 'http://localhost:3000/api' : 'http://10.0.2.2:3000/api';
 
 export class SyncService {
   /**

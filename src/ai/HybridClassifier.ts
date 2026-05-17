@@ -41,9 +41,28 @@ export class HybridClassifier {
     const bertRes = this.bertModel.predict(input);
 
     // 2. Select Final Result (Preference: Rule > ML > BERT)
-    const finalResult = ruleRes || mlRes;
+    const finalResult = ruleRes || { ...mlRes };
     
-    // 3. Perform Consensus Analysis
+    // 3. Fallback: If rule engine missed but ML caught it, try to find a relevant topic keyword
+    if (!ruleRes && finalResult.label !== 'UNCERTAIN' && !finalResult.triggerKeyword) {
+      const keywords = this.ruleEngine.keywordScore(input);
+      if (keywords.triggerKeyword) {
+        finalResult.triggerKeyword = keywords.triggerKeyword;
+        finalResult.reasoning = `${finalResult.reasoning} Topic recognized as ${keywords.triggerKeyword.split(':')[0]}.`;
+      }
+    }
+
+    // 4. INTENT ANALYSIS: If it's a genuine health-seeking question, favor informational labels
+    const isHealthSeeking = /(how|can i|where|what|why|is there|how to)/i.test(input);
+    if (isHealthSeeking && finalResult.label === 'INACCURATE' && finalResult.confidence < 0.95) {
+       finalResult.label = 'UNCERTAIN';
+       finalResult.reliabilityNote = "Informational query identified. Providing relevant health guidance.";
+    }
+
+    // 5. RELIABILITY LAYER
+    const isReliable = finalResult.confidence > 0.85 || finalResult.triggerKeyword !== null;
+    
+    // 4. Perform Consensus Analysis
     const models = [
       { name: 'Rule Engine', res: ruleRes || { label: 'UNCERTAIN', confidence: 0 } },
       { name: 'Logistic Regression', res: mlRes },

@@ -5,6 +5,8 @@ import * as dotenv from 'dotenv';
 import authRoutes from './routes/auth';
 import syncRoutes from './routes/sync';
 import statsRoutes from './routes/stats';
+import federatedRoutes from './routes/federated';
+import aiRoutes from './routes/ai';
 
 dotenv.config();
 
@@ -23,6 +25,8 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/sync', syncRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/v1/federated', federatedRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.listen(PORT, () => {
   console.log(`HealthGuard AI Backend running on port ${PORT}`);

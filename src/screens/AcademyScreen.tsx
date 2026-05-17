@@ -9,7 +9,7 @@ import { useAppTheme } from '../ThemeContext';
 import AnimatedCard from '../components/AnimatedCard';
 
 const AcademyScreen = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;

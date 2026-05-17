@@ -9,6 +9,9 @@
     "web": "expo start --web",
     "prebuild": "expo prebuild"
   },
+  "contributors": [
+    "Ndugu2"
+  ],
   "dependencies": {
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^14.1.0",

@@ -151,12 +151,12 @@ export const shadows = {
 // ── Gradient Presets (Ultra-Smooth) ──────────────────────────────────────────
 
 export const gradients = {
-  primary: ['#059669', '#10B981'],
-  danger:  ['#DC2626', '#EF4444'],
-  warning: ['#D97706', '#F59E0B'],
-  info:    ['#2563EB', '#3B82F6'],
-  surface: ['#FFFFFF', '#F9FAFB'],
-  darkSurface: ['#111827', '#1F2937'],
+  primary: ['#059669', '#10B981'] as const,
+  danger:  ['#DC2626', '#EF4444'] as const,
+  warning: ['#D97706', '#F59E0B'] as const,
+  info:    ['#2563EB', '#3B82F6'] as const,
+  surface: ['#FFFFFF', '#F9FAFB'] as const,
+  darkSurface: ['#111827', '#1F2937'] as const,
 };
 
 // ── Topic Colors ─────────────────────────────────────────────────────────────

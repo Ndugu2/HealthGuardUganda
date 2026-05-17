@@ -3,32 +3,44 @@
     "topic": "vaccination",
     "keyword": "infertility",
     "myth_text_en": "Vaccines cause infertility in women.",
-    "correct_text_en": "Vaccines are rigorously tested and do not affect fertility.",
-    "correct_text_lg": "Enkingo tezikosa kubeera n'abaana.",
-    "source": "WHO, 2023"
+    "correct_text_en": "No, vaccines do NOT cause infertility. They are rigorously tested for safety. Protecting your child with vaccines saves lives and has no effect on fertility.",
+    "correct_text_lg": "Enkingo tezikosa kubeera n'abaana. Zikezesebwa bulungi ennyo.",
+    "symptoms": "Vaccine-preventable diseases: High fever, paralysis (polio), rash (measles), difficulty breathing (whooping cough).",
+    "prevention": "Follow the Uganda National Expanded Programme on Immunisation (UNEPI) schedule from birth.",
+    "treatment": "Vaccines prevent disease. If your child misses a dose, visit the nearest health center immediately for catch-up immunization.",
+    "source": "WHO / MOH Uganda, 2023"
   },
   {
     "topic": "vaccination",
     "keyword": "microchips",
-    "myth_text_en": "Vaccines contain microchips.",
-    "correct_text_en": "Vaccines contain no microchips.",
-    "correct_text_lg": "Enkingo tezirimu chip.",
+    "myth_text_en": "Vaccines contain microchips to track people.",
+    "correct_text_en": "No, vaccines contain NO microchips. They contain weakened or killed germs, proteins, or mRNA that train your immune system to fight disease. Microchip technology cannot survive injection.",
+    "correct_text_lg": "Enkingo tezirimu chip. Zirimu obuwuka obutakkivu oba pulootiini ezinya omubiri okutangaala.",
+    "symptoms": "Vaccine-preventable illnesses cause severe fever, paralysis, deafness, and death in unvaccinated children.",
+    "prevention": "Vaccinate all children on schedule. Vaccines are free at government health facilities in Uganda.",
+    "treatment": "Once a child contracts measles or polio, only supportive care is available — prevention through vaccination is far safer.",
     "source": "WHO, 2021"
   },
   {
     "topic": "vaccination",
     "keyword": "prevention_routine",
     "myth_text_en": "Only sick children need vaccines.",
-    "correct_text_en": "Fact: Routine immunization prevents deadly diseases like Polio, Measles, and TB before they occur.",
-    "correct_text_lg": "Fact: Okugemba bulijjo kuziyiza endwadde nnyingi nga mumpumpu n'olukusu.",
-    "source": "MOH Uganda, 2023"
+    "correct_text_en": "Fact: ALL healthy children need vaccines on schedule. Routine immunization prevents Polio, Measles, TB, and Hepatitis B before a child is ever exposed.",
+    "correct_text_lg": "Fact: Abaana bonna baetaaga enkingo nga balamu. Okugemba bulijjo kuziyiza mumpumpu, olukusu, TB n'endwadde nnyingi.",
+    "symptoms": "Unvaccinated children are at high risk of fever, paralysis, pneumonia, and death from preventable diseases.",
+    "prevention": "Complete all 8 vaccines in the UNEPI schedule: BCG, OPV, Pentavalent, PCV, Rotavirus, IPV, MR, and Yellow Fever.",
+    "treatment": "Vaccine-preventable diseases have no cure — only supportive treatment. Prevention is the only reliable solution.",
+    "source": "MOH Uganda / UNEPI, 2023"
   },
   {
     "topic": "hiv",
     "keyword": "witchcraft",
     "myth_text_en": "HIV is caused by witchcraft.",
-    "correct_text_en": "HIV is caused by a virus transmitted through fluids. It is managed by ART.",
-    "correct_text_lg": "HIV ereetera omukutu gwa HIV, si obulogo. Eddagala lya ART liyamba.",
+    "correct_text_en": "HIV is NOT caused by witchcraft. It is caused by a virus (HIV) that attacks the immune system. While there is currently no cure, it is managed through ART which allows for a healthy life. Prevention is through ABC (Abstinence, Be Faithful, Condoms).",
+    "correct_text_lg": "HIV si mulogo. Ereeterwa akawuka. Eddagala lya ART liyamba, naye tewali ddagala liwonya.",
+    "symptoms": "Fever, weight loss, and recurring infections.",
+    "prevention": "Use condoms, avoid sharing needles, and get tested regularly.",
+    "treatment": "Lifelong ART (Antiretroviral Therapy).",
     "source": "UNAIDS, 2023"
   },
   {
@@ -37,6 +49,8 @@
     "myth_text_en": "There is no medicine to prevent HIV after exposure.",
     "correct_text_en": "Fact: PrEP and PEP are medicines that can prevent HIV infection if taken as directed by a health worker.",
     "correct_text_lg": "Fact: Waliwo eddagala (PrEP/PEP) eriziyiza HIV ssinga okikozesa mu ddwaliro.",
+    "detailed_guidance_en": "PEP must be started within 72 hours of exposure. PrEP is for people at high risk who are currently negative.",
+    "detailed_guidance_lg": "PEP erina kutandikibwa mu ssaawa 72 oluvannyuma lw'okusisinkana akawuka. PrEP eyaabo abali mu buzibu obungi naye nga tebalina kawuka.",
     "source": "WHO, 2022"
   },
   {
@@ -45,6 +59,9 @@
     "myth_text_en": "Eating sugarcane or too much sun causes malaria.",
     "correct_text_en": "Fact: Malaria (Omusujja gw'ensiri) is only caused by the bite of an infected female Anopheles mosquito.",
     "correct_text_lg": "Fact: Omusujja gw'ensiri gureetebwa nsiri, si ebikajjo oba musana.",
+    "symptoms": "High fever, chills, sweating, headache, nausea, and muscle pain.",
+    "prevention": "Sleep under a treated mosquito net, use insect repellent, and clear stagnant water.",
+    "treatment": "Malaria is cured with Coartem (ACTs) after a positive blood test. Never self-medicate.",
     "source": "MOH Uganda, 2021"
   },
   {
@@ -53,39 +70,54 @@
     "myth_text_en": "Sleeping under a net makes you feel too hot and isn't necessary.",
     "correct_text_en": "Fact: Sleeping under a Long-Lasting Insecticide-Treated Net (LLIN) is the most effective way to prevent malaria.",
     "correct_text_lg": "Fact: Okusula mu katimba k'ensiri akalimu eddagala kwekuziyiza omusujja gw'ensiri okusinga.",
+    "symptoms": "Fever, headache, and joint pain.",
+    "prevention": "Consistent use of LLINs, indoor residual spraying, and wearing long clothes at night.",
+    "treatment": "Tested and treated at any health facility using ACTs.",
     "source": "MOH Uganda, 2023"
   },
   {
     "topic": "maternal",
     "keyword": "hospital_danger",
-    "myth_text_en": "Hospital delivery is dangerous.",
-    "correct_text_en": "Skilled health facility deliveries are safer and prevent maternal death.",
-    "correct_text_lg": "Okuzaala mu ddwaliro kusinga okukuuma omukazi n'omwana.",
-    "source": "WHO Safe Motherhood"
+    "myth_text_en": "Hospital delivery is dangerous — home birth is safer.",
+    "correct_text_en": "No, facility-based delivery is far safer. Uganda's maternal mortality is largely due to home births without skilled care. Hospitals have equipment to handle emergencies like bleeding and obstructed labour.",
+    "correct_text_lg": "Okuzaala mu ddwaliro kusinga okuteeka omukazi n'omwana mu mbeera ennungi. Okufa kw'abakazi ab'olubuto mu Uganda kuzisibwa okuzaala ewaka.",
+    "symptoms": "Danger signs in pregnancy: Heavy vaginal bleeding, severe headache, blurred vision, convulsions, baby not moving, high fever.",
+    "prevention": "Attend all 8 ANC visits. Deliver at a certified health facility. Have a birth plan ready including transport to the hospital.",
+    "treatment": "If complications arise, go to the nearest health facility immediately. Call the Emergency Maternal Hotline: 0800-100-066.",
+    "source": "MOH Uganda / WHO Safe Motherhood"
   },
   {
     "topic": "maternal",
     "keyword": "anc_prevention",
     "myth_text_en": "You only need to visit the clinic once during pregnancy.",
-    "correct_text_en": "Fact: At least 8 ANC visits are recommended to monitor the health of both mother and baby and prevent complications.",
-    "correct_text_lg": "Fact: Omukazi alina okukeberebwa emirundi munaana (8) ng'ali lubuto okuziyiza obuzibu.",
+    "correct_text_en": "Fact: At least 8 ANC visits are required by MOH Uganda. These visits detect anaemia, high blood pressure, infections, and foetal positioning — all of which can be life-threatening if missed.",
+    "correct_text_lg": "Fact: Omukazi alina okukeberebwa emirundi munaana (8) ng'ali lubuto. Okukebera kuziyiza anemia, pulesha, n'endwadde ez'omwana.",
+    "symptoms": "Missed ANC can result in undetected anaemia, pre-eclampsia, or malpositioned baby — all dangerous during delivery.",
+    "prevention": "Register for ANC in the first trimester (before 12 weeks). Bring your antenatal card to every visit.",
+    "treatment": "ANC visits include iron/folic acid tablets, tetanus injections, malaria prevention, and HIV testing.",
     "source": "MOH Uganda, 2022"
   },
   {
     "topic": "covid",
     "keyword": "hot_water",
-    "myth_text_en": "Drinking hot water kills COVID-19.",
-    "correct_text_en": "High temperatures don't kill the virus inside the body and can cause burns.",
-    "correct_text_lg": "Okunywa ebyokulya ebyokya tekutuuka mu mawuggwe gye kawangaalira.",
+    "myth_text_en": "Drinking hot water or steam kills COVID-19.",
+    "correct_text_en": "No, drinking hot water does NOT kill COVID-19. The virus lives in your respiratory tract, not your stomach. Drinking boiling water only causes burns to your mouth and throat.",
+    "correct_text_lg": "Okunywa ebyokulya ebyokya tekutuuka mu mawuggwe gye kawangaalira. Akawuka kaba mu nkanu, si mu lubuto.",
+    "symptoms": "COVID-19: Dry cough, fever, loss of taste or smell, tiredness, and difficulty breathing.",
+    "prevention": "Get vaccinated, wash hands with soap regularly, wear a mask in crowded places, and ventilate indoor spaces.",
+    "treatment": "Rest, drink plenty of fluids, and take paracetamol for fever. Go to a health facility if breathing becomes difficult.",
     "source": "WHO, 2021"
   },
   {
     "topic": "covid",
     "keyword": "covid_cause_virus",
-    "myth_text_en": "COVID-19 is a spiritual curse or caused by 5G.",
-    "correct_text_en": "Fact: COVID-19 is caused by the SARS-CoV-2 virus, which spreads through respiratory droplets.",
-    "correct_text_lg": "Fact: COVID-19 ereetebwa kawuka (virus), si mpewo za 5G oba bulogo.",
-    "source": "WHO, 2021"
+    "myth_text_en": "COVID-19 is a spiritual curse or caused by 5G towers.",
+    "correct_text_en": "No, COVID-19 is caused by the SARS-CoV-2 virus — a biological pathogen, NOT 5G signals or a curse. It spreads through respiratory droplets when an infected person coughs, sneezes, or talks.",
+    "correct_text_lg": "COVID-19 ereetebwa kawuka (virus), si mpewo za 5G oba bulogo. Ekyetwalibwa ku mpewo ez'olusu.",
+    "symptoms": "Fever, dry cough, loss of smell/taste, headache, body aches, and in severe cases, difficulty breathing.",
+    "prevention": "Vaccination, hand hygiene, masking, social distancing, and good ventilation in enclosed spaces.",
+    "treatment": "Mild: rest and fluids at home. Severe: seek immediate medical care with oxygen support.",
+    "source": "WHO / MOH Uganda, 2021"
   },
   {
     "topic": "nutrition",
@@ -107,41 +139,133 @@
     "topic": "sanitation",
     "keyword": "ebola_touch",
     "myth_text_en": "Ebola is a curse from spirits.",
-    "correct_text_en": "Ebola is a viral disease spread by contact with body fluids. It is not spiritual.",
-    "correct_text_lg": "Ebola esaasaanyizibwa mu kukwata ku mazzi g'omubiri, si mu mpewo.",
-    "source": "CDC, 2022"
+    "correct_text_en": "No, Ebola is a deadly viral disease spread ONLY through direct contact with body fluids of an infected or deceased person. It is NOT spiritual. Isolation and PPE are critical for containment.",
+    "correct_text_lg": "Ebola si mulogo. Esaasaanyizibwa mu kukwata ku mazzi g'omubiri gw'omulwadde oba omufu.",
+    "symptoms": "Sudden fever, severe headache, muscle pain, vomiting, diarrhea, and unexplained bleeding.",
+    "prevention": "Avoid contact with body fluids of sick or deceased persons. Wash hands thoroughly. Alert the nearest health center immediately.",
+    "treatment": "Immediate isolation at a certified Ebola Treatment Unit. Do NOT attempt home treatment. Call the emergency line: 0800-100-066.",
+    "source": "CDC / MOH Uganda, 2022"
+  },
+  {
+    "topic": "hiv",
+    "keyword": "virgin_cure",
+    "myth_text_en": "Having sex with a virgin cures HIV.",
+    "correct_text_en": "No, that is NOT true. Having sex with a virgin does NOT cure HIV. HIV has no cure, and such acts only spread the virus further and harm innocent people. HIV is managed only by ART.",
+    "correct_text_lg": "Nga, ekyo si kituufu. Okwesisinkanya n'omuwala omuto tikuwonya HIV. HIV tawona naye ajjanjabwa na ART.",
+    "symptoms": "Fever, fatigue, and night sweats.",
+    "prevention": "Safe sex, partner testing, and avoiding shared sharp objects.",
+    "treatment": "Strict adherence to ART medication.",
+    "source": "MOH Uganda / WHO"
+  },
+  {
+    "topic": "hiv",
+    "keyword": "mosquitos_hiv",
+    "myth_text_en": "Mosquitoes can transmit HIV from one person to another.",
+    "correct_text_en": "Fact: Mosquitoes CANNOT transmit HIV. The virus cannot survive inside a mosquito, and they do not inject blood from a previous person into the next.",
+    "correct_text_lg": "Fact: Ensiri teziyisaamu HIV. Akawuka kafa mangu ssinga kaba mu nsiri.",
+    "symptoms": "N/A (Related to transmission myth)",
+    "prevention": "Focus on sexual transmission and blood contact, not insects.",
+    "treatment": "N/A",
+    "source": "WHO, 2022"
   },
   {
     "topic": "sanitation",
     "keyword": "cholera_cause_dirty",
     "myth_text_en": "Cholera is caused by eating too much food.",
-    "correct_text_en": "Fact: Cholera is caused by the Vibrio cholerae bacteria, often found in water or food contaminated with feces.",
-    "correct_text_lg": "Fact: Cholera ava ku buwuka mu mazzi amacaafu oba emmere erimu obubi.",
-    "source": "WHO, 2022"
+    "correct_text_en": "No, Cholera is caused by the Vibrio cholerae bacteria found in contaminated water or food. Eating too much food does not cause Cholera. It can kill within hours if untreated.",
+    "correct_text_lg": "Cholera ava ku buwuka mu mazzi amacaafu oba emmere erimu obubi, si okulya ennyo.",
+    "symptoms": "Profuse watery diarrhea (like rice-water), vomiting, and rapid dehydration.",
+    "prevention": "Drink boiled or treated water only. Wash hands with soap. Use clean latrines and safe food handling.",
+    "treatment": "Oral Rehydration Salts (ORS) immediately. Seek IV fluids at a health facility for severe cases. Antibiotics prescribed by a doctor.",
+    "source": "WHO / MOH Uganda, 2022"
   },
   {
     "topic": "stds",
     "keyword": "stis_cause_sex",
     "myth_text_en": "STDs are caused by sitting on dirty latrines.",
-    "correct_text_en": "Fact: STIs are primarily caused by bacteria, viruses, or parasites transmitted through unprotected sexual contact.",
-    "correct_text_lg": "Fact: Endwadde z'ekikaba ziva mu kwegatta okutali kukuume, si kuteekebwa ku kabuyonjo.",
-    "source": "CDC, 2023"
+    "correct_text_en": "No, STIs are caused by bacteria, viruses, or parasites transmitted through UNPROTECTED SEXUAL CONTACT. A toilet seat is not a route of transmission for any major STI.",
+    "correct_text_lg": "Endwadde z'ekikaba ziva mu kwegatta okutali kukuume, si kuteekebwa ku kabuyonjo.",
+    "symptoms": "Unusual discharge (penis/vagina), sores or rashes in genital area, painful urination, and lower abdominal pain.",
+    "prevention": "Consistent and correct condom use, mutual monogamy, regular STI screening, and partner notification.",
+    "treatment": "Visit a health facility for testing and a full course of antibiotics or antivirals as prescribed.",
+    "source": "CDC / MOH Uganda, 2023"
   },
   {
     "topic": "stds",
     "keyword": "stis_prevention_condoms",
     "myth_text_en": "Condoms are not effective and contain holes.",
-    "correct_text_en": "Fact: Consistent and correct use of condoms is highly effective in preventing STIs and HIV.",
-    "correct_text_lg": "Fact: Okukozesa obulungi kondomu kuziyiza endwadde z'ekikaba n'akawuka ka HIV.",
-    "source": "WHO, 2022"
+    "correct_text_en": "Correctly used condoms are 98% effective at preventing STIs and HIV. Claims of factory holes are false — condoms are rigorously tested before distribution.",
+    "correct_text_lg": "Obupiira bukozesebwa bulungi buziyiza endwadde z'ekikaba n'HIV okutuuka ku 98%.",
+    "symptoms": "Without condom use, STIs may cause sores, discharge, pain, and can lead to infertility or death.",
+    "prevention": "Use a new condom for every sexual encounter. Condoms are available free at all government health facilities.",
+    "treatment": "Condoms prevent transmission. If symptoms appear, visit a health facility for diagnosis and treatment immediately.",
+    "source": "WHO / MOH Uganda, 2022"
   },
   {
     "topic": "stds",
-    "keyword": "syphilis_cause",
-    "myth_text_en": "Syphilis is a natural stage of growing up for men.",
-    "correct_text_en": "Fact: Syphilis is a serious bacterial infection (Treponema pallidum) that requires medical treatment to prevent organ damage.",
-    "correct_text_lg": "Fact: Syphilis lulwadde lwa buwuka obubi era lwetaaga eddagala ly'omu ddwaliro.",
-    "source": "MOH Uganda, 2022"
+    "keyword": "syphilis_kabotongo",
+    "myth_text_en": "Syphilis is just a minor skin rash that goes away on its own.",
+    "correct_text_en": "Syphilis (Kabotongo) is a dangerous bacterial infection. It has 4 stages and can cause permanent brain, heart, and nerve damage if left untreated. It requires Penicillin injections.",
+    "correct_text_lg": "Kabotongo lulwadde lwa buwuka oluluma ennyo. Lwetaaga eddagala lya Penicillin, tolweka bwokka.",
+    "symptoms": "Stage 1: Painless sore. Stage 2: Body rash, fever, hair loss. Stage 3: No symptoms. Stage 4: Brain damage, paralysis, death.",
+    "prevention": "Condom use, faithful partnerships, and regular STI testing especially during pregnancy.",
+    "treatment": "Penicillin injection (Benzathine penicillin G) prescribed by a doctor. Do not self-medicate.",
+    "source": "MOH Uganda / CDC, 2023"
+  },
+  {
+    "topic": "stds",
+    "keyword": "gonorrhea_enziku",
+    "myth_text_en": "Gonorrhea is caused by standing in the rain or cold.",
+    "correct_text_en": "No, Gonorrhea (Nanziri/Enziku) is caused by the bacteria Neisseria gonorrhoeae, transmitted ONLY through sexual contact. Rain and cold have no role in its transmission.",
+    "correct_text_lg": "Enziku oba Nanziri lulwadde lwa buwuka era lusaasaanyizibwa mu kwegatta, si musana oba nkuba.",
+    "symptoms": "Thick yellow-green discharge, burning urination, and in women: no symptoms (silent infection) or pelvic pain.",
+    "prevention": "Condom use and regular STI screening. Partners must be treated simultaneously to prevent re-infection.",
+    "treatment": "Dual antibiotic therapy (Ceftriaxone + Azithromycin) as prescribed by a doctor.",
+    "source": "MOH Uganda / WHO, 2022"
+  },
+  {
+    "topic": "stds",
+    "keyword": "chlamydia_cause",
+    "myth_text_en": "Chlamydia has no symptoms so it cannot be dangerous.",
+    "correct_text_en": "Chlamydia is called a 'silent infection' because 70% of women show NO symptoms, yet it can permanently damage fallopian tubes and cause infertility. It requires a lab test to detect.",
+    "correct_text_lg": "Chlamydia eyinza obutalaga bubonero naye eyinza okureetera omukazi obutazaala.",
+    "symptoms": "Often none. If present: discharge, burning urination, or lower abdominal pain. In men: discharge from penis.",
+    "prevention": "Routine STI screening (especially for sexually active women under 25), condom use, and partner treatment.",
+    "treatment": "Azithromycin or Doxycycline antibiotics as prescribed. Both partners must be treated.",
+    "source": "CDC / MOH Uganda, 2023"
+  },
+  {
+    "topic": "stds",
+    "keyword": "hepatitis_b_prevention",
+    "myth_text_en": "Hepatitis B is only spread through shared food or saliva.",
+    "correct_text_en": "Hepatitis B is 100x more infectious than HIV. It spreads through blood, unprotected sex, and mother-to-child during birth. It is NOT spread through food, water, coughing, or hugging.",
+    "correct_text_lg": "Hepatitis B asaasaanyizibwa mu musaayi, kwegatta, oba okuva ku nnyina okujja omwana. Si ku mmere oba okuyogera.",
+    "symptoms": "Jaundice (yellow eyes/skin), dark urine, extreme fatigue, nausea, and abdominal pain. Chronic infection can lead to liver cancer.",
+    "prevention": "Vaccination (3-dose HepB vaccine) is the most effective prevention. Safe sex and avoid sharing needles or razors.",
+    "treatment": "No cure, but antiviral medications control the virus. Vaccination prevents infection entirely.",
+    "source": "WHO / MOH Uganda, 2023"
+  },
+  {
+    "topic": "stds",
+    "keyword": "hpv_warts",
+    "myth_text_en": "Genital warts are caused by skin irritation or poor hygiene.",
+    "correct_text_en": "Genital warts (Ensekere) are caused by HPV (Human Papillomavirus), the most common STI worldwide. Certain HPV strains cause cervical cancer in women. The HPV vaccine prevents the most dangerous strains.",
+    "correct_text_lg": "Ensekere ziva ku kawuka ka HPV era kiyinza okureetera kookolo w'omumwa gw'ennabaana.",
+    "symptoms": "Soft, flesh-colored bumps in the genital area. Often painless but may itch. Cervical cancer from HPV may be asymptomatic until advanced.",
+    "prevention": "HPV vaccination (girls aged 10-14), consistent condom use, and cervical cancer screening (VIA/Pap smear) for women.",
+    "treatment": "Warts can be treated (frozen, burned, or removed) but the virus stays in the body. Cervical cancer requires surgery or chemotherapy.",
+    "source": "MOH Uganda / WHO, 2022"
+  },
+  {
+    "topic": "stds",
+    "keyword": "trichomoniasis_parasite",
+    "myth_text_en": "Trichomoniasis is caused by poor hygiene alone.",
+    "correct_text_en": "Trichomoniasis (Trich) is caused by a tiny parasite Trichomonas vaginalis, transmitted through sexual contact. It is the most common CURABLE STI worldwide but requires proper medication.",
+    "correct_text_lg": "Trichomoniasis ava ku kawuka k'ekika kya parasite era awoneka bulungi n'eddagala.",
+    "symptoms": "Women: Yellow-green frothy discharge with fishy odor, itching, painful urination. Men: Often no symptoms.",
+    "prevention": "Condom use and treating both partners simultaneously.",
+    "treatment": "A single dose of Metronidazole (400-500mg) taken by both partners. Avoid alcohol during treatment.",
+    "source": "WHO / MOH Uganda, 2021"
   },
   {
     "topic": "malaria",
@@ -158,5 +282,411 @@
     "correct_text_en": "Fact: Voluntary Medical Male Circumcision (VMMC) reduces the risk of female-to-male HIV transmission by approximately 60%.",
     "correct_text_lg": "Fact: Okukomola abasajja mu ddwaliro kukendeeza akatyabaga k'okufuna HIV n'ebitundu 60%.",
     "source": "MOH Uganda / WHO"
+  },
+
+  {
+    "topic": "nutrition",
+    "keyword": "infant_breastfeeding",
+    "myth_text_en": "Babies need water in addition to breast milk from birth.",
+    "correct_text_en": "Fact: Breast milk alone provides all the water and nutrients a baby needs for the first 6 months. Giving water can cause diarrhea and reduce milk intake.",
+    "correct_text_lg": "Fact: Amabeere ga nnyina gakka ge getaagibwa omwana okumala emyezi 6. Okuwa amazzi kiyinza okuleeta olummeeme.",
+    "symptoms": "Infant dehydration/malnutrition: Sunken fontanelle, dry mouth, fewer than 6 wet diapers per day, lethargy, poor weight gain.",
+    "prevention": "Exclusive Breastfeeding (EBF) for the first 6 months. Initiate breastfeeding within 1 hour of birth. Feed on demand.",
+    "treatment": "For dehydration or diarrhea in infants under 6 months, seek professional clinical assessment. Continue frequent exclusive breastfeeding.",
+    "source": "WHO / UNICEF, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "infant_complementary",
+    "myth_text_en": "Babies can eat adult food at 3 months.",
+    "correct_text_en": "Fact: Complementary feeding should begin at exactly 6 months. Start with soft mashed foods like matooke, sweet potato (lumonde), or porridge (obushera) alongside continued breastfeeding.",
+    "correct_text_lg": "Fact: Emmere ey'okwongerako etandikibwa ku myezi 6. Tandika n'emmere empola nga matooke, lumonde, oba obushera ng'osigala okuyonsa.",
+    "symptoms": "Early complementary feeding risks: Diarrhea, vomiting, severe stomach pain, choking, allergic reactions, weight loss.",
+    "prevention": "Begin complementary feeding at exactly 6 months. Continue frequent breastfeeding up to 2 years or beyond.",
+    "treatment": "Introduce one food at a time to monitor allergies. For persistent diarrhea or vomiting, seek immediate pediatric care.",
+    "source": "MOH Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "child_eggs",
+    "myth_text_en": "Eggs are bad for young children and cause worms.",
+    "correct_text_en": "Fact: Eggs are one of the most nutritious foods for children. They provide protein, iron, and Vitamin A essential for brain development and growth. They do NOT cause worms.",
+    "correct_text_lg": "Fact: Amagi ge bimu ku birungo ebisinga obulungi eri abaana. Biwa pulootiini, eyaani, ne Vitamin A ebiyamba obwongo n'okukula.",
+    "symptoms": "Protein-energy malnutrition (PEM) symptoms: Edema (swollen feet/face), thinning hair, extreme thinness, listlessness, growth stunting.",
+    "prevention": "Feed children aged 6 months and older one egg daily. Ensure proper cooking (hard-boiled) to prevent bacterial infections.",
+    "treatment": "Nutritional support containing high-quality proteins like eggs, groundnuts, and milk. Deworm children every 6 months starting at 1 year.",
+    "source": "UNICEF Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "child_stunting",
+    "myth_text_en": "Short children are just taking after their parents genetically.",
+    "correct_text_en": "Fact: Stunting (being too short for age) is usually caused by chronic malnutrition, not genetics. A diverse diet with proteins, vegetables, and fruits prevents stunting.",
+    "correct_text_lg": "Fact: Okuba omukutte mu baana kiseera ekisinga kireeterwa obutafuna mmere nnungi, si bigenderengo. Endiisa eyenjawulo eziyiza okukutta.",
+    "symptoms": "Stunting indicators: Low height-for-age, delayed motor skill milestones, frequent illnesses, poor school performance.",
+    "prevention": "Ensure maternal balanced nutrition during pregnancy. Practice exclusive breastfeeding for 6 months and introduce a diverse complementary diet.",
+    "treatment": "Early intervention with nutrient-dense foods, vitamin A supplementation, and routine monitoring of child growth milestones.",
+    "source": "WHO / MOH Uganda, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "child_silverfish",
+    "myth_text_en": "Dried silver fish (mukene) is inferior to imported food.",
+    "correct_text_en": "Fact: Mukene (silver fish) is a superfood rich in calcium, protein, and omega-3 fatty acids. It is excellent for children's bone and brain development.",
+    "correct_text_lg": "Fact: Mukene y'ekyokulya eky'amaanyi ennyo ekirimo calcium, pulootiini, n'amafuta ga omega-3. Kiyamba amagumba n'obwongo bw'abaana.",
+    "symptoms": "Calcium deficiency in children: Weak bones, rickets (bowed legs), muscle cramps, delayed tooth eruption.",
+    "prevention": "Incorporate ground mukene powder into children's porridge (obushera) and meals regularly starting at 6 months.",
+    "treatment": "Daily intake of calcium-rich foods like mukene and milk. Clinical calcium and Vitamin D supplementation for diagnosed rickets.",
+    "source": "NARO Uganda, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "child_vitamin_a",
+    "myth_text_en": "Vitamin A supplements are unnecessary for children.",
+    "correct_text_en": "Fact: Vitamin A deficiency is a leading cause of preventable blindness in Ugandan children. Orange-fleshed sweet potato, carrots, mangoes, and dark green vegetables like dodo (amaranth) are excellent sources.",
+    "correct_text_lg": "Fact: Obutaba na Vitamin A kureetera obuzibu bw'amaaso mu baana. Lumonde ow'alangi, kaloti, emiyembe, ne dodo bifuna Vitamin A nnyingi.",
+    "symptoms": "Vitamin A deficiency: Night blindness (difficulty seeing in dim light), dry eyes (xerophthalmia), frequent respiratory and skin infections.",
+    "prevention": "Ensure children receive Vitamin A capsules every 6 months at health facilities or during Child Health Days.",
+    "treatment": "Immediate high-dose Vitamin A administration at a clinic for children showing signs of xerophthalmia or severe measles.",
+    "source": "MOH Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "adolescent_diet",
+    "myth_text_en": "Teenagers can survive on just posho and beans.",
+    "correct_text_en": "Fact: Adolescents need a diverse diet including proteins (eggs, fish, beans), iron-rich foods (dodo, liver), fruits, and vegetables to support rapid growth and brain development.",
+    "correct_text_lg": "Fact: Abavubuka beetaaga endiisa eyenjawulo nga amagi, ebyenyanja, ebijanjaalo, dodo, ekibumba, ne bibala okuyamba okukula n'obwongo.",
+    "symptoms": "Adolescent nutritional gaps: Poor school performance, fatigue, slow height increase, recurrent skin breakouts, weakened immunity.",
+    "prevention": "Incorporate local protective foods (fruits like pawpaw, orange) and proteins (mukene, eggs) alongside staple posho/beans.",
+    "treatment": "Provide balanced daily meals. Ensure twice-yearly school-based or community-based deworming and micronutrient checks.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "adolescent_iron",
+    "myth_text_en": "Only pregnant women need iron supplements.",
+    "correct_text_en": "Fact: Adolescent girls lose iron through menstruation. Foods like liver, mukene, dodo (amaranth), beans, and fortified flour help prevent anemia.",
+    "correct_text_lg": "Fact: Abawala abavubuka bafiirwa eyaani mu nsonga z'omwezi. Emmere ng'ekibumba, mukene, dodo, n'ebijanjaalo ziyamba okuziyiza anemia.",
+    "symptoms": "Anemia in teenage girls: Extreme tiredness, pale inner eyelids/palms, dizziness, shortness of breath, cold hands/feet.",
+    "prevention": "Consume iron-rich foods weekly. Under the MOH Uganda program, receive weekly Iron-Folic Acid (IFA) supplements in school.",
+    "treatment": "For confirmed anemia, take daily therapeutic iron tablets under health worker supervision for 3 months.",
+    "source": "MOH Uganda, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "adolescent_junk",
+    "myth_text_en": "Rolex (chapati and egg roll) and sodas are a balanced meal.",
+    "correct_text_en": "Fact: While rolex provides some protein and carbs, a balanced meal also needs vegetables, fruits, and clean water. Limit sugary drinks and fried snacks to prevent obesity and diabetes.",
+    "correct_text_lg": "Fact: Newankubadde rolex eyamba ku pulootiini, emmere ennungi nayo yeetaaga enva, ebibala, n'amazzi amalungi. Kendeeza ku bikomye n'ebinywe eby'amasukali.",
+    "symptoms": "Junk-heavy diet consequences: Excessive weight gain (obesity), sluggishness, dental cavities, elevated blood sugar.",
+    "prevention": "Replace sodas with clean boiled water or fresh local fruit juice. Add tomatoes, onions, and cabbage into chapati rolls.",
+    "treatment": "Nutrition counseling, increased daily physical activity, and establishing regular balanced home meal schedules.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "pregnant_eat_less",
+    "myth_text_en": "Pregnant women should eat less to have a small baby for easy delivery.",
+    "correct_text_en": "Fact: Pregnant women need MORE food — at least one extra meal per day. Eating less causes low birth weight and increases risk of death for both mother and baby.",
+    "correct_text_lg": "Fact: Abakazi ab'olubuto beetaaga emmere ENNYO — okulya ekyokulya eky'okwongera buli lunaku. Okulya ekitono kuleeta omwana omutono era nga n'akabi kapulikirizibwa.",
+    "symptoms": "Inadequate pregnancy intake: Maternal weight loss, severe lethargy, fetal growth restriction, high susceptibility to infections.",
+    "prevention": "Eat at least three balanced meals and one extra snack daily. Partner support in sourcing diverse local foods.",
+    "treatment": "Enroll in the antenatal nutrition program. Targeted food supplementation for pregnant mothers with low body mass index.",
+    "source": "MOH Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "pregnant_iron_folate",
+    "myth_text_en": "Iron and folic acid tablets during pregnancy are harmful.",
+    "correct_text_en": "Fact: Iron and Folic Acid (IFA) tablets are essential during pregnancy to prevent anemia and birth defects. Take them as prescribed by your health worker.",
+    "correct_text_lg": "Fact: Amabaale ga Iron ne Folic Acid geetaagibwa mu lubuto okuziyiza anemia n'obuzibu mu kuzaala. Gaminya nga omuweereza w'obulamu bw'akugambye.",
+    "symptoms": "Iron/folate deficiency in pregnancy: Severe pallor, swelling of feet, neural tube birth defects in the infant, premature birth.",
+    "prevention": "Take one IFA tablet daily throughout pregnancy starting from the first antenatal clinic (ANC) visit.",
+    "treatment": "High-dose oral iron therapy or intravenous iron infusions in clinics if maternal hemoglobin drops below 7g/dL.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "pregnant_food_taboo",
+    "myth_text_en": "Pregnant women should not eat eggs, fish, or meat.",
+    "correct_text_en": "Fact: Pregnant women NEED protein-rich foods like eggs, fish (tilapia, mukene), meat, beans, and groundnuts for the baby's brain and organ development.",
+    "correct_text_lg": "Fact: Abakazi ab'olubuto BEETAAGA emmere erimu pulootiini ng'amagi, ebyenyanja (ngege, mukene), ennyama, ebijanjaalo, n'ebinyeebwa okuyamba omwana okukula.",
+    "symptoms": "Protein deficit in pregnancy: Slow fetal growth, postpartum hemorrhage risk, muscle wasting in the mother, poor lactation prep.",
+    "prevention": "Eat at least one source of animal protein (egg, fish, meat) or two plant proteins (beans, groundnuts) daily.",
+    "treatment": "Provide maternal nutritional supplements. Target high-risk mothers with fortified corn-soy blend (CSB) foods in local health centers.",
+    "source": "MOH Uganda / UNICEF, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "pregnant_diverse",
+    "myth_text_en": "Eating matooke alone is enough during pregnancy.",
+    "correct_text_en": "Fact: A pregnant woman should eat from ALL food groups daily: energy foods (matooke, posho, rice), body-building foods (beans, fish, eggs), and protective foods (fruits, vegetables like nakati, dodo).",
+    "correct_text_lg": "Fact: Omukazi alina olubuto alya emmere ey'ebika byonna: eby'amaanyi (matooke, posho), ebyomubiri (ebijanjaalo, ebyenyanja, amagi), n'ebikuuma (bibala, enva ng'enakati, dodo).",
+    "symptoms": "Micronutrient deficiency in pregnancy: Brittle nails, night blindness, bleeding gums, high susceptibility to common illnesses.",
+    "prevention": "Create a daily 'colorful plate' featuring yellow/orange fruits, green leafy vegetables, and whole grains.",
+    "treatment": "Clinical prescription of multiple micronutrient supplements (MMS) and comprehensive nutrition education during ANC sessions.",
+    "source": "MOH Uganda, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "breastfeeding_diet",
+    "myth_text_en": "Breastfeeding mothers don't need to eat more food.",
+    "correct_text_en": "Fact: Breastfeeding mothers need an extra 500 calories per day. Eat more porridge (obushera), groundnut paste, fruits, vegetables, and drink plenty of clean water to produce enough milk.",
+    "correct_text_lg": "Fact: Abakyala abayonsa beetaaga emmere eyongerevu. Lya obushera, obunyeebwa obusiikiriddwa, bibala, enva, era nywangako amazzi amalungi okusobola okufuna amabeere amala.",
+    "symptoms": "Lactation gaps/maternal depletion: Low breast milk volume, extreme maternal fatigue, rapid weight loss, bone aches.",
+    "prevention": "Eat five times a day (3 meals and 2 snacks). Consume high-calcium foods and drink water before every feed.",
+    "treatment": "Provide lactation counseling. Clinical supplementation with calcium and multivitamin therapies if depletion is severe.",
+    "source": "WHO / MOH Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "breastfeeding_exclusive",
+    "myth_text_en": "Breast milk alone is not enough for a baby — they also need porridge from 2 months.",
+    "correct_text_en": "Fact: WHO recommends exclusive breastfeeding for the first 6 months. No water, no porridge, no other foods. Breast milk contains everything the baby needs.",
+    "correct_text_lg": "Fact: WHO eraga okuyonsa bwokka okumala emyezi 6 egy'olubereberye. Tewali mazzi, tewali bushera, tewali kyokulya. Amabeere galina byonna omwana by'ayetaaga.",
+    "symptoms": "Early feeding complications: Diarrhea in infants, severe stomach bloating, reduction in maternal breast milk supply, baby rejecting the breast.",
+    "prevention": "Ensure EBF for the first 6 months. Maintain skin-to-skin contact and frequent breastfeeding.",
+    "treatment": "For low milk supply, consult a midwife or lactation specialist. Treat infant diarrhea with clinical ORS immediately.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "adult_balanced",
+    "myth_text_en": "Eating a lot of one food is better than eating small amounts of many foods.",
+    "correct_text_en": "Fact: A balanced diet means eating from different food groups every day: carbohydrates (posho, matooke, rice), proteins (beans, fish, eggs), fats (groundnuts, oil), vitamins (fruits, vegetables).",
+    "correct_text_lg": "Fact: Endiisa ennungi kwe kulya emmere ey'ebika bingi buli lunaku: amaanyi (posho, matooke), pulootiini (ebijanjaalo, ebyenyanja), amafuta (ebinyeebwa), ne vitaminze (bibala, enva).",
+    "symptoms": "Monotonous diet issues: Micronutrient malnutrition, general lethargy, dry skin, weak hair, slow healing of cuts.",
+    "prevention": "Use the 'healthy plate' concept: half plate vegetables/fruits, quarter protein, quarter starch.",
+    "treatment": "Dietary diversification. Incorporate local orange-fleshed sweet potatoes and green dodo leaves daily.",
+    "source": "MOH Uganda, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "adult_water",
+    "myth_text_en": "Drinking tea and soda is the same as drinking water.",
+    "correct_text_en": "Fact: Adults should drink at least 8 glasses of clean water daily. Tea and soda contain caffeine and sugar which can cause dehydration rather than hydration.",
+    "correct_text_lg": "Fact: Abantu abakulu balina okunywa gilasi munaana (8) ez'amazzi amalungi buli lunaku. Ccayi ne soda biramu caffeine n'amasukali ebireetera omubiri okukala.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "adult_salt",
+    "myth_text_en": "Adding extra salt to food makes it healthier.",
+    "correct_text_en": "Fact: Too much salt causes high blood pressure (hypertension). Adults should consume less than 5 grams (one teaspoon) of salt per day.",
+    "correct_text_lg": "Fact: Omunnyo omungi guleeta pulesha ey'amaanyi (high BP). Abantu abakulu balya omunnyo gutasukka kakijiko kamu (5g) olunaku lwonna.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "elderly_protein",
+    "myth_text_en": "Old people don't need much food because they are not active.",
+    "correct_text_en": "Fact: Elderly people need protein-rich foods (eggs, beans, mukene, milk) to maintain muscle strength and prevent falls. They also need calcium and Vitamin D for bone health.",
+    "correct_text_lg": "Fact: Abakadde beetaaga emmere erimu pulootiini (amagi, ebijanjaalo, mukene, amata) okukuuma ebinywa. Era beetaaga calcium ne Vitamin D ey'amagumba.",
+    "source": "WHO, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "elderly_fluids",
+    "myth_text_en": "Elderly people should drink less water to avoid frequent urination.",
+    "correct_text_en": "Fact: Dehydration is a serious risk for elderly people. They should drink water regularly even if not thirsty. Dehydration can cause confusion, falls, and kidney problems.",
+    "correct_text_lg": "Fact: Okukala kw'omubiri kulabe ennyo mu bakadde. Balina okunywa amazzi buli kiseera wadde nga tebanyoomba. Okukala kuyinza okuleeta okutabukana, okugwa, n'obuzibu mu nsigo.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "elderly_soft_food",
+    "myth_text_en": "Elderly people should only eat porridge.",
+    "correct_text_en": "Fact: While soft foods are easier to chew, elderly people still need diverse nutrition. Mashed beans, soft fish, eggs, ripe bananas, avocado, and enriched porridge provide complete nutrition.",
+    "correct_text_lg": "Fact: Newankubadde emmere empola nyangu okusoma, abakadde basigala beetaaga endiisa eyenjawulo. Ebijanjaalo ebisiikiriddwa, ebyenyanja ebigonvu, amagi, menvu, avocado, n'obushera obugimu.",
+    "source": "MOH Uganda, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "hiv_nutrition",
+    "myth_text_en": "People with HIV don't need special nutrition — ARVs are enough.",
+    "correct_text_en": "Fact: People living with HIV need 10-30% MORE calories than uninfected people. Good nutrition strengthens the immune system and helps ARVs work better. Eat proteins, fruits, and vegetables daily.",
+    "correct_text_lg": "Fact: Abantu abalina HIV beetaaga emmere ENNYO okusinga abalala 10-30%. Endiisa ennungi enyweza omubiri era eyamba eddagala (ARVs) okukola obulungi.",
+    "source": "WHO / UNAIDS, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "hiv_arv_food",
+    "myth_text_en": "You cannot take ARVs on an empty stomach.",
+    "correct_text_en": "Fact: Most ARVs can be taken with or without food. However, eating regularly helps reduce side effects like nausea. Never skip your medicine because you haven't eaten.",
+    "correct_text_lg": "Fact: ARVs ezisinga oziyinza okunywangako wadde nga toliiyo. Naye okukuba emmere kuyamba okukendeeza obubonero obubi. Tovaamu kunywa ddagala lyo kubanga tolidde.",
+    "source": "MOH Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "diabetes_sugar",
+    "myth_text_en": "People with diabetes should stop eating all carbohydrates.",
+    "correct_text_en": "Fact: Diabetics need controlled portions of complex carbohydrates (whole grains, sweet potato, brown posho). Avoid refined sugar and sugary drinks, but don't eliminate carbs entirely.",
+    "correct_text_lg": "Fact: Abalina ssukaali mu musaayi balya emmere ey'amaanyi empola (lumonde, posho ow'obuwunga obutayongeddwamu). Wewale ssukaali n'ebinywe eby'amasukali, naye tokoma bikyafu byonna.",
+    "source": "Uganda Diabetes Association, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "diabetes_fruit",
+    "myth_text_en": "Diabetics cannot eat any fruits.",
+    "correct_text_en": "Fact: Most fruits are safe for diabetics in moderate portions. Choose low-sugar fruits like guava (mapera), oranges, passion fruit, and watermelon. Avoid fruit juices with added sugar.",
+    "correct_text_lg": "Fact: Ebibala ebisinga birungi eri abalina ssukaali mu musaayi mu bitundu ebitono. Londa ebibala ebirimu ssukaali entono ng'amapera, emicungwa, katunda, ne watermelon.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "diabetes_herbal",
+    "myth_text_en": "Herbal medicine alone can cure diabetes.",
+    "correct_text_en": "Fact: There is no herbal cure for diabetes. Proper diet, exercise, and prescribed medication (insulin or metformin) are the proven ways to manage blood sugar levels.",
+    "correct_text_lg": "Fact: Tewali ddagala ly'ebyobuwangwa eliwonyeza ssukaali mu musaayi. Endiisa ennungi, okuddukana, n'eddagala (insulin oba metformin) bye biyamba okubuuzaabuuza ssukaali mu musaayi.",
+    "source": "MOH Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "hypertension_diet",
+    "myth_text_en": "High blood pressure is only treated with medicine.",
+    "correct_text_en": "Fact: Diet changes significantly reduce high blood pressure. Eat more fruits, vegetables, potassium-rich foods (bananas, avocado), reduce salt, avoid excessive alcohol, and exercise regularly.",
+    "correct_text_lg": "Fact: Okukyusa endiisa kuyamba ennyo okukendeeza ku pulesha. Lya bibala, enva, emmere erimu potassium (menvu, avocado), kendeeza ku munnyo, era ddukana buli lunaku.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "hypertension_salt_myth",
+    "myth_text_en": "If food doesn't taste salty, it has no salt.",
+    "correct_text_en": "Fact: Many processed and packaged foods contain hidden salt (sodium). Maggi cubes, soy sauce, and processed meats are high in sodium even if they don't taste very salty.",
+    "correct_text_lg": "Fact: Emmere engi egulwa mu kadduuka erimu omunnyo ogukise (sodium). Maggi, soy sauce, n'ennyama enzigulibwa mu kadduuka biramu sodium nnyingi wadde nga tebibeera munnyo ennyo.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "general_local_food",
+    "myth_text_en": "Imported food is always more nutritious than local food.",
+    "correct_text_en": "Fact: Local Ugandan foods are highly nutritious. Matooke, groundnuts, beans, dodo (amaranth), nakati, mukene, cassava leaves (kisakye), and orange-fleshed sweet potato provide excellent balanced nutrition.",
+    "correct_text_lg": "Fact: Emmere ey'eggwanga ly'Uganda eyamu ennyo. Matooke, ebinyeebwa, ebijanjaalo, dodo, enakati, mukene, kisakye, ne lumonde ow'alangi biwa omubiri byonna bye gwetaaga.",
+    "source": "NARO Uganda, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "general_food_safety",
+    "myth_text_en": "Leftover food is safe to eat the next day without reheating.",
+    "correct_text_en": "Fact: Bacteria multiply rapidly in cooked food left at room temperature. Always store leftovers in a clean, covered container and reheat thoroughly before eating.",
+    "correct_text_lg": "Fact: Obuwuka bweyongera mangu mu mmere etekeddwa eyirisiddwa ku bbugumu bw'ekisenge. Bulijjo tereka emmere ey'ejobudde mu kibbo ekyogeddwa era gikumye, era gibuugumye bulungi ng'onnaddayo okulya.",
+    "source": "WHO, 2022"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "general_cooking_oil",
+    "myth_text_en": "Reusing cooking oil many times is not harmful.",
+    "correct_text_en": "Fact: Reheating cooking oil creates harmful compounds (trans fats) linked to heart disease and cancer. Use fresh oil and avoid reheating oil more than twice.",
+    "correct_text_lg": "Fact: Okuddamu okubuugumya amafuta g'okufumbiramu kuleeta ebintu ebibi (trans fats) ebireetera endwadde z'omutima ne kookolo. Kozesa amafuta amapya era toddayo kubuugumya mirundi esukka ebiri.",
+    "source": "WHO, 2023"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "school_breakfast",
+    "myth_text_en": "Children don't need breakfast before going to school.",
+    "correct_text_en": "Fact: Breakfast is the most important meal for school children. It improves concentration, memory, and academic performance. A simple breakfast of porridge, fruit, and an egg is sufficient.",
+    "correct_text_lg": "Fact: Eky'enkya kye kirungo ekisinga obukulu eri abaana abagenda mu ssomero. Kiwa obwongo okukola obulungi mu kusome. Obushera, ekibala, n'eggi bimala.",
+    "source": "UNICEF, 2023"
+  },
+  {
+    "topic": "vaccination",
+    "keyword": "vaccination:general",
+    "correct_text_en": "Vaccines are a safe and effective way to protect communities from deadly diseases. Always follow the national immunization schedule provided by the Ministry of Health.",
+    "correct_text_lg": "Enkingo nnyangu era ziyamba okukuuma abantu ku ndwadde ezitta. Galoberera enteekateeka y'eggwanga ey'okugemba.",
+    "symptoms": "N/A (Preventative)",
+    "prevention": "Follow the UNEPI schedule, ensure hygiene during vaccination, and complete all doses.",
+    "treatment": "Vaccines prevent disease; they are not a cure for active infections.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "hiv",
+    "keyword": "hiv:general",
+    "correct_text_en": "HIV is managed through Antiretroviral Therapy (ART), which allows people living with HIV to lead long, healthy lives. Prevention include condom use, PrEP, and safe medical circumcision.",
+    "correct_text_lg": "HIV ajjanjabibwa n'eddagala lya ART, eriyamba abalina akawuka okuwangaala. Okuziyiza kulimu okukozesa obupiira, PrEP, n'okusala ku basajja mu ngeri ey'ekisawo.",
+    "symptoms": "Rapid weight loss, recurring fever, extreme tiredness, prolonged swelling of lymph glands.",
+    "prevention": "ABC (Abstinence, Be Faithful, Condoms), PrEP, PEP, and safe medical circumcision.",
+    "treatment": "Lifelong ART medication. There is currently no cure, but ART suppresses the virus.",
+    "source": "MOH Uganda / WHO"
+  },
+  {
+    "topic": "malaria",
+    "keyword": "malaria:general",
+    "correct_text_en": "Malaria is prevented by sleeping under treated mosquito nets, using indoor residual spraying, and clearing stagnant water. Seek immediate testing if you have a fever.",
+    "correct_text_lg": "Omusujja gw'ensiri guziyizibwa okusula mu butimba obulimu eddagala, okufuuyira mu nju, n'okuggyawo amazzi agalero. Genda okebeberwe mangu ssinga ofuna omusujja.",
+    "symptoms": "Fever, chills, headache, nausea, and joint pain.",
+    "prevention": "LLIN nets, IRS spraying, clearing bushes, and removing stagnant water.",
+    "treatment": "Coartem (ACTs) after testing. Complete the full course even if you feel better.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "maternal:general",
+    "correct_text_en": "Maternal health is prioritized through early ANC visits, facility-based deliveries, and postpartum care. Proper nutrition and rest are essential for a healthy pregnancy.",
+    "correct_text_lg": "Ebyobulamu bw'abakazi ab'olubuto bikulembezebwa okukeberebwa amangu, okuzaalira mu ddwaliro, n'okufuna obujjanjabi oluvannyuma lw'okuzaala.",
+    "symptoms": "Danger signs: Vaginal bleeding, severe headache, blurred vision, or swollen feet.",
+    "prevention": "Regular ANC checks (at least 8), tetanus toxoid injections, and iron supplements.",
+    "treatment": "Professional obstetric care at a health facility.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "covid",
+    "keyword": "covid:general",
+    "correct_text_en": "COVID-19 prevention includes vaccination, handwashing with soap, and social distancing when sick. Official guidelines are updated regularly by the Ministry of Health.",
+    "correct_text_lg": "Okuziyiza COVID-19 kulimu okugemwa, okunaaba mu ngalo n'obusaayi, n'okwewa amabanga. Ebiragiro bitereezebwa bulijjo ekitongole ky'ebyobulamu.",
+    "symptoms": "Cough, fever, loss of taste/smell, and difficulty breathing.",
+    "prevention": "Vaccination, wearing masks in crowded places, and handwashing.",
+    "treatment": "Supportive care, hydration, and medical oxygen in severe cases.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "nutrition",
+    "keyword": "nutrition:general",
+    "correct_text_en": "A balanced diet with local foods like matooke, beans, dodo, and eggs provides essential nutrients for all ages. Exclusive breastfeeding is recommended for the first 6 months.",
+    "correct_text_lg": "Endiisa ennungi erimu emmere ey'awaka ng'ematooke, ebijanjaalo, dodo, n'amagi ewa omubiri ebirungo ebyetaagisa. Okuyonsa bwokka kukkirizibwa mu myezi 6 emisozi.",
+    "symptoms": "Stunted growth, lack of energy, frequent illness, and pale skin.",
+    "prevention": "Diverse diet (GO, GROW, GLOW foods) and clean water.",
+    "treatment": "Nutritional rehabilitation and micronutrient supplementation.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "sanitation",
+    "keyword": "sanitation:general",
+    "correct_text_en": "Proper sanitation involves using clean latrines, handwashing after toilet use, and boiling drinking water to prevent diarrheal diseases.",
+    "correct_text_lg": "Obuyonjo kulimu okukozesa kaabuyonjo ennyonjo, okunaaba mu ngalo nga wavudde mu kaabuyonjo, n'okufumba amazzi ag'okunywa.",
+    "symptoms": "Diarrhea, stomach cramps, and vomiting.",
+    "prevention": "WASH (Water, Sanitation, Hygiene) practices and safe waste disposal.",
+    "treatment": "Rehydration (ORS) and medical care for severe diarrhea.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "stds",
+    "keyword": "stds:general",
+    "correct_text_en": "Sexually Transmitted Infections (STIs) are prevented by consistent condom use and mutual monogamy. Most STIs are curable with proper medical treatment at a health facility.",
+    "correct_text_lg": "Endwadde ez'ekikaba (STIs) ziyizibwa okukozesa obupiira n'obwesigwa. Endwadde nnyingi ziwona n'obujjanjabi obutuufu mu ddwaliro.",
+    "symptoms": "Unusual discharge, sores, itching in the genital area, and painful urination.",
+    "prevention": "Condom use, partner notification, and regular screening.",
+    "treatment": "Antibiotics or antivirals prescribed by a doctor. Complete the full dose.",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "stds",
+    "keyword": "syphilis",
+    "myth_text_en": "Syphilis can be cured with herbal tea.",
+    "correct_text_en": "Syphilis is a serious bacterial infection. It CANNOT be cured with herbs. It requires professional medical treatment with antibiotics (usually penicillin). Early treatment is essential to prevent heart and brain damage.",
+    "correct_text_lg": "Syphilis obulwadde bwa siriimu bwa maanyi. Bugenda na ddagala lya kisawo lyokka (penicillin), si kiti. Jjanjaba mangu okuziyiza obunaku bw'omutima n'obwongo.",
+    "symptoms": "Painless sores (chancres), skin rash, fever, and swollen glands.",
+    "prevention": "Safe sex (condoms), mutual monogamy, and regular STI screening.",
+    "treatment": "Medical antibiotics (Penicillin) prescribed by a health worker.",
+    "source": "MOH Uganda / WHO"
+  },
+  {
+    "topic": "stds",
+    "keyword": "syphilis:general",
+    "correct_text_en": "Syphilis is a bacterial STI that is fully curable with the right medical treatment. It progresses through stages if left untreated, leading to severe health complications.",
+    "correct_text_lg": "Syphilis obulwadde obukwatira mu kwegatta naye buwona n'obujjanjabi obutuufu. Ssinga tebujjanjabwa, buleeta obunaku bw'amaanyi.",
+    "symptoms": "Sores, rashes, fever, and hair loss.",
+    "prevention": "Condom use and testing.",
+    "treatment": "Antibiotics (Penicillin) as directed by a doctor.",
+    "source": "MOH Uganda"
   }
 ]

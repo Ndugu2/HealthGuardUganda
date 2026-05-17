@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { MLModel } from '../ai/MLModel';
 
 export interface FederatedPayload {
@@ -5,6 +6,9 @@ export interface FederatedPayload {
   weightDeltas: any;
   timestamp: string;
 }
+
+const API_BASE = Platform.OS === 'web' ? 'http://localhost:3000/api' : 'http://10.0.2.2:3000/api';
+const FED_API = `${API_BASE}/v1/federated`;
 
 export class FederatedService {
   private static model = new MLModel();
@@ -24,8 +28,7 @@ export class FederatedService {
 
       console.log('FederatedSync: Pushing weight updates to central node...');
       
-      // Simulated API Call to /api/v1/federated/aggregate
-      const response = await fetch('http://localhost:3000/api/v1/federated/aggregate', {
+      const response = await fetch(`${FED_API}/aggregate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -45,7 +48,7 @@ export class FederatedService {
    */
   public static async pullGlobalModel(): Promise<{ success: boolean; model?: any; error?: string }> {
     try {
-      const response = await fetch('http://localhost:3000/api/v1/federated/global-model');
+      const response = await fetch(`${FED_API}/global-model`);
       if (!response.ok) throw new Error('Could not fetch global model');
       
       const data = await response.json();

@@ -75,13 +75,30 @@ function MainApp() {
         initDatabase();
         
         // Auto-seed knowledge on first run
-        const hasSeeded = await getSetting('knowledge_seeded');
+        const hasSeeded = await getSetting('knowledge_seeded_v75');
         if (!hasSeeded) {
           await SyncService.seedLocalKnowledge();
-          await saveSetting('knowledge_seeded', 'true');
+          await saveSetting('knowledge_seeded_v75', 'true');
         }
         
         checkAuth();
+
+        // ─── AUTO-SYNC: Pull latest data when online ───────────────
+        const isOnline = await ConnectivityService.isOnline();
+        if (isOnline) {
+          console.log('[AutoSync] Network detected — syncing knowledge...');
+          const pullResult = await SyncService.pullKnowledge();
+          if (pullResult.success) {
+            console.log(`[AutoSync] Downloaded ${pullResult.count} knowledge items from server`);
+          }
+          // Push any pending encounters silently
+          const pushResult = await SyncService.pushEncounters();
+          if (pushResult.success && (pushResult.count || 0) > 0) {
+            console.log(`[AutoSync] Uploaded ${pushResult.count} pending encounters`);
+          }
+        } else {
+          console.log('[AutoSync] Offline — using local knowledge base');
+        }
       } catch (e: any) {
         console.error("Initialization error:", e);
       }
@@ -89,14 +106,38 @@ function MainApp() {
     startup();
   }, [checkAuth]);
 
+  // ─── REAL CONNECTIVITY MONITORING ─────────────────────────────────────────
   useEffect(() => {
+    // Initial signal check
     const checkSignal = async () => {
       const s = await ConnectivityService.getSignalStrength();
       setSignal(s);
     };
     checkSignal();
-    const interval = setInterval(checkSignal, 10000);
-    return () => clearInterval(interval);
+
+    // Subscribe to real connectivity changes
+    const unsubscribe = ConnectivityService.subscribeToConnectivityChanges(
+      async (isOnline) => {
+        const s = await ConnectivityService.getSignalStrength();
+        setSignal(s);
+
+        // Auto-sync when reconnecting
+        if (isOnline) {
+          console.log('[Connectivity] Back online — triggering background sync...');
+          SyncService.pullKnowledge().then(res => {
+            if (res.success) console.log(`[BackgroundSync] Pulled ${res.count} items`);
+          });
+        }
+      }
+    );
+
+    // Also poll every 15 seconds for signal strength updates
+    const interval = setInterval(checkSignal, 15000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
   }, []);
 
   const handleSync = async () => {

@@ -26,14 +26,16 @@ model Encounter {
 }
 
 model KnowledgeItem {
-  id            Int      @id @default(autoincrement())
-  topic         String
-  keyword       String?
-  mythTextEn    String?
-  correctTextEn String
-  correctTextLg String?
-  source        String?
-  updatedAt     DateTime @updatedAt
+  id                 Int      @id @default(autoincrement())
+  topic              String
+  keyword            String?
+  mythTextEn         String?
+  correctTextEn      String
+  correctTextLg      String?
+  detailedGuidanceEn String?  // Detailed clinical steps (English)
+  detailedGuidanceLg String?  // Detailed clinical steps (Luganda)
+  source             String?
+  updatedAt          DateTime @updatedAt
 }
 
 model User {

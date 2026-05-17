@@ -118,6 +118,14 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             <Text style={[styles.registerText, { color: themeColors.primary[900] }]}>{t('auth.contact_admin')}</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Demo Credentials Hint */}
+        <View style={[styles.demoHint, { backgroundColor: themeColors.primary[50], borderColor: themeColors.primary[200] }]}>
+          <Icon source="information-outline" size={14} color={themeColors.primary[900]} />
+          <Text style={[styles.demoHintText, { color: themeColors.primary[800] }]}>
+            Demo: <Text style={{ fontWeight: '800' }}>0700000000</Text> / <Text style={{ fontWeight: '800' }}>password123</Text>
+          </Text>
+        </View>
       </View>
     </AnimatedCard>
   );
@@ -334,6 +342,21 @@ const styles = StyleSheet.create({
   registerText: {
     fontSize: 14,
     fontWeight: '700',
+  },
+  demoHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: radii.md,
+    borderWidth: 1,
+  },
+  demoHintText: {
+    fontSize: 12,
+    fontWeight: '500',
+    flex: 1,
   },
 });
 

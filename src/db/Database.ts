@@ -9,6 +9,11 @@ export interface KnowledgeItem {
   myth_text_en: string | null;
   correct_text_en: string;
   correct_text_lg: string | null;
+  detailed_guidance_en?: string | null;
+  detailed_guidance_lg?: string | null;
+  symptoms?: string | null;
+  prevention?: string | null;
+  treatment?: string | null;
   source: string;
 }
 
@@ -129,6 +134,11 @@ export const searchKnowledge = async (query: string): Promise<KnowledgeItem[]> =
       myth_text_en: k.mythTextEn || k.myth_text_en || null,
       correct_text_en: k.correctTextEn || k.correct_text_en,
       correct_text_lg: k.correctTextLg || k.correct_text_lg || null,
+      detailed_guidance_en: k.detailedGuidanceEn || k.detailed_guidance_en || null,
+      detailed_guidance_lg: k.detailedGuidanceLg || k.detailed_guidance_lg || null,
+      symptoms: k.symptoms || null,
+      prevention: k.prevention || null,
+      treatment: k.treatment || null,
       source: k.source || "MOH Uganda"
     }));
 };
@@ -152,6 +162,11 @@ export const saveKnowledge = async (items: any[]) => {
       mythTextEn: item.mythTextEn || item.myth_text_en || null,
       correctTextEn: item.correctTextEn || item.correct_text_en,
       correctTextLg: item.correctTextLg || item.correct_text_lg || null,
+      detailedGuidanceEn: item.detailedGuidanceEn || item.detailed_guidance_en || null,
+      detailedGuidanceLg: item.detailedGuidanceLg || item.detailed_guidance_lg || null,
+      symptoms: item.symptoms || null,
+      prevention: item.prevention || null,
+      treatment: item.treatment || null,
       source: item.source || null
     }));
     return await HealthGuardEngine.bulkInsertKnowledge(nativeItems);
@@ -216,10 +231,15 @@ export const getResponseForKeyword = async (keyword: string | null): Promise<Kno
     const topic = parts[0];
     const kw = parts.length > 1 ? parts[1] : "";
 
-    const match = knowledge.find(k => 
-      (k.topic === topic && (k.keyword === kw || !kw)) || 
-      (k.keyword === keyword)
+    let match = knowledge.find(k => 
+      (k.keyword === keyword) ||
+      (k.topic === topic && k.keyword === kw)
     );
+
+    // Fallback: If specific keyword not found, try general topic info
+    if (!match && topic) {
+       match = knowledge.find(k => k.topic === topic && (k.keyword === `${topic}:general` || k.keyword === 'general'));
+    }
 
     if (match) {
       return {
@@ -229,6 +249,11 @@ export const getResponseForKeyword = async (keyword: string | null): Promise<Kno
         myth_text_en: match.mythTextEn || match.myth_text_en || null,
         correct_text_en: match.correctTextEn || match.correct_text_en,
         correct_text_lg: match.correctTextLg || match.correct_text_lg || null,
+        detailed_guidance_en: match.detailedGuidanceEn || match.detailed_guidance_en || null,
+        detailed_guidance_lg: match.detailedGuidanceLg || match.detailed_guidance_lg || null,
+        symptoms: match.symptoms || null,
+        prevention: match.prevention || null,
+        treatment: match.treatment || null,
         source: match.source || "MOH Uganda"
       };
     }
