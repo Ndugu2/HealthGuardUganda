@@ -50,7 +50,6 @@ const INACCURATE_RULES: Record<string, string> = {
   "arvs kill people": "hiv:arv_poison",
   "sex with a virgin cures hiv": "hiv:virgin_cure",
   "virgin cures hiv": "hiv:virgin_cure",
-  "virgin cure": "hiv:virgin_cure",
   "mosquitoes spread hiv": "hiv:mosquitos_hiv",
   "mosquito bites hiv": "hiv:mosquitos_hiv",
   "prayer cures hiv": "hiv:prayer_cure",
@@ -100,6 +99,9 @@ const INACCURATE_RULES: Record<string, string> = {
   "nanziri eva ku nkuba": "stds:gonorrhea_enziku",
   "ensekere ziva ku kwegatta": "stds:hpv_warts",
   "syphilis is a minor rash": "stds:syphilis_kabotongo",
+  "sex with a virgin cures syphilis": "stds:syphilis_kabotongo",
+  "virgin cures syphilis": "stds:syphilis_kabotongo",
+  "virgin cure syphilis": "stds:syphilis_kabotongo",
   "condoms contain holes": "stds:stis_prevention_condoms",
   "hepb is only shared by food": "stds:hepatitis_b_prevention",
 
@@ -358,7 +360,9 @@ const TOPIC_KEYWORDS: Record<string, string> = {
   "hepatitis": "stds",
   "ensekere": "stds",
   "warts": "stds",
-  "hpv": "stds"
+  "hpv": "stds",
+  "syphilis": "stds",
+  "sifilis": "stds"
 };
 
 // ─── KEYWORD SCORING (for fuzzy fallback) ─────────────────────────────────────
@@ -392,9 +396,10 @@ export class RuleEngine {
   public check(rawInput: string): ClassificationResult | null {
     if (!rawInput) return null;
     const input = this.normalize(rawInput);
+    const inputTokens = input.split(' ');
 
     for (const [phrase, token] of Object.entries(INACCURATE_RULES)) {
-      if (input.includes(phrase)) {
+      if (this.fuzzyIncludes(inputTokens, phrase)) {
         return {
           label: 'INACCURATE',
           confidence: 1.0,
@@ -412,7 +417,7 @@ export class RuleEngine {
     }
 
     for (const [phrase, token] of Object.entries(ACCURATE_RULES)) {
-      if (input.includes(phrase)) {
+      if (this.fuzzyIncludes(inputTokens, phrase)) {
         return {
           label: 'ACCURATE',
           confidence: 1.0,
@@ -434,6 +439,7 @@ export class RuleEngine {
 
   public keywordScore(rawInput: string): ClassificationResult {
     const input = this.normalize(rawInput);
+    const inputTokens = input.split(' ');
     
     let mythScore = 0;
     let factScore = 0;
@@ -442,23 +448,24 @@ export class RuleEngine {
     let detectedTopic: string | null = null;
 
     for (const signal of MYTH_SIGNAL_WORDS) {
-      if (input.includes(signal)) {
+      if (this.fuzzyIncludes(inputTokens, signal)) {
         mythScore++;
         if (!matchedMyth) matchedMyth = signal;
       }
     }
 
     for (const signal of FACT_SIGNAL_WORDS) {
-      if (input.includes(signal)) {
+      if (this.fuzzyIncludes(inputTokens, signal)) {
         factScore++;
         if (!matchedFact) matchedFact = signal;
       }
     }
 
     for (const [kw, topic] of Object.entries(TOPIC_KEYWORDS)) {
-      if (input.includes(kw)) {
-        detectedTopic = topic;
-        break;
+      if (this.fuzzyIncludes(inputTokens, kw)) {
+        if (!detectedTopic || detectedTopic === 'general') {
+          detectedTopic = topic;
+        }
       }
     }
 
@@ -542,7 +549,8 @@ export class RuleEngine {
   }
 
   public detectClinicalFlags(text: string): { required: boolean, flags: string[] } {
-    const t = text.toLowerCase();
+    const input = this.normalize(text);
+    const inputTokens = input.split(' ');
     const flags: string[] = [];
     const RED_FLAGS = {
       'EBOLA_SYMPTOMS': ['bleeding', 'vomiting blood', 'ebola', 'haemorrhagic'],
@@ -551,22 +559,73 @@ export class RuleEngine {
       'CRITICAL': ['unconscious', 'cannot breathe', 'difficulty breathing', 'severe pain']
     };
     for (const [key, terms] of Object.entries(RED_FLAGS)) {
-      if (terms.some(term => t.includes(term))) flags.push(key);
+      if (terms.some(term => this.fuzzyIncludes(inputTokens, term))) flags.push(key);
     }
     return { required: flags.length > 0, flags };
   }
 
   public detectCulturalContext(text: string): { active: boolean, prefix: string } {
-    const t = text.toLowerCase();
+    const input = this.normalize(text);
+    const inputTokens = input.split(' ');
     const CULTURAL_KEYWORDS = ['witchcraft', 'curse', 'god', 'prayer', 'spirits', 'ancestors', 'traditional', 'herbs', 'obulogo', 'ebimera', 'lubaale', 'katonda'];
-    const isActive = CULTURAL_KEYWORDS.some(kw => t.includes(kw));
+    const isActive = CULTURAL_KEYWORDS.some(kw => this.fuzzyIncludes(inputTokens, kw));
     return {
       active: isActive,
       prefix: isActive ? "While traditional and spiritual beliefs are deeply respected, medical evidence shows that " : ""
     };
   }
 
+  private levenshteinDistance(a: string, b: string): number {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+    const matrix = [];
+    for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+    for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1,
+            Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+          );
+        }
+      }
+    }
+    return matrix[b.length][a.length];
+  }
+
+  private fuzzyIncludes(inputTokens: string[], phrase: string): boolean {
+    const phraseTokens = phrase.split(' ');
+    if (phraseTokens.length === 0 || inputTokens.length < phraseTokens.length) return false;
+    for (let i = 0; i <= inputTokens.length - phraseTokens.length; i++) {
+      let match = true;
+      for (let j = 0; j < phraseTokens.length; j++) {
+        const target = phraseTokens[j];
+        const inputWord = inputTokens[i + j];
+        if (inputWord === target) continue;
+        
+        const dist = this.levenshteinDistance(inputWord, target);
+        let maxDist = 0;
+        if (target.length >= 10) maxDist = 2;
+        else if (target.length >= 6) maxDist = 1;
+
+        if (dist > maxDist) {
+          match = false;
+          break;
+        }
+      }
+      if (match) return true;
+    }
+    return false;
+  }
+
   private normalize(input: string): string {
-    return input.toLowerCase().replace(/[^a-z0-9\s' \-/]/g, " ").replace(/\s+/g, " ").trim();
+    return input.toLowerCase()
+      .replace(/\bsifilis\b/g, "syphilis")
+      .replace(/[^a-z0-9\s' \-/]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
   }
 }

@@ -42,3 +42,16 @@ claim,label,language
 "uncertain about the new herbal drink efficacy","uncertain",en
 "some home remedies might help with minor symptoms","uncertain",en
 "waiting for more research on this health claim","uncertain",en
+"heavy lifting during pregnancy makes delivery easier","inaccurate",en
+"extreme physical labor causes miscarriage","accurate",en
+"you dont need to prepare for birth until labor starts","inaccurate",en
+"every pregnant woman needs a birth preparedness plan early","accurate",en
+"bleeding a little during pregnancy is normal","inaccurate",en
+"any bleeding during pregnancy is a medical emergency","accurate",en
+"family planning makes women permanently infertile","inaccurate",en
+"modern contraceptives delay pregnancy and do not cause infertility","accurate",en
+"withdrawal is the safest way to prevent pregnancy","inaccurate",en
+"implants iuds and condoms are effective ways to prevent pregnancy","accurate",en
+"okukola emirimu egyamaanyi ngolina olubuto kulungi","inaccurate",lg
+"okuvaamu omusaayi ngoli lubuto kabonero ka kabi","accurate",lg
+"enkola zekisawo zireeta obutazaala","inaccurate",lg

@@ -90,13 +90,59 @@ export class MLModel {
         const tf = new Array(Object.keys(this.vocabulary).length).fill(0);
         
         tokens.forEach(t => {
-            const idx = this.vocabulary[t];
-            if (idx !== undefined) tf[idx]++;
+            const matchedTerm = this.findClosestVocabularyMatch(t);
+            if (matchedTerm) {
+                const idx = this.vocabulary[matchedTerm];
+                if (idx !== undefined) tf[idx]++;
+            }
         });
 
         const vector = tf.map((count, i) => count * this.idf[i]);
         const norm = Math.sqrt(vector.reduce((sum, v) => sum + v * v, 0));
         return norm > 0 ? vector.map(v => v / norm) : vector;
+    }
+
+    private levenshteinDistance(a: string, b: string): number {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) matrix[i] = [i];
+        for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1,
+                        Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
+                    );
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    private findClosestVocabularyMatch(token: string): string | null {
+        if (this.vocabulary[token] !== undefined) return token;
+        
+        let bestMatch: string | null = null;
+        let minDistance = Infinity;
+
+        for (const vocabWord in this.vocabulary) {
+            if (Math.abs(vocabWord.length - token.length) <= 2) {
+                const dist = this.levenshteinDistance(token, vocabWord);
+                let maxDist = 0;
+                if (vocabWord.length >= 10) maxDist = 2;
+                else if (vocabWord.length >= 6) maxDist = 1;
+
+                if (dist <= maxDist && dist < minDistance) {
+                    minDistance = dist;
+                    bestMatch = vocabWord;
+                }
+            }
+        }
+        return bestMatch;
     }
 
     /**

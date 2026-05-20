@@ -129,14 +129,23 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
       setSource(t('analyze.general_guidelines') || 'General Guidelines');
     }
 
+    // Clean up info to remove redundant prefixes that might be in the database
+    let cleanInfo = info.replace(/^(Fact|False|True):\s*/i, '')
+                        .replace(/^(Yes|No),\s*(that\s*is\s*(not)?\s*true\.?\s*)?/i, '')
+                        .replace(/^(Yes|No),\s*(that\s*is\s*(in)?correct\.?\s*)?/i, '')
+                        .trim();
+    if (cleanInfo.length > 0) {
+      cleanInfo = cleanInfo.charAt(0).toUpperCase() + cleanInfo.slice(1);
+    }
+
     // Construct Direct Conversational Answer
     let answer = '';
     if (res.label === 'INACCURATE') {
-      answer = i18n.language === 'lg' ? `Nga, ekyo si kituufu. ${info}` : `No, that is not true. ${info}`;
+      answer = i18n.language === 'lg' ? `Nga, ekyo si kituufu. ${cleanInfo}` : `No, that is not true. ${cleanInfo}`;
     } else if (res.label === 'ACCURATE') {
-      answer = i18n.language === 'lg' ? `Ye, ekyo kituufu. ${info}` : `Yes, that is correct. ${info}`;
+      answer = i18n.language === 'lg' ? `Ye, ekyo kituufu. ${cleanInfo}` : `Yes, that is correct. ${cleanInfo}`;
     } else {
-      answer = i18n.language === 'lg' ? `Kino tekimanyiddwa bulungi. ${info}` : `This information is unverified. ${info}`;
+      answer = i18n.language === 'lg' ? `Kino tekimanyiddwa bulungi. ${cleanInfo}` : `This information is unverified. ${cleanInfo}`;
     }
     setDirectAnswer(answer);
 

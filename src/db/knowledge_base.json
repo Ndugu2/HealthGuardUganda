@@ -688,5 +688,60 @@
     "prevention": "Condom use and testing.",
     "treatment": "Antibiotics (Penicillin) as directed by a doctor.",
     "source": "MOH Uganda"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "maternal_heavy_lifting",
+    "myth_text_en": "Pregnant women should do heavy physical labor to make delivery easier.",
+    "correct_text_en": "Fact: Heavy lifting and extreme physical labor during pregnancy can cause premature labor or miscarriage. Pregnant women need moderate exercise and adequate rest.",
+    "correct_text_lg": "Fact: Okukola emirimu egy'amaanyi ng'olina olubuto kiyinza okuleeta okuzaala omwana atannatuuka oba okuvaamu kw'olubuto. Abakazi ab'olubuto beetaaga okuwummula obulungi.",
+    "symptoms": "Signs of overexertion: Back pain, dizziness, spotting/bleeding, contractions before 37 weeks.",
+    "prevention": "Avoid lifting heavy jerrycans, digging for long hours, or carrying heavy loads. Rest frequently.",
+    "treatment": "If bleeding or severe back pain occurs after heavy work, visit a health facility immediately.",
+    "source": "MOH Uganda / WHO"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "maternal_birth_plan",
+    "myth_text_en": "You don't need to prepare for birth until labor pains start.",
+    "correct_text_en": "Fact: Every pregnant woman must have a Birth Preparedness Plan early. This includes saving money, identifying a transport method, choosing a health facility, and buying a Mama Kit.",
+    "correct_text_lg": "Fact: Buli mukazi ow'olubuto alina okwetegekera okuzaala nga bukyali. Kino kizingiramu okutereka ssente, okufuna entambula, n'okugula Mama Kit.",
+    "symptoms": "Unpreparedness leads to delays in reaching the hospital, increasing the risk of maternal and neonatal death.",
+    "prevention": "Prepare a Mama Kit (cotton wool, gauze, surgical blades, polythene sheet, gloves, soap) and identify a blood donor.",
+    "treatment": "N/A",
+    "source": "MOH Uganda"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "maternal_danger_signs",
+    "myth_text_en": "Bleeding a little during pregnancy is normal and nothing to worry about.",
+    "correct_text_en": "Fact: ANY bleeding during pregnancy is a danger sign and a medical emergency. It can indicate a miscarriage, placental issues, or other life-threatening conditions.",
+    "correct_text_lg": "Fact: Okuvaamu omusaayi gwonna ng'oli lubuto kabonero ka kabi era kyetaagisa obujjanjabi obw'amangu. Kiyinza okulaga nti olubuto luvaamu oba buzibu ku kisawo.",
+    "symptoms": "Danger signs: Vaginal bleeding, severe abdominal pain, persistent headaches, blurred vision, fever, or baby stops moving.",
+    "prevention": "Attend all ANC visits to monitor the pregnancy and identify risks early.",
+    "treatment": "Go to the nearest health center III, IV or hospital IMMEDIATELY. Do not wait for the bleeding to stop.",
+    "source": "WHO / MOH Uganda"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "maternal_family_planning",
+    "myth_text_en": "Family planning makes women permanently infertile.",
+    "correct_text_en": "Fact: Modern family planning methods do NOT cause infertility. They simply delay pregnancy. Once you stop the method, you can become pregnant again. Spacing births by at least 2 years protects both mother and baby.",
+    "correct_text_lg": "Fact: Enteekateeka y'amaka teziyiza buzaale bwa lulubeera. Eziyiza lubuto mu kiseera ekyo kyokka. Ssinga oleka enkola, osobola okufuna olubuto. Okwawula mu mazaalibwa okumala emyaka 2 kikuuma maama n'omwana.",
+    "symptoms": "Frequent pregnancies without spacing (less than 2 years apart) lead to maternal anemia, low birth weight, and high risk of maternal mortality.",
+    "prevention": "Visit a health facility to discuss the best contraceptive method for you (pills, injections, implants, IUDs, condoms).",
+    "treatment": "N/A",
+    "source": "MOH Uganda / UNFPA"
+  },
+  {
+    "topic": "maternal",
+    "keyword": "maternal_unwanted_pregnancy",
+    "myth_text_en": "Withdrawal or tracking the calendar is the safest way to prevent pregnancy.",
+    "correct_text_en": "Fact: Natural methods like withdrawal or the calendar method have high failure rates. The most effective way to prevent unwanted pregnancy is by using modern contraceptives like implants, IUDs, injectables, pills, or condoms.",
+    "correct_text_lg": "Fact: Enkola ez'obutonde ng'okuggyamu oba okubala ennaku ziremererwa nnyo. Engeri esinga obulungi okuziyiza olubuto lwe toyagala kwe kukozesa enkola z'ekisawo ng'empiso, akapiira, oba IUD.",
+    "symptoms": "Unintended pregnancies often lead to unsafe abortions, maternal stress, and financial difficulties.",
+    "prevention": "Use dual protection: a reliable contraceptive method (pills, implant, IUD) to prevent pregnancy PLUS a condom to prevent STIs.",
+    "treatment": "Visit your nearest health center for free, confidential family planning counseling and services.",
+    "source": "MOH Uganda / WHO"
   }
 ]
