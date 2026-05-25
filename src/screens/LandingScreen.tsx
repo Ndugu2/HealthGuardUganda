@@ -273,41 +273,40 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
           </View>
         </View>
 
-      </ScrollView>
-
-      {/* ── FOOTER ── */}
-      <View style={[styles.footer, { backgroundColor: colors.primary[900] }]}>
-        <View style={[styles.footerContent, !isDesktop && styles.footerContentMobile]}>
-          <View style={styles.footerCol}>
-            <View style={styles.footerLogoRow}>
-              <View style={[styles.logoCircle, { backgroundColor: '#FFF' }]}>
-                <Icon source="shield-plus" size={20} color={colors.primary[900]} />
+        {/* ── FOOTER ── */}
+        <View style={[styles.footer, { backgroundColor: colors.primary[900] }]}>
+          <View style={[styles.footerContent, !isDesktop && styles.footerContentMobile]}>
+            <View style={styles.footerCol}>
+              <View style={styles.footerLogoRow}>
+                <View style={[styles.logoCircle, { backgroundColor: '#FFF' }]}>
+                  <Icon source="shield-plus" size={20} color={colors.primary[900]} />
+                </View>
+                <Text style={[styles.footerLogoText, { color: '#FFF' }]}>HealthGuard</Text>
               </View>
-              <Text style={[styles.footerLogoText, { color: '#FFF' }]}>HealthGuard</Text>
+              <Text style={[styles.footerDesc, { color: 'rgba(255,255,255,0.7)' }]}>
+                Protecting livelihoods by verifying health facts. We are committed to sustainable public health and empowering communities through accurate information.
+              </Text>
             </View>
-            <Text style={[styles.footerDesc, { color: 'rgba(255,255,255,0.7)' }]}>
-              Protecting livelihoods by verifying health facts. We are committed to sustainable public health and empowering communities through accurate information.
-            </Text>
+            
+            <View style={styles.footerLinksCol}>
+               <Text style={styles.footerHeading}>Platform</Text>
+               <TouchableOpacity onPress={() => onLoginPress('ADMIN')}><Text style={styles.footerLink}>Admin Dashboard</Text></TouchableOpacity>
+               <TouchableOpacity onPress={() => onLoginPress('HW')}><Text style={styles.footerLink}>For Health Workers</Text></TouchableOpacity>
+               <TouchableOpacity onPress={() => onLoginPress('COMMUNITY')}><Text style={styles.footerLink}>Community Portal</Text></TouchableOpacity>
+            </View>
+            
+            <View style={styles.footerLinksCol}>
+               <Text style={styles.footerHeading}>Contact</Text>
+               <Text style={styles.footerLink}>info@healthguard.ug</Text>
+               <Text style={styles.footerLink}>+256 800 100 066</Text>
+               <Text style={styles.footerLink}>Kampala, Uganda</Text>
+            </View>
           </View>
-          
-          <View style={styles.footerLinksCol}>
-             <Text style={styles.footerHeading}>Platform</Text>
-             <TouchableOpacity onPress={() => onLoginPress('ADMIN')}><Text style={styles.footerLink}>Admin Dashboard</Text></TouchableOpacity>
-             <TouchableOpacity onPress={() => onLoginPress('HW')}><Text style={styles.footerLink}>For Health Workers</Text></TouchableOpacity>
-             <TouchableOpacity onPress={() => onLoginPress('COMMUNITY')}><Text style={styles.footerLink}>Community Portal</Text></TouchableOpacity>
-          </View>
-          
-          <View style={styles.footerLinksCol}>
-             <Text style={styles.footerHeading}>Contact</Text>
-             <Text style={styles.footerLink}>info@healthguard.ug</Text>
-             <Text style={styles.footerLink}>+256 800 100 066</Text>
-             <Text style={styles.footerLink}>Kampala, Uganda</Text>
+          <View style={styles.footerBottom}>
+            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>© 2026 HealthGuard Uganda. All rights reserved.</Text>
           </View>
         </View>
-        <View style={styles.footerBottom}>
-          <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>© 2026 HealthGuard Uganda. All rights reserved.</Text>
-        </View>
-      </View>
+      </ScrollView>
     </View>
   );
 };
@@ -595,7 +594,7 @@ const styles = StyleSheet.create({
   },
   footer: {
     width: '100%',
-    paddingTop: 60,
+    paddingTop: 30,
     paddingBottom: 20,
     paddingHorizontal: '8%',
   },
@@ -605,7 +604,7 @@ const styles = StyleSheet.create({
     maxWidth: 1200,
     alignSelf: 'center',
     width: '100%',
-    marginBottom: 40,
+    marginBottom: 20,
     gap: 40,
   },
   footerContentMobile: {
