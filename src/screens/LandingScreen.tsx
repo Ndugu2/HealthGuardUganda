@@ -107,45 +107,43 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
               Smarter Health for <Text style={{ color: colors.primary[900] }}>Every Community.</Text>
             </Text>
             
-            <Text style={[styles.heroSub, { color: colors.neutral[500] }]}>
+            <Text style={[styles.heroSub, { color: colors.neutral[500] }, isMobile && styles.heroSubMobile]}>
               We leverage data analytics and offline technology to bring expert medical intelligence directly to rural health workers, ensuring verified facts and sustainable public health.
             </Text>
             
-            <View style={styles.heroActions}>
-              <TouchableOpacity style={[styles.primaryActionBtn, { backgroundColor: colors.primary[900] }]} onPress={() => onLoginPress('COMMUNITY')}>
-                <Text style={styles.primaryActionBtnText}>Community Portal</Text>
-                <Icon source="arrow-right" size={18} color="#FFF" />
+            <View style={[styles.heroActions, isMobile && styles.heroActionsMobile]}>
+              <TouchableOpacity style={[styles.primaryActionBtn, isMobile && styles.primaryActionBtnMobile, { backgroundColor: colors.primary[900] }]} onPress={() => onLoginPress('COMMUNITY')}>
+                <Text style={[styles.primaryActionBtnText, isMobile && { fontSize: 14 }]}>Community Portal</Text>
+                <Icon source="arrow-right" size={16} color="#FFF" />
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.secondaryActionBtn, { borderColor: colors.neutral[200] }]} onPress={() => onLoginPress('HW')}>
-                <Text style={[styles.secondaryActionBtnText, { color: colors.neutral[700] }]}>Health Worker Login</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={[styles.secondaryActionBtn, { borderColor: colors.neutral[200] }]} onPress={() => Linking.openURL('https://healthguard.ug/expert')}>
-                <Text style={[styles.secondaryActionBtnText, { color: colors.neutral[700] }]}>Ask Online Expert</Text>
+              <TouchableOpacity style={[styles.secondaryActionBtn, isMobile && styles.secondaryActionBtnMobile, { borderColor: colors.neutral[200] }]} onPress={() => onLoginPress('HW')}>
+                <Text style={[styles.secondaryActionBtnText, isMobile && { fontSize: 14 }, { color: colors.neutral[700] }]}>Health Worker Login</Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          <View style={[styles.heroRight, isMobile && styles.heroRightMobile]}>
-            <View style={[styles.heroImageCard, isMobile && styles.heroImageCardMobile, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.lg }]}>
-              <Image 
-                source={require('../../assets/landing_hero.png')} 
-                style={styles.heroImage as any} 
-                resizeMode="contain"
-              />
-              
-              <View style={[styles.floatingBadge, isMobile && styles.floatingBadgeMobile, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.md }]}>
-                <View style={[styles.badgeIconWrap, { backgroundColor: '#E2F0D9' }]}>
-                  <Icon source="trending-down" size={16} color={colors.primary[900]} />
-                </View>
-                <View>
-                  <Text style={[styles.badgeLabel, { color: colors.neutral[400] }]}>MISINFORMATION RATE</Text>
-                  <Text style={[styles.badgeValue, { color: colors.neutral[900] }]}>45% Reduction</Text>
+          {!isMobile && (
+            <View style={[styles.heroRight, isMobile && styles.heroRightMobile]}>
+              <View style={[styles.heroImageCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.lg }]}>
+                <Image 
+                  source={require('../../assets/landing_hero.png')} 
+                  style={styles.heroImage as any} 
+                  resizeMode="contain"
+                />
+                
+                <View style={[styles.floatingBadge, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.md }]}>
+                  <View style={[styles.badgeIconWrap, { backgroundColor: '#E2F0D9' }]}>
+                    <Icon source="trending-down" size={16} color={colors.primary[900]} />
+                  </View>
+                  <View>
+                    <Text style={[styles.badgeLabel, { color: colors.neutral[400] }]}>MISINFORMATION RATE</Text>
+                    <Text style={[styles.badgeValue, { color: colors.neutral[900] }]}>45% Reduction</Text>
+                  </View>
                 </View>
               </View>
             </View>
-          </View>
+          )}
         </View>
 
         {/* ── MISSION SECTION ── */}
@@ -383,13 +381,14 @@ const styles = StyleSheet.create({
   },
   heroSectionMobile: {
     flexDirection: 'column',
-    paddingVertical: 40,
-    paddingHorizontal: spacing.xl,
-    gap: 40,
+    paddingVertical: 28,
+    paddingHorizontal: spacing.lg,
+    gap: 24,
   },
   heroLeft: {
     flex: 1,
     alignItems: 'flex-start',
+    width: '100%',
   },
   pill: {
     flexDirection: 'row',
@@ -418,8 +417,9 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   heroHeadlineMobile: {
-    fontSize: 42,
-    lineHeight: 48,
+    fontSize: 34,
+    lineHeight: 40,
+    marginBottom: 16,
   },
   heroSub: {
     fontSize: 18,
@@ -427,10 +427,21 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     maxWidth: '90%',
   },
+  heroSubMobile: {
+    fontSize: 14,
+    lineHeight: 22,
+    marginBottom: 24,
+    maxWidth: '100%',
+  },
   heroActions: {
     flexDirection: 'row',
     gap: 16,
     flexWrap: 'wrap',
+  },
+  heroActionsMobile: {
+    flexDirection: 'column',
+    gap: 12,
+    width: '100%',
   },
   primaryActionBtn: {
     flexDirection: 'row',
@@ -439,6 +450,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radii.md,
     gap: 8,
+  },
+  primaryActionBtnMobile: {
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    justifyContent: 'center',
   },
   primaryActionBtnText: {
     color: '#FFF',
@@ -450,6 +466,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: radii.md,
     borderWidth: 1,
+  },
+  secondaryActionBtnMobile: {
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
   secondaryActionBtnText: {
     fontSize: 16,
