@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 /** Default host (no /api suffix) — Android emulator uses 10.0.2.2 for host machine */
 const DEFAULT_HOST =
   Platform.OS === 'web'
-    ? 'http://localhost:3000'
+    ? 'https://healthguarduganda.onrender.com'
     : Platform.OS === 'android'
       ? 'http://10.0.2.2:3000'
       : 'http://localhost:3000';

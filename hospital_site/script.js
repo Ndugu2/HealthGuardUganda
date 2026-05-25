@@ -21,3 +21,39 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = mailtoLink;
   });
 });
+// Registration form handler
+const registerForm = document.getElementById('register-form');
+if (registerForm) {
+  registerForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+      phone: document.getElementById('phone').value.trim(),
+      name: document.getElementById('name').value.trim(),
+      password: document.getElementById('password').value,
+      role: document.getElementById('role').value,
+      village: document.getElementById('village').value.trim(),
+      district: document.getElementById('district').value.trim()
+    };
+    const msgBox = document.getElementById('register-msg');
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        msgBox.textContent = `✅ Account created (ID: ${json.userId})`;
+        msgBox.style.color = 'green';
+        registerForm.reset();
+      } else {
+        msgBox.textContent = json.error || 'Registration failed';
+        msgBox.style.color = 'red';
+      }
+    } catch (err) {
+      console.error(err);
+      msgBox.textContent = 'Network error';
+      msgBox.style.color = 'red';
+    }
+  });
+}

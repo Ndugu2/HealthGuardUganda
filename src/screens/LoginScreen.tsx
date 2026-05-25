@@ -36,6 +36,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [isRegisterMode, setIsRegisterMode] = useState(false);
   const [regName, setRegName] = useState('');
@@ -143,16 +144,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
     setLoading(false);
 
     if (result.success) {
+      let msg = '✅ Account created successfully! You can now sign in.';
       if (regRole === 'HW') {
-        Alert.alert('Registration Successful', 'Account created successfully! It is pending administrator approval before you can sign in.');
+        msg = '✅ Account created! It is pending administrator approval before you can sign in.';
       } else if (regRole === 'ADMIN') {
-        Alert.alert('Registration Successful', 'Administrator account created successfully! You can now sign in.');
-      } else {
-        Alert.alert('Registration Successful', 'Account created successfully! You can now sign in.');
+        msg = '✅ Administrator account created successfully! You can now sign in.';
       }
       setPhone(regPhone);
       setPassword(regPassword);
+      setSuccessMessage(msg);
       setIsRegisterMode(false);
+      // Auto-hide the banner after 6 seconds
+      setTimeout(() => setSuccessMessage(null), 6000);
     } else {
       Alert.alert('Registration Failed', result.error || 'Could not register user.');
     }
@@ -160,6 +163,27 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
 
   const renderLoginForm = () => (
     <AnimatedCard delay={100} style={[styles.loginCard, { backgroundColor: themeColors.surface, maxWidth: 450 }]}>
+      {successMessage && (
+        <View style={{
+          backgroundColor: '#D1FAE5',
+          borderColor: '#34D399',
+          borderWidth: 1,
+          borderRadius: 10,
+          padding: 14,
+          marginBottom: 16,
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          gap: 10,
+        }}>
+          <Icon source="check-circle-outline" size={20} color="#065F46" />
+          <Text style={{ color: '#065F46', fontWeight: '700', fontSize: 13, flex: 1, lineHeight: 20 }}>
+            {successMessage}
+          </Text>
+          <TouchableOpacity onPress={() => setSuccessMessage(null)}>
+            <Icon source="close" size={18} color="#065F46" />
+          </TouchableOpacity>
+        </View>
+      )}
       {onBack && (
         <TouchableOpacity style={styles.backBtn} onPress={onBack}>
           <Icon source="arrow-left" size={24} color={themeColors.neutral[600]} />
