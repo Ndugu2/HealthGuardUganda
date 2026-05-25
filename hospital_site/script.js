@@ -1,4 +1,5 @@
 // script.js - Handles contact form submission via mailto link
+const API_URL = "https://healthguarduganda.onrender.com";
 
 document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('contactForm');
