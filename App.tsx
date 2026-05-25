@@ -4,6 +4,7 @@ import {
   SafeAreaView,
   StatusBar,
   View,
+  ScrollView,
   Platform,
   useWindowDimensions,
   TouchableOpacity,
@@ -22,13 +23,24 @@ import { ThemeProvider, useAppTheme, getPaperTheme } from './src/ThemeContext';
 
 // Screens
 import HomeScreen from './src/screens/HomeScreen';
+import DiseaseStatsScreen from './src/screens/DiseaseStatsScreen';
+import DrugInfoScreen from './src/screens/DrugInfoScreen';
+import GuidelinesScreen from './src/screens/GuidelinesScreen';
+import VaccinationScreen from './src/screens/VaccinationScreen';
+import FAQScreen from './src/screens/FAQScreen';
 import AnalyzeScreen from './src/screens/AnalyzeScreen';
 import KnowledgeScreen from './src/screens/KnowledgeScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
 import FacilitiesScreen from './src/screens/FacilitiesScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import AcademyScreen from './src/screens/AcademyScreen';
+import LandingScreen from './src/screens/LandingScreen';
+import PatientQueueScreen from './src/screens/PatientQueueScreen';
+import AlertCenterScreen from './src/screens/AlertCenterScreen';
+import MoreScreen from './src/screens/MoreScreen';
+import { isOfflineToken } from './src/config';
 
 // Services
 import { AuthService } from './src/services/AuthService';
@@ -45,34 +57,83 @@ function MainApp() {
   
   const [index, setIndex] = useState(0);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [selectedRole, setSelectedRole] = useState<'COMMUNITY' | 'HW' | 'ADMIN' | undefined>(undefined);
+
+  // ... existing code lines remain unchanged
+
+  const [showLanding, setShowLanding] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [syncing, setSyncing] = useState(false);
   const [signal, setSignal] = useState<'LOW' | 'MEDIUM' | 'HIGH'>('HIGH');
+  const [isOnline, setIsOnline] = useState(false);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
-  const routes = React.useMemo(() => [
-    { key: 'home', title: t('nav.home') || 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
-    { key: 'analyze', title: t('nav.analyze') || 'Analyze', focusedIcon: 'magnify-scan', unfocusedIcon: 'magnify' },
-    { key: 'knowledge', title: t('nav.knowledge') || 'Knowledge', focusedIcon: 'book-open-variant', unfocusedIcon: 'book-outline' },
-    { key: 'reports', title: t('nav.reports') || 'Reports', focusedIcon: 'chart-bar', unfocusedIcon: 'chart-bar-stacked' },
-    { key: 'facilities', title: t('nav.facilities') || 'Facilities', focusedIcon: 'hospital-marker', unfocusedIcon: 'hospital-building' },
-    { key: 'academy', title: t('nav.academy') || 'Academy', focusedIcon: 'school', unfocusedIcon: 'school-outline' },
-    { key: 'settings', title: t('nav.settings') || 'Settings', focusedIcon: 'cog', unfocusedIcon: 'cog-outline' },
-  ], [t]);
+  const routes = React.useMemo(() => {
+    const rawRoutes = (() => {
+      if (user?.role === 'COMMUNITY') {
+        return [
+          { key: 'home', title: t('nav.home'), fallback: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
+          { key: 'analyze', title: t('nav.analyze'), fallback: 'Analyze', focusedIcon: 'magnify-scan', unfocusedIcon: 'magnify' },
+          { key: 'knowledge', title: t('nav.knowledge'), fallback: 'Knowledge', focusedIcon: 'book-open-variant', unfocusedIcon: 'book-outline' },
+          { key: 'facilities', title: t('nav.facilities'), fallback: 'Facilities', focusedIcon: 'hospital-marker', unfocusedIcon: 'hospital-building' },
+          { key: 'more', title: t('nav.more'), fallback: 'More', focusedIcon: 'dots-grid', unfocusedIcon: 'dots-horizontal' },
+        ];
+      }
+      if (user?.role === 'ADMIN') {
+        return [
+          { key: 'home', title: t('nav.home'), fallback: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
+          { key: 'analyze', title: t('nav.analyze'), fallback: 'Analyze', focusedIcon: 'magnify-scan', unfocusedIcon: 'magnify' },
+          { key: 'knowledge', title: t('nav.knowledge'), fallback: 'Knowledge', focusedIcon: 'book-open-variant', unfocusedIcon: 'book-outline' },
+          { key: 'reports', title: t('nav.reports'), fallback: 'Reports', focusedIcon: 'chart-bar', unfocusedIcon: 'chart-bar-stacked' },
+          { key: 'facilities', title: t('nav.facilities'), fallback: 'Facilities', focusedIcon: 'hospital-marker', unfocusedIcon: 'hospital-building' },
+          { key: 'more', title: t('nav.more'), fallback: 'More', focusedIcon: 'dots-grid', unfocusedIcon: 'dots-horizontal' },
+        ];
+      }
+      // HEALTH WORKER
+      return [
+        { key: 'home', title: t('nav.home'), fallback: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
+        { key: 'analyze', title: t('nav.analyze'), fallback: 'Analyze', focusedIcon: 'magnify-scan', unfocusedIcon: 'magnify' },
+        { key: 'knowledge', title: t('nav.knowledge'), fallback: 'Knowledge', focusedIcon: 'book-open-variant', unfocusedIcon: 'book-outline' },
+        { key: 'reports', title: t('nav.reports'), fallback: 'Reports', focusedIcon: 'chart-bar', unfocusedIcon: 'chart-bar-stacked' },
+        { key: 'facilities', title: t('nav.facilities'), fallback: 'Facilities', focusedIcon: 'hospital-marker', unfocusedIcon: 'hospital-building' },
+        { key: 'more', title: t('nav.more'), fallback: 'More', focusedIcon: 'dots-grid', unfocusedIcon: 'dots-horizontal' },
+      ];
+    })();
+
+    return rawRoutes.map(route => {
+      const isRawTranslationKey = route.title && route.title.startsWith('nav.');
+      return {
+        key: route.key,
+        title: (isRawTranslationKey || !route.title) ? route.fallback : route.title,
+        focusedIcon: route.focusedIcon,
+        unfocusedIcon: route.unfocusedIcon,
+      };
+    });
+  }, [t, user?.role]);
+
+  const connectionLabel = React.useMemo(() => {
+    if (!isOnline) return t('status.offline');
+    if (sessionToken && isOfflineToken(sessionToken)) return t('status.online_demo');
+    return t('status.online_server');
+  }, [isOnline, sessionToken, t]);
 
   const checkAuth = useCallback(async () => {
     const session = await AuthService.getSession();
     if (session) {
       setIsAuthenticated(true);
       setUser(session.user);
+      setSessionToken(session.token);
+      setIndex(0);
     } else {
       setIsAuthenticated(false);
+      setSessionToken(null);
     }
   }, []);
 
   useEffect(() => {
     const startup = async () => {
       try {
-        initDatabase();
+        await initDatabase();
         
         // Auto-seed knowledge on first run
         const hasSeeded = await getSetting('knowledge_seeded_v75');
@@ -84,8 +145,9 @@ function MainApp() {
         checkAuth();
 
         // ─── AUTO-SYNC: Pull latest data when online ───────────────
-        const isOnline = await ConnectivityService.isOnline();
-        if (isOnline) {
+        const online = await ConnectivityService.isOnline();
+        setIsOnline(online);
+        if (online) {
           console.log('[AutoSync] Network detected — syncing knowledge...');
           const pullResult = await SyncService.pullKnowledge();
           if (pullResult.success) {
@@ -101,6 +163,7 @@ function MainApp() {
         }
       } catch (e: any) {
         console.error("Initialization error:", e);
+        setIsAuthenticated(false);
       }
     };
     startup();
@@ -117,12 +180,13 @@ function MainApp() {
 
     // Subscribe to real connectivity changes
     const unsubscribe = ConnectivityService.subscribeToConnectivityChanges(
-      async (isOnline) => {
+      async (online) => {
+        setIsOnline(online);
         const s = await ConnectivityService.getSignalStrength();
         setSignal(s);
 
         // Auto-sync when reconnecting
-        if (isOnline) {
+        if (online) {
           console.log('[Connectivity] Back online — triggering background sync...');
           SyncService.pullKnowledge().then(res => {
             if (res.success) console.log(`[BackgroundSync] Pulled ${res.count} items`);
@@ -178,6 +242,7 @@ function MainApp() {
     await AuthService.logout();
     setIsAuthenticated(false);
     setUser(null);
+    setSessionToken(null);
   };
 
   const navigateToTab = useCallback((key: string) => {
@@ -187,27 +252,41 @@ function MainApp() {
 
   const renderScene = ({ route }: { route: { key: string } }) => {
     switch (route.key) {
-      case 'home': return <HomeScreen navigateToTab={navigateToTab} />;
-      case 'analyze': return <AnalyzeScreen navigateToTab={navigateToTab} />;
-      case 'knowledge': return <KnowledgeScreen />;
+      case 'home': return <HomeScreen navigateToTab={navigateToTab} userRole={user?.role} />;
+      case 'analyze': return <AnalyzeScreen navigateToTab={navigateToTab} userRole={user?.role} onLogout={handleLogout} />;
+      case 'knowledge': return <KnowledgeScreen userRole={user?.role} onLogout={handleLogout} />;
       case 'reports': return <ReportsScreen />;
       case 'facilities': return <FacilitiesScreen />;
       case 'academy': return <AcademyScreen />;
-      case 'settings': return <SettingsScreen />;
+      case 'settings': return <SettingsScreen onLogout={handleLogout} />;
+      case 'more': return <MoreScreen navigateToTab={navigateToTab} userRole={user?.role} />;
+      case 'queue': return <PatientQueueScreen />;
+      case 'alerts': return <AlertCenterScreen userRole={user?.role} />;
+      // Knowledge‑enrichment screens
+      case 'stats': return <DiseaseStatsScreen />;
+      case 'drugs': return <DrugInfoScreen />;
+      case 'guidelines': return <GuidelinesScreen />;
+      case 'vaccination': return <VaccinationScreen />;
+      case 'faq': return <FAQScreen />;
       default: return null;
     }
   };
 
-  if (isAuthenticated === null) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <ActivityIndicator size="large" color={colors.primary[900]} />
-      </View>
-    );
-  }
+  const [showRegister, setShowRegister] = useState(false);
 
   if (!isAuthenticated) {
-    return <LoginScreen onLoginSuccess={checkAuth} />;
+    if (showLanding) {
+      return <LandingScreen onLoginPress={(role) => {
+        setSelectedRole(role);
+        setShowLanding(false);
+        // Direct to login for all roles
+        setShowRegister(false);
+      }} />;
+    }
+    if (showRegister) {
+      return <RegisterScreen onRegisterSuccess={() => { setShowRegister(false); setShowLanding(false); }} onBack={() => { setShowRegister(false); setShowLanding(true); }} />;
+    }
+    return <LoginScreen onLoginSuccess={checkAuth} onBack={() => setShowLanding(true)} roleHint={selectedRole} />;
   }
 
   const Container = Platform.OS === 'web' ? View : SafeAreaView;
@@ -228,7 +307,7 @@ function MainApp() {
                  <Text style={[styles.sidebarLogoSub, { color: colors.neutral[400] }]}>Uganda</Text>
               </View>
 
-              <View style={styles.sidebarNav}>
+              <ScrollView style={styles.sidebarNav} showsVerticalScrollIndicator={false}>
                 {routes.map((route, i) => (
                   <TouchableOpacity 
                     key={route.key} 
@@ -255,30 +334,34 @@ function MainApp() {
                     )}
                   </TouchableOpacity>
                 ))}
-              </View>
+              </ScrollView>
 
               <View style={[styles.sidebarFooter, { borderTopColor: colors.neutral[100] }]}>
-                  <TouchableOpacity 
-                    style={styles.syncBtnSidebar} 
-                    onPress={handleSync}
-                    disabled={syncing}
-                  >
-                    <Icon source="database-sync" size={20} color={colors.primary[900]} />
-                    <Text style={[styles.syncTextSidebar, { color: colors.primary[900] }]}>
-                      {syncing ? t('sidebar.syncing') : t('sidebar.sync_db')}
-                    </Text>
-                  </TouchableOpacity>
+                  {user?.role !== 'COMMUNITY' && (
+                    <>
+                      <TouchableOpacity 
+                        style={styles.syncBtnSidebar} 
+                        onPress={handleSync}
+                        disabled={syncing}
+                      >
+                        <Icon source="database-sync" size={20} color={colors.primary[900]} />
+                        <Text style={[styles.syncTextSidebar, { color: colors.primary[900] }]}>
+                          {syncing ? t('sidebar.syncing') : t('sidebar.sync_db')}
+                        </Text>
+                      </TouchableOpacity>
 
-                  <TouchableOpacity 
-                    style={styles.syncBtnSidebar} 
-                    onPress={handleFederatedSync}
-                    disabled={syncing}
-                  >
-                    <Icon source="shield-key-outline" size={20} color={colors.primary[900]} />
-                    <Text style={[styles.syncTextSidebar, { color: colors.primary[900] }]}>
-                      {syncing ? t('sidebar.improving') : t('sidebar.private_sync')}
-                    </Text>
-                  </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.syncBtnSidebar} 
+                        onPress={handleFederatedSync}
+                        disabled={syncing}
+                      >
+                        <Icon source="shield-key-outline" size={20} color={colors.primary[900]} />
+                        <Text style={[styles.syncTextSidebar, { color: colors.primary[900] }]}>
+                          {syncing ? t('sidebar.improving') : t('sidebar.private_sync')}
+                        </Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
 
                   <TouchableOpacity 
                     style={styles.themeToggleSidebar} 
@@ -304,12 +387,12 @@ function MainApp() {
                  </View>
                   <View style={[styles.offlinePillSidebar, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.neutral[100] }]}>
                      <Icon 
-                        source={signal === 'HIGH' ? "cellular-3" : signal === 'MEDIUM' ? "cellular-2" : "cellular-1"} 
+                        source={isOnline ? (signal === 'HIGH' ? "cloud-check" : "cloud-sync") : "cloud-off-outline"} 
                         size={14} 
-                        color={signal === 'LOW' ? colors.warning[900] : colors.primary[800]} 
+                        color={isOnline ? colors.primary[800] : colors.warning[900]} 
                       />
                     <Text style={[styles.offlineTextSidebar, { color: colors.primary[900] }]}>
-                      {signal === 'LOW' ? t('connectivity.low_bandwidth') : t('connectivity.connected')}
+                      {connectionLabel}
                     </Text>
                   </View>
               </View>
@@ -320,9 +403,11 @@ function MainApp() {
                <View style={[styles.topUtilityBar, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[100] }]}>
                   <Text style={[styles.pathText, { color: colors.neutral[400] }]}>{t('sidebar.dashboard')} / {routes[index].title.toUpperCase()}</Text>
                   <View style={styles.topActions}>
-                     <TouchableOpacity onPress={handleSync} disabled={syncing}>
-                        <Icon source={syncing ? "loading" : "sync"} size={20} color={colors.neutral[500]} />
-                     </TouchableOpacity>
+                     {user?.role !== 'COMMUNITY' && (
+                        <TouchableOpacity onPress={handleSync} disabled={syncing}>
+                           <Icon source={syncing ? "loading" : "sync"} size={20} color={colors.neutral[500]} />
+                        </TouchableOpacity>
+                     )}
                      <TouchableOpacity onPress={toggleTheme}>
                         <Icon source={mode === 'light' ? 'moon-waning-crescent' : 'white-balance-sunny'} size={20} color={colors.neutral[500]} />
                      </TouchableOpacity>

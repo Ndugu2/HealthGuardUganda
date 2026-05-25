@@ -8,7 +8,22 @@
     "reports": "Lipoota",
     "facilities": "Amadwaliro",
     "academy": "Okutendekebwa",
-    "settings": "Entegeka"
+    "settings": "Entegeka",
+    "more": "Ebirala",
+    "profile": "Profaayiro y'Obulamu",
+    "emergency": "Obuyambi",
+    "alerts": "Amawulire",
+    "queue": "Olukalala"
+  },
+  "more": {
+    "subtitle": "Profaayiro, ennamba z'obuyambi, n'ebirala",
+    "profile_sub": "Amawulire go ku bulamu",
+    "emergency_sub": "Ennamba z'obuyambi n'amadwaliro"
+  },
+  "status": {
+    "offline": "Tewali yintaneeti · Data mu ssimu",
+    "online_demo": "Yintaneeti · Demo",
+    "online_server": "Yintaneeti · Server y'eggwanga"
   },
   "sidebar": {
     "sync_db": "Gatta n'Enkola ey'Awamu",
@@ -263,6 +278,8 @@
     "dark_mode": "Ekiddu",
     "dark_mode_sub": "Kozesa enneeyisa ey'ekiddu",
     "api_config": "Entegeka ya API",
+    "server_url": "URL ya Server y'Eggwanga",
+    "server_url_help": "URL ejjudde nga mulimu /api. Sigala nga bwereere okukozesa entegeka eya bulijjo.",
     "openrouter_key": "OpenRouter API Key (Expert AI)",
     "expert_ai_help": "Wetaagibwa okusobola okubuuza abakugu.",
     "ors_key": "OpenRouteService Key (Navigation)",
@@ -273,7 +290,10 @@
     "save_btn": "Kuuma Entegeka",
     "save_success": "Entegeka Kuumiddwa",
     "save_success_msg": "Entegeka zo za API ziddiziddwamu okukebejjebwa.",
-    "developed_by": "Kikoleddwa Advanced Agentic Coding Team"
+    "developed_by": "Kikoleddwa Advanced Agentic Coding Team",
+    "logout": "Fuluma mu Nkola",
+    "logout_confirm_title": "Kakasa Kufuluma",
+    "logout_confirm_msg": "Oli mukakafu nti oyagala okufuluma mu HealthGuard?"
   },
   "auth": {
     "title": "HealthGuard Uganda",

@@ -9,6 +9,8 @@ import {
   TouchableOpacity,
   Dimensions,
   useWindowDimensions,
+  Alert,
+  Linking,
 } from 'react-native';
 import { Text, Icon, Avatar, Divider } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -21,9 +23,16 @@ import { useAppTheme } from '../ThemeContext';
 import { RiskService, RiskAlert } from '../services/RiskService';
 import { BroadcastService } from '../services/BroadcastService';
 import { Broadcast } from '../db/Database';
+import { MythBusterFeed } from '../components/home/MythBusterFeed';
+import { AilmentGuides } from '../components/home/AilmentGuides';
+import { FacilityLocator } from '../components/home/FacilityLocator';
+import { HealthQuiz } from '../components/home/HealthQuiz';
+import { DailyHealthTips } from '../components/home/DailyHealthTips';
+import { RumorChecker } from '../components/home/RumorChecker';
 
 interface HomeScreenProps {
   navigateToTab: (key: string) => void;
+  userRole?: string;
 }
 
 const RECENT_ALERTS = [
@@ -33,11 +42,13 @@ const RECENT_ALERTS = [
   { id: 4, type: 'update', title: 'MoH Guidelines Updated', title_lg: 'Ebikwata ku Minisitule y\'Obulamu', location: 'Ministry of Health', location_lg: 'Minisitule y\'Obulamu', time: '1d ago', icon: 'file-document-outline' },
 ];
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
+
+const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 900;
+  const isCommunity = userRole === 'COMMUNITY';
 
   const [stats, setStats] = useState({ total: 0, accurate: 0, misinfo: 0 });
   const [refreshing, setRefreshing] = useState(false);
@@ -49,7 +60,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
     setStats(s);
     const r = await RiskService.analyzeCommunityRisk();
     setRisks(r);
-    
+
     // Sync broadcasts (Mock sync)
     await BroadcastService.syncAlerts();
     const b = await BroadcastService.fetchOfflineBroadcasts();
@@ -100,15 +111,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
       >
         {/* ── EMERGENCY BROADCAST BANNER ── */}
         {broadcasts.filter(b => b.severity === 'URGENT' && !b.isRead).map(alert => (
-          <AnimatedCard 
-            key={alert.id} 
-            delay={0} 
+          <AnimatedCard
+            key={alert.id}
+            delay={0}
             style={[styles.urgentBanner]}
           >
-            <LinearGradient 
-              colors={gradients.danger} 
-              start={{ x: 0, y: 0 }} 
-              end={{ x: 1, y: 1 }} 
+            <LinearGradient
+              colors={gradients.danger}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
               style={styles.bannerGradient}
             >
               <View style={styles.bannerIcon}>
@@ -120,8 +131,17 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
                   {i18n.language === 'lg' ? alert.message_lg || alert.message : alert.message}
                 </Text>
               </View>
-              <TouchableOpacity style={styles.bannerAction}>
-                <Text style={styles.bannerActionText}>{t('home.view_btn')}</Text>
+              <TouchableOpacity
+                style={styles.bannerAction}
+                onPress={() => {
+                  Alert.alert(
+                    i18n.language === 'lg' ? alert.title_lg || alert.title : alert.title,
+                    i18n.language === 'lg' ? alert.message_lg || alert.message : alert.message,
+                    [{ text: t('common.ok') || 'OK', style: 'cancel' }]
+                  );
+                }}
+              >
+                <Text style={styles.bannerActionText}>{t('home.view_btn') || 'VIEW'}</Text>
                 <Icon source="chevron-right" size={16} color="#FFF" />
               </TouchableOpacity>
             </LinearGradient>
@@ -130,29 +150,43 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
 
         <View style={isDesktop ? styles.desktopMain : null}>
           <View style={styles.welcomeSection}>
-            <Text style={[styles.dashboardLabel, { color: colors.neutral[400] }]}>{t('home.dashboard_overview')}</Text>
-            <Text style={[styles.welcomeText, { color: colors.neutral[900] }]}>{t('home.welcome')}</Text>
-            <Text style={[styles.locationText, { color: colors.neutral[500] }]}>{t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
+            <Text style={[styles.dashboardLabel, { color: colors.neutral[400] }]}>{isCommunity ? 'HEALTHGUARD UGANDA' : t('home.dashboard_overview')}</Text>
+            <Text style={[styles.welcomeText, { color: colors.neutral[900] }]}>{isCommunity ? 'Welcome to HealthGuard' : t('home.welcome')}</Text>
+            <Text style={[styles.locationText, { color: colors.neutral[500] }]}>{isCommunity ? 'Protecting Your Community' : t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
           </View>
 
           <View style={isDesktop ? styles.desktopLayout : null}>
             <View style={isDesktop ? styles.leftSide : null}>
               {/* ── UNIFIED STATS CARD ── */}
-              <AnimatedCard delay={100} style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }]}>
-                <View style={styles.statItem}>
-                  <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.stats_total')}</Text>
-                  <Text style={[styles.statValue, { color: colors.primary[900] }]}>{stats.total.toLocaleString()}</Text>
-                </View>
-                <View style={[styles.statDivider, { backgroundColor: colors.neutral[100] }]} />
-                <View style={styles.statItem}>
-                  <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.stats_myths')}</Text>
-                  <Text style={[styles.statValue, { color: colors.primary[600] }]}>{stats.misinfo}</Text>
-                </View>
-                <View style={styles.avatars}>
-                  <Avatar.Text size={24} label="JD" style={[styles.avatar, { backgroundColor: colors.primary[100], borderColor: colors.surface }]} labelStyle={{ color: colors.primary[900] }} />
-                  <Avatar.Text size={24} label="SM" style={[styles.avatar, { marginLeft: -8, backgroundColor: colors.primary[100], borderColor: colors.surface }]} labelStyle={{ color: colors.primary[900] }} />
-                </View>
-              </AnimatedCard>
+              {isCommunity ? (
+                <AnimatedCard delay={100} style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }]}>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>Rumors Checked</Text>
+                    <Text style={[styles.statValue, { color: colors.primary[900] }]}>{stats.total.toLocaleString()}</Text>
+                  </View>
+                  <View style={[styles.statDivider, { backgroundColor: colors.neutral[100] }]} />
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>Verified Facts</Text>
+                    <Text style={[styles.statValue, { color: colors.primary[600] }]}>{stats.accurate}</Text>
+                  </View>
+                </AnimatedCard>
+              ) : (
+                <AnimatedCard delay={100} style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }]}>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.stats_total')}</Text>
+                    <Text style={[styles.statValue, { color: colors.primary[900] }]}>{stats.total.toLocaleString()}</Text>
+                  </View>
+                  <View style={[styles.statDivider, { backgroundColor: colors.neutral[100] }]} />
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.stats_myths')}</Text>
+                    <Text style={[styles.statValue, { color: colors.primary[600] }]}>{stats.misinfo}</Text>
+                  </View>
+                  <View style={styles.avatars}>
+                    <Avatar.Text size={24} label="JD" style={[styles.avatar, { backgroundColor: colors.primary[100], borderColor: colors.surface }]} labelStyle={{ color: colors.primary[900] }} />
+                    <Avatar.Text size={24} label="SM" style={[styles.avatar, { marginLeft: -8, backgroundColor: colors.primary[100], borderColor: colors.surface }]} labelStyle={{ color: colors.primary[900] }} />
+                  </View>
+                </AnimatedCard>
+              )}
 
               {/* ── HERO IMAGE CARD ── */}
               <AnimatedCard delay={200} style={styles.heroCard}>
@@ -162,78 +196,135 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
                   imageStyle={{ borderRadius: radii.lg }}
                 >
                   <View style={styles.heroOverlay}>
-                    <Text style={styles.heroText}>{t('home.hero_text')}</Text>
+                    <Text style={styles.heroText}>{isCommunity ? 'Got a health question? We are here to help.' : t('home.hero_text')}</Text>
                   </View>
                 </ImageBackground>
               </AnimatedCard>
 
-              {/* ── COMMUNITY RISK MONITOR (HIGH VALUE) ── */}
-              <View style={[styles.riskSection, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }]}>
-                <View style={styles.activityHeader}>
-                  <Text style={[styles.sectionTitle, { color: colors.neutral[900] }]}>{t('home.risk_monitor')}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: colors.danger[50] }]}>
-                    <Text style={[styles.statusText, { color: colors.danger[900] }]}>{t('home.ai_active')}</Text>
-                  </View>
-                </View>
-                <Text style={[styles.sectionSub, { color: colors.neutral[500] }]}>{t('home.risk_sub')}</Text>
+              {isCommunity ? (
+                <>
+                  {/* ── SEASONAL ALERT WIDGET ── */}
+                  <AnimatedCard delay={150} style={[styles.seasonalCard, { backgroundColor: mode === 'light' ? '#F0F4F8' : colors.neutral[100] }]}>
+                    <View style={styles.seasonalHeader}>
+                      <Icon source="weather-pouring" size={24} color="#3182CE" />
+                      <Text style={[styles.seasonalTitle, { color: '#2B6CB0' }]}>
+                        {i18n.language === 'lg' ? 'Ekiseera ky\'Enkuba — Yewale Malaria' : 'Rainy Season — Prevent Malaria'}
+                      </Text>
+                    </View>
+                    <Text style={[styles.seasonalText, { color: colors.neutral[700] }]}>
+                      {i18n.language === 'lg'
+                        ? 'Enkuba etonnya buli wamu. Fuba okulaba nti buli omu mu nju yo asula mu katimba k\'ensiri akaliko eddagala buli kiro.'
+                        : 'Increased rainfall means more breeding sites for mosquitoes. Ensure your family sleeps under insecticide-treated nets and clear stagnant water around your home.'}
+                    </Text>
+                  </AnimatedCard>
 
-                <View style={styles.riskList}>
-                  {risks.map((risk) => (
-                    <TouchableOpacity 
-                      key={risk.id} 
-                      style={[styles.riskCard, { borderLeftColor: risk.severity === 'HIGH' ? colors.danger[900] : risk.severity === 'MEDIUM' ? colors.warning[900] : colors.primary[900] }]}
+                  {/* ── DAILY HEALTH TIP ── */}
+                  <DailyHealthTips />
+
+                  {/* ── MATERNAL & IMMUNIZATION QUICK PORTALS ── */}
+                  <View style={styles.quickPortalsRow}>
+                    <TouchableOpacity
+                      style={[styles.portalPromoCard, { backgroundColor: '#FFF5F5', borderColor: '#FED7D7' }]}
+                      onPress={() => navigateToTab('more')}
                     >
-                      <View style={styles.riskCardMain}>
-                        <View style={styles.riskHeader}>
-                          <Text style={[styles.riskTopic, { color: colors.neutral[900] }]}>{risk.topic}</Text>
-                          <View style={[styles.growthBadge, { backgroundColor: risk.severity === 'HIGH' ? colors.danger[50] : colors.primary[50] }]}>
-                            <Icon source="trending-up" size={14} color={risk.severity === 'HIGH' ? colors.danger[900] : colors.primary[900]} />
-                            <Text style={[styles.growthText, { color: risk.severity === 'HIGH' ? colors.danger[900] : colors.primary[900] }]}>+{risk.growthRate}%</Text>
-                          </View>
-                        </View>
-                        <Text style={[styles.riskRegion, { color: colors.neutral[500] }]}>{risk.region} {t('common.district') || 'District'}</Text>
-                        <Text style={[styles.riskMessage, { color: colors.neutral[700] }]}>{risk.message}</Text>
+                      <View style={styles.promoHeader}>
+                        <Icon source="baby-carriage" size={24} color="#E53E3E" />
+                        <Text style={[styles.portalPromoTitle, { color: '#9B2C2C' }]}>Maternal Tracker</Text>
                       </View>
-                      <Icon source="chevron-right" size={24} color={colors.neutral[300]} />
+                      <Text style={styles.portalPromoSub}>Track pregnancy & ANC visits</Text>
                     </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
 
-              {/* ── RECENT ACTIVITY FEED ── */}
-              <View style={[styles.activitySection, { backgroundColor: colors.surface, borderColor: colors.neutral[100], marginTop: spacing.lg }]}>
-                 <View style={styles.activityHeader}>
-                   <Text style={[styles.sectionTitle, { color: colors.neutral[900] }]}>{t('home.recent_activity')}</Text>
-                   <TouchableOpacity>
-                     <Text style={[styles.viewAllText, { color: colors.primary[900] }]}>{t('home.view_all')}</Text>
-                   </TouchableOpacity>
-                 </View>
-                 
-                 <View style={styles.activityList}>
-                   {RECENT_ALERTS.map((alert, idx) => (
-                     <View key={alert.id} style={styles.activityItem}>
-                        <View style={[styles.activityIconBox, { backgroundColor: alert.type === 'alert' ? (mode === 'light' ? '#FDECEA' : colors.danger[900] + '40') : (mode === 'light' ? '#E2F0D9' : colors.primary[900] + '40') }]}>
-                           <Icon source={alert.icon} size={20} color={alert.type === 'alert' ? colors.danger[900] : colors.primary[900]} />
-                        </View>
-                        <View style={styles.activityTextWrap}>
-                           <Text style={[styles.activityTitle, { color: colors.neutral[800] }]}>
+                    <TouchableOpacity
+                      style={[styles.portalPromoCard, { backgroundColor: '#EBF8FF', borderColor: '#BEE3F8' }]}
+                      onPress={() => navigateToTab('more')}
+                    >
+                      <View style={styles.promoHeader}>
+                        <Icon source="needle" size={24} color="#3182CE" />
+                        <Text style={[styles.portalPromoTitle, { color: '#2B6CB0' }]}>Immunization</Text>
+                      </View>
+                      <Text style={styles.portalPromoSub}>UNEPI child vaccine schedule</Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* ── VILLAGE RUMOR CHECKER ── */}
+                  <RumorChecker />
+
+                  <MythBusterFeed />
+                  <AilmentGuides />
+                  <FacilityLocator />
+                  <HealthQuiz />
+                </>
+              ) : (
+                <>
+                  {/* ── COMMUNITY RISK MONITOR (HIGH VALUE) ── */}
+                  <View style={[styles.riskSection, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
+                    <View style={styles.activityHeader}>
+                      <Text style={[styles.sectionTitle, { color: colors.neutral[900] }]}>{t('home.risk_monitor')}</Text>
+                      <View style={[styles.statusBadge, { backgroundColor: colors.danger[50] }]}>
+                        <Text style={[styles.statusText, { color: colors.danger[900] }]}>{t('home.ai_active')}</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.sectionSub, { color: colors.neutral[500] }]}>{t('home.risk_sub')}</Text>
+
+                    <View style={styles.riskList}>
+                      {risks.map((risk) => (
+                        <TouchableOpacity
+                          key={risk.id}
+                          style={[styles.riskCard, { backgroundColor: colors.neutral[50], borderLeftColor: risk.severity === 'HIGH' ? colors.danger[900] : risk.severity === 'MEDIUM' ? colors.warning[900] : colors.primary[900] }]}
+                        >
+                          <View style={styles.riskCardMain}>
+                            <View style={styles.riskHeader}>
+                              <Text style={[styles.riskTopic, { color: colors.neutral[900] }]}>{risk.topic}</Text>
+                              <View style={[styles.growthBadge, { backgroundColor: risk.severity === 'HIGH' ? colors.danger[50] : colors.primary[50] }]}>
+                                <Icon source="trending-up" size={14} color={risk.severity === 'HIGH' ? colors.danger[900] : colors.primary[900]} />
+                                <Text style={[styles.growthText, { color: risk.severity === 'HIGH' ? colors.danger[900] : colors.primary[900] }]}>+{risk.growthRate}%</Text>
+                              </View>
+                            </View>
+                            <Text style={[styles.riskRegion, { color: colors.neutral[500] }]}>{risk.region} {t('common.district') || 'District'}</Text>
+                            <Text style={[styles.riskMessage, { color: colors.neutral[700] }]}>{risk.message}</Text>
+                          </View>
+                          <Icon source="chevron-right" size={24} color={colors.neutral[300]} />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+
+                  {/* ── RECENT ACTIVITY FEED ── */}
+                  <View style={[styles.activitySection, { backgroundColor: colors.surface, borderColor: colors.neutral[200], marginTop: spacing.lg }]}>
+                    <View style={styles.activityHeader}>
+                      <Text style={[styles.sectionTitle, { color: colors.neutral[900] }]}>{t('home.recent_activity')}</Text>
+                      <TouchableOpacity>
+                        <Text style={[styles.viewAllText, { color: colors.primary[900] }]}>{t('home.view_all')}</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.activityList}>
+                      {RECENT_ALERTS.map((alert, idx) => (
+                        <View key={alert.id} style={styles.activityItem}>
+                          <View style={[styles.activityIconBox, { backgroundColor: alert.type === 'alert' ? (mode === 'light' ? '#FDECEA' : colors.danger[900] + '40') : (mode === 'light' ? '#E2F0D9' : colors.primary[900] + '40') }]}>
+                            <Icon source={alert.icon} size={20} color={alert.type === 'alert' ? colors.danger[900] : colors.primary[900]} />
+                          </View>
+                          <View style={styles.activityTextWrap}>
+                            <Text style={[styles.activityTitle, { color: colors.neutral[800] }]}>
                               {i18n.language === 'lg' ? alert.title_lg || alert.title : alert.title}
-                           </Text>
-                           <Text style={[styles.activitySub, { color: colors.neutral[500] }]}>
+                            </Text>
+                            <Text style={[styles.activitySub, { color: colors.neutral[500] }]}>
                               {i18n.language === 'lg' ? alert.location_lg || alert.location : alert.location} • {alert.time}
-                           </Text>
+                            </Text>
+                          </View>
+                          <Icon source="chevron-right" size={20} color={colors.neutral[300]} />
                         </View>
-                        <Icon source="chevron-right" size={20} color={colors.neutral[300]} />
-                     </View>
-                   ))}
-                 </View>
-              </View>
+                      ))}
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
 
             <View style={isDesktop ? styles.rightSide : null}>
               {/* ── PRIMARY ACTION CARD ── */}
-              <TouchableOpacity 
-                activeOpacity={0.92} 
+              <TouchableOpacity
+                activeOpacity={0.92}
                 onPress={() => navigateToTab('analyze')}
                 style={styles.actionCard}
               >
@@ -244,11 +335,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
                   style={styles.actionGradient}
                 >
                   <View style={styles.actionIconCircle}>
-                    <Icon source="magnify" size={28} color="#FFF" />
+                    <Icon source={isCommunity ? "help-circle-outline" : "magnify"} size={28} color="#FFF" />
                   </View>
                   <View style={styles.actionTextContent}>
-                     <Text style={styles.actionTitle}>{t('home.analyze_card_title')}</Text>
-                     <Text style={styles.actionSub}>{t('home.analyze_card_sub')}</Text>
+                    <Text style={styles.actionTitle}>{isCommunity ? 'Ask a Health Question' : t('home.analyze_card_title')}</Text>
+                    <Text style={styles.actionSub}>{isCommunity ? 'Check if a rumor is true' : t('home.analyze_card_sub')}</Text>
                   </View>
                   <Icon source="arrow-right" size={28} color="#FFF" />
                 </LinearGradient>
@@ -256,8 +347,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
 
               {/* ── SECONDARY ACTIONS ── */}
               <View style={isDesktop ? styles.secondaryCol : styles.secondaryRow}>
-                <TouchableOpacity 
-                  style={[styles.secondaryCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]} 
+                <TouchableOpacity
+                  style={[styles.secondaryCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
                   onPress={() => navigateToTab('knowledge')}
                 >
                   <Icon source="book-open-outline" size={24} color={colors.primary[900]} />
@@ -267,41 +358,43 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab }) => {
                   </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={[styles.secondaryCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]} 
-                  onPress={() => navigateToTab('reports')}
-                >
-                  <Icon source="chart-box-outline" size={24} color={colors.primary[900]} />
-                  <View>
-                    <Text style={[styles.secondaryTitle, { color: colors.neutral[900] }]}>{t('home.reports_card_title')}</Text>
-                    <Text style={[styles.secondarySub, { color: colors.neutral[500] }]}>{t('home.reports_card_sub')}</Text>
-                  </View>
-                </TouchableOpacity>
+                {!isCommunity && (
+                  <TouchableOpacity
+                    style={[styles.secondaryCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
+                    onPress={() => navigateToTab('reports')}
+                  >
+                    <Icon source="chart-box-outline" size={24} color={colors.primary[900]} />
+                    <View>
+                      <Text style={[styles.secondaryTitle, { color: colors.neutral[900] }]}>{t('home.reports_card_title')}</Text>
+                      <Text style={[styles.secondarySub, { color: colors.neutral[500] }]}>{t('home.reports_card_sub')}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {/* ── QUICK TIPS ── */}
               <View style={[styles.tipsSection, { backgroundColor: mode === 'light' ? '#FFF9E6' : colors.neutral[100], borderColor: colors.warning[500] + '40' }]}>
-                 <Text style={[styles.tipsHeaderTitle, { color: colors.warning[500] }]}>{t('home.tips_title')}</Text>
-                 <View style={styles.tipItem}>
-                    <Icon source="lightbulb-on-outline" size={18} color={colors.warning[500]} />
-                    <Text style={[styles.tipText, { color: colors.neutral[700] }]}>{t('home.tip_1')}</Text>
-                 </View>
-                 <View style={styles.tipItem}>
-                    <Icon source="lightbulb-on-outline" size={18} color={colors.warning[500]} />
-                    <Text style={[styles.tipText, { color: colors.neutral[700] }]}>{t('home.tip_2')}</Text>
-                 </View>
+                <Text style={[styles.tipsHeaderTitle, { color: colors.warning[500] }]}>{t('home.tips_title')}</Text>
+                <View style={styles.tipItem}>
+                  <Icon source="lightbulb-on-outline" size={18} color={colors.warning[500]} />
+                  <Text style={[styles.tipText, { color: colors.neutral[700] }]}>{t('home.tip_1')}</Text>
+                </View>
+                <View style={styles.tipItem}>
+                  <Icon source="lightbulb-on-outline" size={18} color={colors.warning[500]} />
+                  <Text style={[styles.tipText, { color: colors.neutral[700] }]}>{t('home.tip_2')}</Text>
+                </View>
               </View>
 
               {/* ── LANGUAGE SWITCHER ── */}
               <View style={styles.langToggleContainer}>
                 <View style={[styles.langToggle, { backgroundColor: colors.neutral[200] }]}>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[styles.langBtn, i18n.language === 'en' && [styles.langBtnActive, { backgroundColor: colors.surface }]]}
                     onPress={() => changeLanguage('en')}
                   >
                     <Text style={[styles.langBtnText, { color: colors.neutral[500] }, i18n.language === 'en' && { color: colors.primary[900] }]}>English</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[styles.langBtn, i18n.language === 'lg' && [styles.langBtnActive, { backgroundColor: colors.surface }]]}
                     onPress={() => changeLanguage('lg')}
                   >
@@ -331,7 +424,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl,
     paddingBottom: spacing.md,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.neutral[100],
   },
@@ -364,7 +457,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#E2F0D9',
+    backgroundColor: colors.primary[50],
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: radii.full,
@@ -403,7 +496,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   welcomeText: {
-    fontSize: 36,
+    fontSize: 30,
     fontWeight: '900',
     color: colors.neutral[900],
     marginBottom: 4,
@@ -417,7 +510,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.xl,
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     marginBottom: spacing.lg,
     ...shadows.md,
@@ -448,7 +541,7 @@ const styles = StyleSheet.create({
   avatar: {
     backgroundColor: colors.primary[100],
     borderWidth: 2,
-    borderColor: '#FFF',
+    borderColor: colors.surface,
   },
   avatarText: {
     fontSize: 10,
@@ -478,16 +571,15 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     lineHeight: 38,
     maxWidth: '70%',
-    borderWidth: 1,
+    // border removed for premium look
     borderColor: colors.neutral[100],
   },
   riskSection: {
-    backgroundColor: '#FFF',
-    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
     padding: spacing.xl,
-    ...shadows.md,
-    borderWidth: 1,
-    borderColor: colors.neutral[100],
+    ...shadows.sm,
+    borderWidth: 0,
   },
   sectionSub: {
     fontSize: 14,
@@ -516,7 +608,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.lg,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.neutral[50],
     borderRadius: radii.md,
     borderLeftWidth: 4,
   },
@@ -555,48 +647,50 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   activitySection: {
-     flexDirection: 'row',
-     justifyContent: 'space-between',
-     alignItems: 'center',
-     marginBottom: spacing.lg,
+    flexDirection: 'column',
+    backgroundColor: colors.surface,
+    borderRadius: radii.xl,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
+    ...shadows.sm,
   },
   sectionTitle: {
-     fontSize: 20,
-     fontWeight: '800',
-     color: colors.neutral[900],
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.neutral[900],
   },
   viewAllText: {
-     color: colors.primary[900],
-     fontWeight: '700',
-     fontSize: 14,
+    color: colors.primary[900],
+    fontWeight: '700',
+    fontSize: 14,
   },
   activityList: {
-     gap: spacing.md,
+    gap: spacing.md,
   },
   activityItem: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     gap: 15,
-     paddingVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+    paddingVertical: 10,
   },
   activityIconBox: {
-     width: 40,
-     height: 40,
-     borderRadius: radii.md,
-     alignItems: 'center',
-     justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: radii.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   activityTextWrap: {
-     flex: 1,
+    flex: 1,
   },
   activityTitle: {
-     fontSize: 15,
-     fontWeight: '700',
-     color: colors.neutral[800],
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.neutral[800],
   },
   activitySub: {
-     fontSize: 12,
-     color: colors.neutral[500],
+    fontSize: 12,
+    color: colors.neutral[500],
   },
   urgentBanner: {
     borderRadius: radii.lg,
@@ -680,6 +774,7 @@ const styles = StyleSheet.create({
   },
   secondaryRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.md,
     marginBottom: spacing.xl,
   },
@@ -690,11 +785,12 @@ const styles = StyleSheet.create({
   },
   secondaryCard: {
     flex: 1,
-    backgroundColor: '#FFF',
+    flexBasis: '45%',
+    minWidth: 140,
+    backgroundColor: colors.surface,
     padding: spacing.xl,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderRadius: radii.xl,
+    borderWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,
@@ -710,31 +806,379 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
   },
   tipsSection: {
-     backgroundColor: '#FFFBEB',
-     padding: spacing.lg,
-     borderRadius: radii.lg,
-     marginBottom: spacing.xl,
-     borderWidth: 1,
-     borderColor: '#FDE68A40',
+    backgroundColor: colors.warning[50],
+    padding: spacing.lg,
+    borderRadius: radii.xl,
+    marginBottom: spacing.xl,
+    borderWidth: 0,
+  },
+  seasonalCard: {
+    borderRadius: radii.xl,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+    ...shadows.sm,
+  },
+  seasonalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  seasonalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  seasonalText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  communityTipSection: {
+    padding: spacing.lg,
+    borderRadius: radii.xl,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    ...shadows.sm,
+  },
+  tipMainText: {
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '500',
+    marginTop: spacing.xs,
   },
   tipsHeaderTitle: {
-     fontSize: 16,
-     fontWeight: '800',
-     color: '#D97706',
-     marginBottom: spacing.md,
+    fontSize: 16,
+    fontWeight: '800',
+    color: colors.warning[900],
+    marginBottom: spacing.md,
   },
   tipItem: {
-     flexDirection: 'row',
-     gap: 10,
-     marginBottom: 10,
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
   },
   tipText: {
-     fontSize: 13,
-     color: colors.neutral[700],
-     fontWeight: '600',
-     lineHeight: 18,
-     flex: 1,
+    fontSize: 13,
+    color: colors.neutral[700],
+    fontWeight: '600',
+    lineHeight: 18,
+    flex: 1,
   },
+
+  /* ── Myth-Buster Feed ── */
+  mythSection: {
+    borderRadius: radii.xl,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    ...shadows.sm,
+  },
+  mythCard: {
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    borderLeftWidth: 4,
+  },
+  mythCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mythVerdictBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radii.full,
+  },
+  mythVerdictText: {
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1,
+  },
+  mythTime: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  mythClaim: {
+    fontSize: 15,
+    fontWeight: '700',
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+  mythFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  mythSource: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  /* ── Quick Ailment Guides ── */
+  ailmentSection: {
+    borderRadius: radii.xl,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    ...shadows.sm,
+  },
+  ailmentCard: {
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    borderLeftWidth: 4,
+  },
+  ailmentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  ailmentIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  ailmentTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    flex: 1,
+  },
+  ailmentSteps: {
+    marginTop: 14,
+    gap: 10,
+  },
+  ailmentStepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  stepNumber: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepNumberText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  stepText: {
+    fontSize: 14,
+    lineHeight: 20,
+    flex: 1,
+    fontWeight: '500',
+  },
+
+  /* ── Facility Locator & Emergency Hotlines ── */
+  facilitySection: {
+    borderRadius: radii.xl,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    ...shadows.sm,
+  },
+  facilitySubHeader: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 10,
+    letterSpacing: 0.3,
+  },
+  hotlineRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+    marginBottom: spacing.md,
+  },
+  hotlineCard: {
+    flex: 1,
+    minWidth: 90,
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    gap: 6,
+  },
+  hotlineLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  hotlineNumber: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  facilityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radii.lg,
+    marginBottom: spacing.sm,
+    gap: 12,
+  },
+  facilityIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  facilityInfo: {
+    flex: 1,
+  },
+  facilityName: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  facilityType: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  callBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  /* ── Health Quiz ── */
+  quizSection: {
+    borderRadius: radii.xl,
+    padding: spacing.xl,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+  },
+  quizProgress: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  quizCard: {
+    borderRadius: radii.lg,
+    padding: spacing.lg,
+    ...shadows.sm,
+  },
+  quizQuestion: {
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  quizButtons: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  quizBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: radii.lg,
+  },
+  quizBtnText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  quizResult: {
+    gap: 12,
+  },
+  quizResultBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: radii.lg,
+  },
+  quizResultText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  quizExplanation: {
+    fontSize: 14,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  quizNextBtn: {
+    paddingVertical: 14,
+    borderRadius: radii.lg,
+    alignItems: 'center',
+  },
+  quizNextBtnText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  quizScoreTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  quizScoreBig: {
+    fontSize: 48,
+    fontWeight: '900',
+    marginVertical: 4,
+  },
+  quizScoreMsg: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+
+  feedFilterContainer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  feedFilterBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.full,
+    backgroundColor: colors.neutral[100],
+  },
+  feedFilterBtnActive: {
+    backgroundColor: '#805AD5',
+  },
+  feedFilterText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.neutral[600],
+  },
+  feedFilterTextActive: {
+    color: '#FFF',
+  },
+  reportRumorBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.lg,
+    borderRadius: radii.xl,
+    marginBottom: spacing.lg,
+    gap: spacing.md,
+    ...shadows.md,
+  },
+  reportRumorTitle: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  reportRumorSub: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+
   langToggleContainer: {
     alignItems: 'center',
     marginTop: spacing.md,
@@ -753,7 +1197,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
   },
   langBtnActive: {
-    backgroundColor: '#FFF',
+    backgroundColor: colors.surface,
     ...shadows.sm,
   },
   langBtnText: {
@@ -766,6 +1210,37 @@ const styles = StyleSheet.create({
   },
   spacer: {
     height: spacing.xxl,
+  },
+  quickPortalsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  portalPromoCard: {
+    flex: 1,
+    padding: spacing.md,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 1,
+  },
+  promoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  portalPromoTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  portalPromoSub: {
+    fontSize: 11,
+    color: '#4A5568',
+    lineHeight: 15,
   },
 });
 

@@ -1,0 +1,8 @@
+[
+  { "id": 1, "name": "Mulago National Referral Hospital", "type": "National Hospital", "latitude": 0.3385, "longitude": 32.5761, "contact": "+256 414 554001" },
+  { "id": 2, "name": "Nsambya Hospital", "type": "Private Hospital", "latitude": 0.3082, "longitude": 32.5856, "contact": "+256 414 267611" },
+  { "id": 3, "name": "Entebbe Regional Referral Hospital", "type": "Regional Hospital", "latitude": 0.0577, "longitude": 32.4646, "contact": "+256 414 320141" },
+  { "id": 4, "name": "Kawempe National Referral Hospital", "type": "National Hospital", "latitude": 0.3521, "longitude": 32.5654, "contact": "+256 414 554002" },
+  { "id": 5, "name": "Mbarara Regional Referral Hospital", "type": "Regional Hospital", "latitude": -0.6072, "longitude": 30.6545, "contact": "+256 485 421234" },
+  { "id": 6, "name": "Gulu Regional Referral Hospital", "type": "Regional Hospital", "latitude": 2.7747, "longitude": 32.2988, "contact": "+256 471 432100" }
+]

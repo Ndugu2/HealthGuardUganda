@@ -10,12 +10,13 @@ import {
   Dimensions,
   useWindowDimensions,
   Alert,
+  Platform,
 } from 'react-native';
 import { Text, Icon, Modal, Portal, Divider, ProgressBar, ActivityIndicator } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 import { HybridClassifier } from '../ai/HybridClassifier';
-import { getResponseForKeyword, saveEncounter, updateEncounterFeedback, getSetting } from '../db/Database';
+import { getResponseForKeyword, saveEncounter, updateEncounterFeedback, getSetting, saveSetting, getAllClaims, ClaimRecord, addPatient } from '../db/Database';
 import { ClassificationResult } from '../ai/RuleEngine';
 import AnimatedCard from '../components/AnimatedCard';
 import { colors, spacing, radii, shadows } from '../theme';
@@ -27,11 +28,18 @@ import { Easing } from 'react-native';
 
 const classifier = new HybridClassifier();
 
-const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => void }) => {
+interface AnalyzeScreenProps {
+  navigateToTab?: (key: string) => void;
+  userRole?: string;
+  onLogout?: () => void;
+}
+
+const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, onLogout }) => {
   const { t, i18n } = useTranslation();
   const { colors, mode, topicColors } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;
+  const isCommunity = userRole === 'COMMUNITY';
 
   const [claim, setClaim] = useState('');
   const [loading, setLoading] = useState(false);
@@ -51,7 +59,63 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
   const [expertLoading, setExpertLoading] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [recentQuestions, setRecentQuestions] = useState<ClaimRecord[]>([]);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [clinicalFlags, setClinicalFlags] = useState<string[]>([]);
+  const [addedToQueue, setAddedToQueue] = useState(false);
+  const [claimsHistory, setClaimsHistory] = useState<ClaimRecord[]>([]);
+  const [historyFilter, setHistoryFilter] = useState<'all' | 'accurate' | 'inaccurate'>('all');
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const initFeatures = async () => {
+      if (isCommunity) {
+        const hasSeenOnboarding = await getSetting('has_seen_onboarding');
+        if (!hasSeenOnboarding) {
+          setShowWelcomeModal(true);
+          await saveSetting('has_seen_onboarding', 'true');
+        }
+        const claims = await getAllClaims();
+        setRecentQuestions(claims.slice(0, 3));
+      } else {
+        // Health Worker: load claims history for side panel
+        const claims = await getAllClaims();
+        setClaimsHistory(claims);
+      }
+    };
+    initFeatures();
+  }, [isCommunity]);
+
+  const toggleClinicalFlag = (flag: string) => {
+    setClinicalFlags(prev => 
+      prev.includes(flag) ? prev.filter(f => f !== flag) : [...prev, flag]
+    );
+  };
+
+  const handleAddToQueue = async () => {
+    if (!claim || !result) return;
+    try {
+      await addPatient({
+        name: 'Walk-in Patient',
+        age: 0,
+        gender: 'U',
+        village: 'Screening',
+        symptoms: claim,
+        status: result.label === 'INACCURATE' && result.riskLevel === 'HIGH' ? 'referred' : 'waiting',
+        priority: result.riskLevel === 'HIGH' ? 'high' : result.riskLevel === 'MEDIUM' ? 'medium' : 'low',
+        referredTo: result.escalationRequired ? 'Mulago National Referral Hospital' : undefined,
+      });
+      setAddedToQueue(true);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert(
+        'Added to Queue',
+        'This case has been added to the Patient Queue for triage and follow-up.',
+        [{ text: 'View Queue', onPress: () => { setShowModal(false); navigateToTab?.('queue'); } }, { text: 'OK' }]
+      );
+    } catch (e) {
+      Alert.alert('Error', 'Could not add patient to queue.');
+    }
+  };
 
   const STAGES = [
     { label: t('analyze.stage_1'), icon: 'text-search' },
@@ -275,10 +339,18 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
     if (!result) return { color: colors.primary[900], bg: colors.surface };
     const labelKey = result.label === 'ACCURATE' ? 'accurate' : result.label === 'INACCURATE' ? 'misleading' : 'uncertain';
     const baseColor = result.label === 'ACCURATE' ? colors.primary[900] : result.label === 'INACCURATE' ? colors.danger[900] : colors.warning[900];
+    
+    let displayLabel = t(`analyze.results.${labelKey}_label`);
+    if (isCommunity) {
+      if (result.label === 'ACCURATE') displayLabel = 'This is Correct';
+      else if (result.label === 'INACCURATE') displayLabel = 'This is Not True';
+      else displayLabel = 'Unverified Information';
+    }
+
     return { 
       color: baseColor, 
       bg: colors.surface, 
-      label: t(`analyze.results.${labelKey}_label`),
+      label: displayLabel,
       badgeBg: baseColor + '15'
     };
   };
@@ -354,26 +426,26 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
 
   const renderForm = () => (
     <View style={isDesktop ? styles.leftColumn : undefined}>
-       <View style={[styles.inputArea, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
+      <View style={[styles.inputArea, { backgroundColor: colors.surface }]}>
         <View style={styles.inputLabelRow}>
-          <Text style={[styles.inputLabel, { color: colors.neutral[800] }]}>{t('analyze.input_label')}</Text>
+          <Text style={[styles.inputLabel, { color: colors.neutral[800], fontSize: 13, fontWeight: '700' }]}>{t('analyze.input_label')}</Text>
           <View style={styles.inputMethods}>
-             <TouchableOpacity onPress={() => handleMultimediaPress('voice')} style={styles.miniMethodBtn}>
+             <TouchableOpacity onPress={() => handleMultimediaPress('voice')} style={[styles.miniMethodBtn, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[900] }]}>
                 <Icon source="microphone" size={16} color={colors.primary[900]} />
              </TouchableOpacity>
-             <TouchableOpacity onPress={() => handleMultimediaPress('image')} style={styles.miniMethodBtn}>
+             <TouchableOpacity onPress={() => handleMultimediaPress('image')} style={[styles.miniMethodBtn, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[900] }]}>
                 <Icon source="image" size={16} color={colors.primary[900]} />
              </TouchableOpacity>
           </View>
         </View>
-        <View style={[styles.inputBox, { backgroundColor: colors.surface, borderColor: colors.neutral[300] }]}>
+        <View style={[styles.inputBox, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}>
           <TextInput
             placeholder={t('analyze.input_placeholder')}
             placeholderTextColor={colors.neutral[400]}
             multiline
             value={claim}
             onChangeText={setClaim}
-            style={[styles.textInput, { color: colors.neutral[900] }]}
+            style={[styles.textInput, { color: colors.neutral[900], ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}) }]}
           />
         </View>
          <View style={styles.inputFooter}>
@@ -385,13 +457,30 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
          </View>
       </View>
 
+      {isCommunity && (
+        <View style={styles.quickQuestionsContainer}>
+          <Text style={[styles.quickQuestionsTitle, { color: colors.neutral[800] }]}>Or tap a common question:</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickQuestionsScroll}>
+            {[
+              "Does drinking hot water cure COVID?",
+              "Can herbal tea cure malaria?",
+              "Do vaccines cause infertility?"
+            ].map((q, idx) => (
+              <TouchableOpacity key={idx} style={[styles.quickQuestionBtn, { backgroundColor: colors.neutral[100] }]} onPress={() => setClaim(q)}>
+                <Text style={[styles.quickQuestionText, { color: colors.primary[900] }]}>{q}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
        <TouchableOpacity 
-        style={[styles.analyzeBtn, { backgroundColor: colors.primary[900] }, (!claim || loading) ? [styles.analyzeBtnDisabled, { backgroundColor: colors.neutral[400] }] : undefined]} 
+        style={[styles.analyzeBtn, { backgroundColor: '#2C5E3E' }, (!claim || loading) ? [styles.analyzeBtnDisabled, { backgroundColor: colors.neutral[400] }] : undefined]} 
         onPress={handleVerify}
         disabled={!claim || loading}
       >
         <Icon source="text-box-search-outline" size={24} color="#FFF" />
-        <Text style={styles.analyzeBtnText}>{loading ? t('analyze.analyzing_btn') : t('analyze.analyze_btn')}</Text>
+        <Text style={[styles.analyzeBtnText, { fontSize: 16, fontWeight: '700' }]}>{loading ? t('analyze.analyzing_btn') : t('analyze.analyze_btn')}</Text>
       </TouchableOpacity>
 
       <View style={styles.graphicCard}>
@@ -412,8 +501,26 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
 
   const renderSidePanel = () => (
     <View style={styles.rightColumn}>
+      {isCommunity ? (
+        <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
+          <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 12 }]}>Your Recent Questions</Text>
+          {recentQuestions.length > 0 ? (
+            recentQuestions.map((q, i) => (
+              <View key={i} style={{ paddingVertical: 10, borderBottomWidth: i < recentQuestions.length - 1 ? 1 : 0, borderBottomColor: colors.neutral[100] }}>
+                <Text style={{ color: colors.neutral[800], fontSize: 14, fontWeight: '500' }}>"{q.claim_text}"</Text>
+                <Text style={{ color: q.label === 'ACCURATE' ? colors.primary[700] : colors.danger[600], fontSize: 12, marginTop: 4 }}>
+                  {q.label === 'ACCURATE' ? '✅ Correct' : '❌ Not True'}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={{ color: colors.neutral[500], fontSize: 14 }}>No recent questions. Try asking one!</Text>
+          )}
+        </View>
+      ) : (
+        <>
        {/* Status */}
-       <View style={[styles.panelCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
+       <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
           <View style={styles.panelHeaderRow}>
             <Text style={[styles.panelLabel, { color: colors.neutral[600] }]}>CURRENT STATUS</Text>
             <View style={styles.statusDotRow}>
@@ -421,20 +528,20 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                <Text style={[styles.statusDotText, { color: colors.primary[700] }]}>System Ready</Text>
             </View>
           </View>
-          <View style={[styles.syncBox, { backgroundColor: colors.neutral[50], borderColor: colors.neutral[200] }]}>
+          <View style={[styles.syncBox, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}>
              <Icon source="database-sync-outline" size={20} color={colors.primary[900]} />
              <Text style={[styles.syncText, { color: colors.neutral[800] }]}>Last Database Sync: 12m ago</Text>
           </View>
        </View>
 
        {/* Other inputs */}
-       <View style={[styles.panelCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
-          <Text style={[styles.panelTitle, { color: colors.neutral[900] }]}>Other Input Methods</Text>
+       <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
+          <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 16 }]}>Other Input Methods</Text>
           <TouchableOpacity 
             onPress={() => handleMultimediaPress('voice')}
-            style={[styles.methodItem, { backgroundColor: colors.neutral[50], borderColor: colors.neutral[100] }]}
+            style={[styles.methodItem, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}
           >
-             <View style={[styles.methodIconCircle, { backgroundColor: colors.primary[900] }]}>
+             <View style={[styles.methodIconCircle, { backgroundColor: '#2C5E3E' }]}>
                <Icon source="microphone" size={20} color="#FFF" />
              </View>
              <View style={styles.methodTextWrap}>
@@ -445,7 +552,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
           </TouchableOpacity>
           <TouchableOpacity 
             onPress={() => handleMultimediaPress('image')}
-            style={[styles.methodItem, { backgroundColor: colors.neutral[50], borderColor: colors.neutral[100] }]}
+            style={[styles.methodItem, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}
           >
              <View style={[styles.methodIconCircle, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[900] }]}>
                <Icon source="image-outline" size={20} color={colors.primary[900]} />
@@ -464,14 +571,74 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
              <Icon source="lightbulb-outline" size={18} color={colors.primary[900]} />
              <Text style={[styles.tipTitle, { color: colors.primary[900] }]}>VERIFICATION TIP</Text>
           </View>
-          <Text style={[styles.tipText, { color: colors.neutral[700] }]}>
+          <Text style={[styles.tipText, { color: colors.neutral[800] }]}>
             Claims often use "urgent" language or emotional triggers to bypass critical thinking. If a health message asks you to "Share quickly before it's deleted," it's a major red flag for misinformation.
           </Text>
-          <TouchableOpacity style={styles.learnMoreRow}>
+           <TouchableOpacity style={styles.learnMoreRow}>
              <Text style={[styles.learnMoreText, { color: colors.primary[900] }]}>Learn about Red Flags</Text>
              <Icon source="open-in-new" size={14} color={colors.primary[900]} />
           </TouchableOpacity>
        </View>
+
+       {/* Claims History — Health Worker Only */}
+       <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Icon source="history" size={18} color={colors.primary[900]} />
+              <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 0 }]}>Claims History</Text>
+            </View>
+            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.neutral[400] }}>{claimsHistory.length} total</Text>
+          </View>
+          
+          <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12 }}>
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'accurate', label: '✅ Accurate' },
+              { key: 'inaccurate', label: '❌ Inaccurate' },
+            ].map(f => (
+              <TouchableOpacity 
+                key={f.key}
+                style={{ 
+                  paddingHorizontal: 10, paddingVertical: 5, borderRadius: 14,
+                  backgroundColor: historyFilter === f.key ? '#2C5E3E' : colors.neutral[100] 
+                }}
+                onPress={() => setHistoryFilter(f.key as any)}
+              >
+                <Text style={{ fontSize: 11, fontWeight: '700', color: historyFilter === f.key ? '#FFF' : colors.neutral[600] }}>{f.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {claimsHistory
+            .filter(c => historyFilter === 'all' || c.label.toLowerCase() === historyFilter.toUpperCase() || (historyFilter === 'accurate' && c.label === 'ACCURATE') || (historyFilter === 'inaccurate' && c.label === 'INACCURATE'))
+            .slice(0, 5)
+            .map((c, i) => (
+              <TouchableOpacity 
+                key={i} 
+                style={{ paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.neutral[50] }}
+                onPress={() => setClaim(c.claim_text)}
+              >
+                <Text style={{ color: colors.neutral[800], fontSize: 13, fontWeight: '500' }} numberOfLines={2}>"{c.claim_text}"</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 }}>
+                  <View style={{ 
+                    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10,
+                    backgroundColor: c.label === 'ACCURATE' ? colors.primary[50] : colors.danger[50]
+                  }}>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: c.label === 'ACCURATE' ? colors.primary[900] : colors.danger[900] }}>
+                      {c.label}
+                    </Text>
+                  </View>
+                  <Text style={{ fontSize: 10, color: colors.neutral[400] }}>{Math.round(c.confidence_pct)}% conf</Text>
+                </View>
+              </TouchableOpacity>
+            ))
+          }
+          {claimsHistory.length === 0 && (
+            <Text style={{ color: colors.neutral[500], fontSize: 13, textAlign: 'center', paddingVertical: 16 }}>No claims analyzed yet.</Text>
+          )}
+       </View>
+       </>
+      )}
     </View>
   );
 
@@ -479,10 +646,18 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {!isDesktop && (
         <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[100] }]}>
-          <TouchableOpacity style={styles.backBtn}>
-            <Icon source="arrow-left" size={24} color={colors.primary[900]} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary[900] }]}>Analyze a Claim</Text>
+          {isCommunity && onLogout ? (
+            <TouchableOpacity onPress={onLogout} style={styles.backBtn}>
+              <Icon source="logout" size={24} color={colors.primary[900]} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.backBtn}>
+              <Icon source="arrow-left" size={24} color={colors.primary[900]} />
+            </TouchableOpacity>
+          )}
+          <Text style={[styles.headerTitle, { color: colors.primary[900] }]}>
+            {isCommunity ? 'Ask a Health Question' : 'Analyze a Claim'}
+          </Text>
           <View style={[styles.offlinePill, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.neutral[100] }]}>
             <Icon source="cloud-check-outline" size={14} color={colors.primary[800]} />
             <Text style={[styles.offlineText, { color: colors.primary[900] }]}>Offline Ready</Text>
@@ -493,14 +668,20 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={isDesktop ? styles.desktopMain : null}>
           <View style={isDesktop ? styles.desktopHeaderArea : null}>
-            <Text style={[styles.mainTitle, { color: colors.neutral[900] }]}>Analyze a Claim</Text>
-            <Text style={[styles.mainSub, { color: colors.neutral[600] }]}>Submit health-related news, social media posts, or audio clips for instant verification against official medical guidelines.</Text>
+            <Text style={[styles.mainTitle, { color: colors.neutral[900] }]}>
+              {isCommunity ? 'Ask a Health Question' : 'Analyze a Claim'}
+            </Text>
+            <Text style={[styles.mainSub, { color: colors.neutral[600] }]}>
+              {isCommunity 
+                ? 'Type any health rumor or question you\'ve heard and we\'ll verify it for you against official medical guidelines.' 
+                : 'Submit health-related news, social media posts, or audio clips for instant verification against official medical guidelines.'}
+            </Text>
             <TouchableOpacity 
-              style={[styles.voiceToggle, { backgroundColor: colors.primary[50], marginTop: 15, alignSelf: 'flex-start' }]}
+              style={[styles.voiceToggle, { backgroundColor: '#E2F0D9', marginTop: 15, alignSelf: 'flex-start', borderRadius: radii.full, paddingHorizontal: 16, paddingVertical: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }]}
               onPress={handleVoiceAssistant}
             >
-              <Icon source="microphone" size={20} color={colors.primary[900]} />
-              <Text style={[styles.voiceToggleText, { color: colors.primary[900] }]}>Open Voice Assistant</Text>
+              <Icon source="microphone" size={18} color="#2C5E3E" />
+              <Text style={[styles.voiceToggleText, { color: '#2C5E3E', fontWeight: '800', fontSize: 13, letterSpacing: 0.5 }]}>Open Voice Assistant</Text>
             </TouchableOpacity>
           </View>
 
@@ -517,31 +698,70 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                    style={[styles.mediaCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
                  >
                    <Icon source="microphone-outline" size={28} color={colors.primary[900]} />
-                   <Text style={[styles.mediaLabel, { color: colors.neutral[700] }]}>Voice Recording</Text>
+                   <Text style={[styles.mediaLabel, { color: colors.neutral[800] }]}>Voice Recording</Text>
                  </TouchableOpacity>
                  <TouchableOpacity 
                    onPress={() => handleMultimediaPress('image')}
                    style={[styles.mediaCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
                  >
                    <Icon source="camera-outline" size={28} color={colors.primary[900]} />
-                   <Text style={[styles.mediaLabel, { color: colors.neutral[700] }]}>Upload Image</Text>
+                   <Text style={[styles.mediaLabel, { color: colors.neutral[800] }]}>Upload Image</Text>
                  </TouchableOpacity>
                </View>
 
-               <View style={[styles.tipCard, { backgroundColor: mode === 'light' ? '#EEF4E8' : colors.neutral[100] }]}>
-                 <View style={styles.tipHeader}>
-                   <Icon source="lightbulb-outline" size={18} color={colors.primary[900]} />
-                   <Text style={[styles.tipTitle, { color: colors.primary[900] }]}>Verification Tip</Text>
+               {isCommunity && (
+                 <View style={[styles.panelCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200], marginHorizontal: 20, marginTop: 20 }]}>
+                    <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 12 }]}>Your Recent Questions</Text>
+                    {recentQuestions.length > 0 ? (
+                      recentQuestions.map((q, i) => (
+                        <View key={i} style={{ paddingVertical: 10, borderBottomWidth: i < recentQuestions.length - 1 ? 1 : 0, borderBottomColor: colors.neutral[100] }}>
+                          <Text style={{ color: colors.neutral[800], fontSize: 14, fontWeight: '500' }}>"{q.claim_text}"</Text>
+                          <Text style={{ color: q.label === 'ACCURATE' ? colors.primary[700] : colors.danger[600], fontSize: 12, marginTop: 4 }}>
+                            {q.label === 'ACCURATE' ? '✅ Correct' : '❌ Not True'}
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <Text style={{ color: colors.neutral[500], fontSize: 14 }}>No recent questions. Try asking one!</Text>
+                    )}
                  </View>
-                 <Text style={[styles.tipText, { color: colors.neutral[700] }]}>
-                   Include the source if possible (e.g., "heard on Radio Simba" or "seen on WhatsApp").
-                 </Text>
-               </View>
+               )}
+
+               {!isCommunity && (
+                 <View style={[styles.tipCard, { backgroundColor: mode === 'light' ? '#EEF4E8' : colors.neutral[100] }]}>
+                   <View style={styles.tipHeader}>
+                     <Icon source="lightbulb-outline" size={18} color={colors.primary[900]} />
+                     <Text style={[styles.tipTitle, { color: colors.primary[900] }]}>Verification Tip</Text>
+                   </View>
+                   <Text style={[styles.tipText, { color: colors.neutral[800] }]}>
+                     Include the source if possible (e.g., "heard on Radio Simba" or "seen on WhatsApp").
+                   </Text>
+                 </View>
+               )}
              </View>
           )}
         </View>
         <View style={styles.spacer} />
       </ScrollView>
+
+      {/* Welcome Onboarding Modal */}
+      <Portal>
+        <Modal visible={showWelcomeModal} onDismiss={() => setShowWelcomeModal(false)} contentContainerStyle={[styles.modalContainer, { backgroundColor: colors.surface, maxWidth: 400, alignSelf: 'center', padding: 24, borderRadius: 16 }]}>
+          <View style={{ alignItems: 'center', marginBottom: 20 }}>
+            <Icon source="shield-check" size={48} color={colors.primary[900]} />
+            <Text style={{ fontSize: 24, fontWeight: '700', color: colors.primary[900], marginTop: 12 }}>Welcome to HealthGuard</Text>
+          </View>
+          <Text style={{ fontSize: 16, color: colors.neutral[800], textAlign: 'center', lineHeight: 24, marginBottom: 24 }}>
+            We're here to help you verify health information. Ask us any health question or rumor, and we will check it against official Ministry of Health guidelines.
+          </Text>
+          <TouchableOpacity 
+            style={[styles.analyzeBtn, { backgroundColor: colors.primary[900] }]} 
+            onPress={() => setShowWelcomeModal(false)}
+          >
+            <Text style={styles.analyzeBtnText}>Get Started</Text>
+          </TouchableOpacity>
+        </Modal>
+      </Portal>
 
       {renderAnalysisLoader()}
 
@@ -591,12 +811,12 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                   <View style={[styles.labelBadge, { backgroundColor: getResultStyle().color + '15' }]}>
                     <Text style={[styles.labelBadgeText, { color: getResultStyle().color }]}>{getResultStyle().label}</Text>
                   </View>
-                  {result?.riskLevel && result.label === 'INACCURATE' && (
+                  {!isCommunity && result?.riskLevel && result.label === 'INACCURATE' && (
                     <View style={[styles.riskBadge, { backgroundColor: result.riskLevel === 'HIGH' ? colors.danger[900] : result.riskLevel === 'MEDIUM' ? colors.warning[900] : colors.neutral[500] }]}>
                       <Text style={styles.riskBadgeText}>{result.riskLevel} RISK</Text>
                     </View>
                   )}
-                  {result?.triggerKeyword && (
+                  {!isCommunity && result?.triggerKeyword && (
                     <View style={[
                       styles.topicBadge, 
                       { 
@@ -612,36 +832,96 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                       </Text>
                     </View>
                   )}
-                  {result?.culturalContext && (
+                  {!isCommunity && result?.culturalContext && (
                     <View style={[styles.culturalBadge, { backgroundColor: colors.primary[50], borderColor: colors.primary[200] }]}>
                        <Icon source="earth" size={12} color={colors.primary[900]} />
                        <Text style={[styles.culturalBadgeText, { color: colors.primary[900] }]}>{t('analyze.culturally_sensitive')}</Text>
                     </View>
                   )}
+                  {isCommunity ? (
+                    <View style={{ flexDirection: 'row', gap: 10, marginTop: 20, width: '100%' }}>
+                      <TouchableOpacity 
+                        style={[styles.closeBtn, { backgroundColor: '#25D366', flex: 1, marginTop: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]} 
+                        onPress={() => {
+                          const shareText = `*Health Fact Check:*\n\nQuestion: "${claim}"\n\nVerdict: ${result?.label === 'ACCURATE' ? 'This is Correct ✅' : 'This is Not True ❌'}\n\nFact: ${correctInfo}\n\nVerified by HealthGuard Uganda.`;
+                          Alert.alert("Share to WhatsApp", "Sharing this fact-check result to your contacts: \n\n" + shareText);
+                        }}
+                      >
+                        <Icon source="whatsapp" size={20} color="#FFF" />
+                        <Text style={[styles.closeBtnText, { marginLeft: 8 }]}>Share</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.closeBtn, { backgroundColor: colors.neutral[900], flex: 1, marginTop: 0, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' }]} 
+                        onPress={() => setShowModal(false)}
+                      >
+                        <Text style={styles.closeBtnText}>Close</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity 
+                      style={[styles.closeBtn, { backgroundColor: colors.neutral[900], marginTop: 20 }]} 
+                      onPress={() => setShowModal(false)}
+                    >
+                      <Text style={styles.closeBtnText}>{t('analyze.close_btn')}</Text>
+                    </TouchableOpacity>
+                  )}
+
+                {/* Feedback section - Hidden for community */}
+                {!isCommunity && !feedbackSubmitted && (
+                  <View style={[styles.feedbackSection, { backgroundColor: colors.primary[50], borderColor: colors.primary[200] }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                       <Icon source="robot-outline" size={18} color={colors.primary[900]} />
+                       <Text style={[styles.feedbackTitle, { color: colors.primary[900] }]}>{t('analyze.feedback_title')}</Text>
+                    </View>
+                    <Text style={{ fontSize: 14, marginBottom: 16, color: colors.neutral[800] }}>{t('analyze.feedback_question')}</Text>
+                    
+                    <View style={styles.feedbackButtons}>
+                      <TouchableOpacity 
+                        style={[styles.feedbackBtn, { backgroundColor: '#FFF', borderColor: colors.primary[200] }]}
+                        onPress={() => handleFeedback(true)}
+                      >
+                        <Icon source="thumb-up-outline" size={18} color={colors.primary[900]} />
+                        <Text style={[styles.feedbackBtnText, { color: colors.primary[900] }]}>{t('analyze.feedback_yes')}</Text>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity 
+                        style={[styles.feedbackBtn, { backgroundColor: '#FFF', borderColor: colors.danger[200] }]}
+                        onPress={() => handleFeedback(false, result?.label === 'ACCURATE' ? 'INACCURATE' : 'ACCURATE')}
+                      >
+                        <Icon source="thumb-down-outline" size={18} color={colors.danger[900]} />
+                        <Text style={[styles.feedbackBtnText, { color: colors.danger[900] }]}>{t('analyze.feedback_no')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
                 </View>
                 
-                <View style={styles.confidenceContainer}>
-                  <Text style={[styles.confidenceLabel, { color: colors.neutral[500] }]}>{t('analyze.confidence_level')}</Text>
-                  <View style={styles.confidenceBarBg}>
-                     <View style={[styles.confidenceBarFill, { width: `${(result?.confidence || 0) * 100}%`, backgroundColor: getResultStyle().color }]} />
-                  </View>
-                  <Text style={[styles.confidenceValue, { color: getResultStyle().color }]}>{Math.round((result?.confidence || 0) * 100)}%</Text>
-                </View>
+                {!isCommunity && (
+                  <>
+                    <View style={styles.confidenceContainer}>
+                      <Text style={[styles.confidenceLabel, { color: colors.neutral[500] }]}>{t('analyze.confidence_level')}</Text>
+                      <View style={styles.confidenceBarBg}>
+                         <View style={[styles.confidenceBarFill, { width: `${(result?.confidence || 0) * 100}%`, backgroundColor: getResultStyle().color }]} />
+                      </View>
+                      <Text style={[styles.confidenceValue, { color: getResultStyle().color }]}>{Math.round((result?.confidence || 0) * 100)}%</Text>
+                    </View>
 
-                {/* ── AI TRUST & RELIABILITY LAYER ── */}
-                <View style={[styles.trustBadge, { backgroundColor: result?.isReliable ? colors.primary[50] : colors.warning[50], borderColor: result?.isReliable ? colors.primary[200] : colors.warning[900] }]}>
-                   <Icon 
-                    source={result?.isReliable ? "shield-check-outline" : "alert-decagram-outline"} 
-                    size={18} 
-                    color={result?.isReliable ? colors.primary[900] : colors.warning[900]} 
-                   />
-                   <View style={styles.trustTextWrap}>
-                      <Text style={[styles.trustTitle, { color: result?.isReliable ? colors.primary[900] : colors.warning[900] }]}>
-                        {result?.isReliable ? t('analyze.ai_reliability_verified') : t('analyze.ai_uncertainty_detected')}
-                      </Text>
-                      <Text style={[styles.trustNote, { color: colors.neutral[600] }]}>{result?.reliabilityNote}</Text>
-                   </View>
-                </View>
+                    {/* ── AI TRUST & RELIABILITY LAYER ── */}
+                    <View style={[styles.trustBadge, { backgroundColor: result?.isReliable ? colors.primary[50] : colors.warning[50], borderColor: result?.isReliable ? colors.primary[200] : colors.warning[900] }]}>
+                       <Icon 
+                        source={result?.isReliable ? "shield-check-outline" : "alert-decagram-outline"} 
+                        size={18} 
+                        color={result?.isReliable ? colors.primary[900] : colors.warning[900]} 
+                       />
+                       <View style={styles.trustTextWrap}>
+                          <Text style={[styles.trustTitle, { color: result?.isReliable ? colors.primary[900] : colors.warning[900] }]}>
+                            {result?.isReliable ? t('analyze.ai_reliability_verified') : t('analyze.ai_uncertainty_detected')}
+                          </Text>
+                          <Text style={[styles.trustNote, { color: colors.neutral[600] }]}>{result?.reliabilityNote}</Text>
+                       </View>
+                    </View>
+                  </>
+                )}
 
                 {!result?.isReliable && (
                   <View style={[styles.uncertaintyWarning, { backgroundColor: colors.danger[50], borderColor: colors.danger[200] }]}>
@@ -666,26 +946,28 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
 
                 <Text style={[styles.resultClaimText, { color: colors.neutral[900] }]}>"{claim}"</Text>
                 
-                <View style={[styles.reasoningBox, { backgroundColor: colors.neutral[50] }]}>
-                  <View style={styles.reasoningHeader}>
-                     <Icon source="brain" size={18} color={colors.neutral[600]} />
-                     <Text style={[styles.reasoningTitle, { color: colors.neutral[700] }]}>{t('analyze.ai_reasoning')}</Text>
-                  </View>
-                  <Text style={[styles.reasoningText, { color: colors.neutral[600] }]}>{result?.reasoning}</Text>
-                  
-                  {result?.triggerPhrases && result.triggerPhrases.length > 0 && (
-                    <View style={styles.triggersList}>
-                      <Text style={[styles.triggersLabel, { color: colors.neutral[500] }]}>{t('analyze.trigger_phrases')}</Text>
-                      <View style={styles.triggerChips}>
-                        {result.triggerPhrases.map((phrase, i) => (
-                          <View key={i} style={[styles.triggerChip, { backgroundColor: getResultStyle().color + '10' }]}>
-                            <Text style={[styles.triggerChipText, { color: getResultStyle().color }]}>{phrase}</Text>
-                          </View>
-                        ))}
-                      </View>
+                {!isCommunity && (
+                  <View style={[styles.reasoningBox, { backgroundColor: colors.neutral[50] }]}>
+                    <View style={styles.reasoningHeader}>
+                       <Icon source="brain" size={18} color={colors.neutral[600]} />
+                       <Text style={[styles.reasoningTitle, { color: colors.neutral[800] }]}>{t('analyze.ai_reasoning')}</Text>
                     </View>
-                  )}
-                </View>
+                    <Text style={[styles.reasoningText, { color: colors.neutral[600] }]}>{result?.reasoning}</Text>
+                    
+                    {result?.triggerPhrases && result.triggerPhrases.length > 0 && (
+                      <View style={styles.triggersList}>
+                        <Text style={[styles.triggersLabel, { color: colors.neutral[500] }]}>{t('analyze.trigger_phrases')}</Text>
+                        <View style={styles.triggerChips}>
+                          {result.triggerPhrases.map((phrase, i) => (
+                            <View key={i} style={[styles.triggerChip, { backgroundColor: getResultStyle().color + '10' }]}>
+                              <Text style={[styles.triggerChipText, { color: getResultStyle().color }]}>{phrase}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                )}
               </View>
 
               {/* SECOND COLUMN (Desktop) */}
@@ -707,7 +989,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                       <Icon source="shield-check" size={22} color={colors.primary[600]} />
                       <Text style={[styles.factsTitle, { color: colors.neutral[900] }]}>{t('analyze.results.correct_info')}</Text>
                     </View>
-                    <Text style={[styles.factsText, { color: colors.neutral[700] }]}>{correctInfo}</Text>
+                    <Text style={[styles.factsText, { color: colors.neutral[800] }]}>{correctInfo}</Text>
                     <View style={[styles.sourceBox, { borderTopColor: colors.neutral[100] }]}>
                       <Icon source="book-open-variant" size={16} color={colors.primary[600]} />
                       <Text style={[styles.sourceText, { color: colors.primary[700] }]}>Source: {source || 'Uganda Ministry of Health'}</Text>
@@ -725,7 +1007,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                             </View>
                             <View style={{ flex: 1 }}>
                                <Text style={[styles.eduLabel, { color: colors.warning[900] }]}>Symptoms</Text>
-                               <Text style={[styles.eduText, { color: colors.neutral[700] }]}>{symptoms}</Text>
+                               <Text style={[styles.eduText, { color: colors.neutral[800] }]}>{symptoms}</Text>
                             </View>
                          </View>
                        ) : null}
@@ -737,7 +1019,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                             </View>
                             <View style={{ flex: 1 }}>
                                <Text style={[styles.eduLabel, { color: colors.primary[900] }]}>How to Prevent</Text>
-                               <Text style={[styles.eduText, { color: colors.neutral[700] }]}>{prevention}</Text>
+                               <Text style={[styles.eduText, { color: colors.neutral[800] }]}>{prevention}</Text>
                             </View>
                          </View>
                        ) : null}
@@ -749,7 +1031,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                             </View>
                             <View style={{ flex: 1 }}>
                                <Text style={[styles.eduLabel, { color: colors.danger[900] }]}>How to Cure / Treat</Text>
-                               <Text style={[styles.eduText, { color: colors.neutral[700] }]}>{treatment}</Text>
+                               <Text style={[styles.eduText, { color: colors.neutral[800] }]}>{treatment}</Text>
                             </View>
                          </View>
                        ) : null}
@@ -765,7 +1047,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                   ) : null}
 
                 {/* Expert AI Section */}
-                {!expertAnalysis ? (
+                {!isCommunity && !expertAnalysis ? (
                   <TouchableOpacity 
                     style={[styles.expertConsultBtn, { backgroundColor: colors.surface, borderColor: colors.primary[900] }]}
                     onPress={handleConsultExpert}
@@ -780,7 +1062,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                       {expertLoading ? t('analyze.expert_loading') : t('analyze.consult_expert')}
                     </Text>
                   </TouchableOpacity>
-                ) : (
+                ) : !isCommunity && expertAnalysis ? (
                   <View style={[styles.expertResultBox, { 
                     backgroundColor: expertAnalysis.source === 'online' ? '#E8F5E9' : expertAnalysis.source === 'backend' ? '#FFF3E0' : '#F5F5F5', 
                     borderColor: expertAnalysis.source === 'online' ? '#A5D6A7' : expertAnalysis.source === 'backend' ? '#FFE0B2' : '#E0E0E0' 
@@ -823,6 +1105,93 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                         color: expertAnalysis.source === 'online' ? '#2E7D32' : '#E65100' 
                       }]}>
                         {expertAnalysis.recommendation}
+                      </Text>
+                    </View>
+                  </View>
+                ) : null}
+
+                {/* ── HEALTH WORKER: CLINICAL ACTIONS PANEL ── */}
+                {!isCommunity && result && (
+                  <View style={[styles.hwActionsPanel, { backgroundColor: colors.surface, borderColor: colors.primary[200] }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                      <Icon source="stethoscope" size={20} color={colors.primary[900]} />
+                      <Text style={{ fontSize: 15, fontWeight: '800', color: colors.primary[900], letterSpacing: -0.3 }}>Clinical Actions</Text>
+                    </View>
+
+                    {/* Add to Patient Queue */}
+                    <TouchableOpacity
+                      style={[styles.hwActionBtn, { backgroundColor: addedToQueue ? colors.primary[50] : '#2C5E3E' }]}
+                      onPress={handleAddToQueue}
+                      disabled={addedToQueue}
+                    >
+                      <Icon source={addedToQueue ? 'check-circle' : 'account-plus'} size={20} color={addedToQueue ? colors.primary[900] : '#FFF'} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: addedToQueue ? colors.primary[900] : '#FFF' }}>
+                          {addedToQueue ? 'Added to Patient Queue' : 'Add to Patient Queue'}
+                        </Text>
+                        <Text style={{ fontSize: 11, color: addedToQueue ? colors.neutral[500] : 'rgba(255,255,255,0.7)', marginTop: 1 }}>
+                          {addedToQueue ? 'Case triaged and queued for follow-up' : 'Triage this case for clinical follow-up'}
+                        </Text>
+                      </View>
+                      {!addedToQueue && <Icon source="chevron-right" size={20} color="rgba(255,255,255,0.7)" />}
+                    </TouchableOpacity>
+
+                    {/* Clinical Flags Toggle */}
+                    <View style={{ marginTop: 14 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.neutral[500], letterSpacing: 0.5, marginBottom: 8 }}>CLINICAL FLAGS</Text>
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                        {[
+                          { key: 'epidemic_risk', label: '🔴 Epidemic Risk', color: '#E53E3E', bg: '#FFF5F5' },
+                          { key: 'outbreak_suspect', label: '🟠 Outbreak Suspect', color: '#DD6B20', bg: '#FFFAF0' },
+                          { key: 'notifiable_disease', label: '🟡 Notifiable Disease', color: '#D69E2E', bg: '#FFFFF0' },
+                          { key: 'vht_follow_up', label: '🟢 VHT Follow-up', color: '#2C5E3E', bg: '#E2F0D9' },
+                          { key: 'referral_needed', label: '🔵 Referral Needed', color: '#3182CE', bg: '#EBF8FF' },
+                          { key: 'community_education', label: '🟣 Community Education', color: '#6B46C1', bg: '#FAF5FF' },
+                        ].map(flag => (
+                          <TouchableOpacity
+                            key={flag.key}
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 6,
+                              paddingHorizontal: 12,
+                              paddingVertical: 8,
+                              borderRadius: 20,
+                              borderWidth: 1.5,
+                              borderColor: clinicalFlags.includes(flag.key) ? flag.color : colors.neutral[200],
+                              backgroundColor: clinicalFlags.includes(flag.key) ? flag.bg : colors.neutral[50],
+                            }}
+                            onPress={() => toggleClinicalFlag(flag.key)}
+                          >
+                            {clinicalFlags.includes(flag.key) && (
+                              <Icon source="check-circle" size={14} color={flag.color} />
+                            )}
+                            <Text style={{ fontSize: 12, fontWeight: '700', color: clinicalFlags.includes(flag.key) ? flag.color : colors.neutral[600] }}>
+                              {flag.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                      {clinicalFlags.length > 0 && (
+                        <View style={{ marginTop: 10, padding: 10, backgroundColor: colors.warning[50], borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <Icon source="alert-circle-outline" size={16} color={colors.warning[900]} />
+                          <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: colors.warning[900] }}>
+                            {clinicalFlags.length} flag{clinicalFlags.length > 1 ? 's' : ''} applied — this case will be escalated to the District Health Officer.
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+
+                    {/* Case Summary for Health Worker */}
+                    <View style={{ marginTop: 14, padding: 12, backgroundColor: colors.neutral[50], borderRadius: 12 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '800', color: colors.neutral[500], letterSpacing: 0.5, marginBottom: 6 }}>CASE SUMMARY</Text>
+                      <Text style={{ fontSize: 13, color: colors.neutral[800], lineHeight: 20 }}>
+                        Claim: "{claim.length > 80 ? claim.substring(0, 80) + '...' : claim}"{'\n'}
+                        Verdict: {result.label} ({Math.round(result.confidence * 100)}% confidence){'\n'}
+                        Risk Level: {result.riskLevel || 'N/A'}{'\n'}
+                        Topic: {result.triggerKeyword?.split(':')[0] || 'General'}{'\n'}
+                        Flags: {clinicalFlags.length > 0 ? clinicalFlags.map(f => f.replace(/_/g, ' ')).join(', ') : 'None'}{'\n'}
+                        Encounter ID: #{currentEncounterId}
                       </Text>
                     </View>
                   </View>
@@ -874,7 +1243,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                       <View style={styles.verticalDivider} />
                        <View style={styles.xaiMetric}>
                           <Text style={styles.xaiMetricLabel}>{t('analyze.internal_logic')}</Text>
-                          <Text style={[styles.xaiMetricVal, { color: colors.neutral[700] }]}>{result?.fromRule ? 'DETERMINISTIC' : 'STATISTICAL'}</Text>
+                          <Text style={[styles.xaiMetricVal, { color: colors.neutral[800] }]}>{result?.fromRule ? 'DETERMINISTIC' : 'STATISTICAL'}</Text>
                        </View>
                    </View>
 
@@ -1039,7 +1408,7 @@ const AnalyzeScreen = ({ navigateToTab }: { navigateToTab?: (key: string) => voi
                  <Text style={styles.whatsappText}>Share to WhatsApp</Text>
                </TouchableOpacity>
                <TouchableOpacity style={[styles.doneBtn, { backgroundColor: colors.neutral[300] }]} onPress={() => setShowModal(false)}>
-                 <Text style={[styles.doneText, { color: colors.neutral[700] }]}>Done</Text>
+                 <Text style={[styles.doneText, { color: colors.neutral[800] }]}>Done</Text>
                </TouchableOpacity>
             </View>
             <View style={styles.spacer} />
@@ -1100,7 +1469,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   mainTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.neutral[900],
     marginBottom: 8,
@@ -1155,7 +1524,8 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.neutral[300],
-    height: 300,
+    minHeight: 160,
+    maxHeight: 300,
     padding: spacing.md,
   },
   textInput: {
@@ -1189,7 +1559,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 12,
     marginBottom: spacing.xl,
-    maxWidth: 240,
+    alignSelf: 'stretch',
     ...shadows.md,
   },
   analyzeBtnDisabled: {
@@ -1361,7 +1731,7 @@ const styles = StyleSheet.create({
   factsText: {
     fontSize: 15,
     lineHeight: 24,
-    color: colors.neutral[700],
+    color: colors.neutral[800],
     marginBottom: spacing.lg,
     fontWeight: '500',
   },
@@ -1446,7 +1816,7 @@ const styles = StyleSheet.create({
   },
   tipText: {
     fontSize: 14,
-    color: colors.neutral[700],
+    color: colors.neutral[800],
     lineHeight: 22,
     marginBottom: spacing.md,
   },
@@ -1480,11 +1850,13 @@ const styles = StyleSheet.create({
   // Mobile Multimedia
   mediaRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.md,
     marginBottom: spacing.lg,
   },
   mediaCard: {
     flex: 1,
+    minWidth: 130,
     backgroundColor: '#FFF',
     borderRadius: radii.md,
     borderWidth: 1,
@@ -1496,7 +1868,7 @@ const styles = StyleSheet.create({
   mediaLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.neutral[700],
+    color: colors.neutral[800],
   },
   tipCard: {
     backgroundColor: '#EEF4E8',
@@ -1579,7 +1951,7 @@ const styles = StyleSheet.create({
   },
   resultSummary: {
     fontSize: 14,
-    color: colors.neutral[700],
+    color: colors.neutral[800],
     textAlign: 'center',
     lineHeight: 22,
   },
@@ -1643,7 +2015,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   doneText: {
-    color: colors.neutral[700],
+    color: colors.neutral[800],
     fontSize: 16,
     fontWeight: '700',
   },
@@ -2338,6 +2710,57 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     flex: 1,
     lineHeight: 22,
+  },
+  quickQuestionsContainer: {
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+  },
+  quickQuestionsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  quickQuestionsScroll: {
+    paddingBottom: 8,
+    gap: 8,
+  },
+  quickQuestionBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  quickQuestionText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  closeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: radii.md,
+    marginTop: spacing.lg,
+  },
+  closeBtnText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  hwActionsPanel: {
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1.5,
+    marginTop: spacing.lg,
+    gap: 12,
+  },
+  hwActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: radii.md,
+    gap: 12,
   },
 });
 

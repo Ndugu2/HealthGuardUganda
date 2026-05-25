@@ -1,6 +1,8 @@
-import { Facility } from '../db/Database';
+import { ORS_API_URL } from '../config';
+import type { Facility } from '../db/types';
 
-const ORS_API_URL = 'https://api.openrouteservice.org';
+
+
 
 export interface RouteInfo {
   distance: number; // in meters
@@ -14,7 +16,8 @@ export class LocationService {
    */
   public static async getRouteToFacility(startLat: number, startLon: number, facility: Facility): Promise<RouteInfo | null> {
     try {
-      const apiKey = localStorage.getItem('ors_api_key');
+      const { getSetting } = await import('../db/Database');
+      const apiKey = await getSetting('ors_api_key');
       if (!apiKey) throw new Error('ORS Key missing');
 
       const response = await fetch(`${ORS_API_URL}/v2/directions/driving-car?api_key=${apiKey}&start=${startLon},${startLat}&end=${facility.longitude},${facility.latitude}`);

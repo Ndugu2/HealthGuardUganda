@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
 import { ClassificationResult } from './RuleEngine';
+import { saveSetting } from '../db/Database';
 
 /**
  * MLModel — Statistical Inference Engine (Web Fallback)
@@ -173,10 +173,10 @@ export class MLModel {
       };
     }
 
-    public importWeights(newWeights: any) {
+    public async importWeights(newWeights: any) {
       this.vocabulary = newWeights.vocabulary;
       this.idf = newWeights.idf;
       this.classWeights = newWeights.class_weights;
-      localStorage.setItem('healthguard_model_v3', JSON.stringify(newWeights));
+      await saveSetting('healthguard_model_v3', JSON.stringify(newWeights));
     }
 }

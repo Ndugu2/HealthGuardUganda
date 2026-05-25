@@ -1,9 +1,7 @@
-import { Platform } from 'react-native';
 import { getAllClaims, saveKnowledge } from '../db/Database';
+import { getApiBaseUrl } from '../db/apiConfig';
 import { AuthService } from './AuthService';
 import { ConnectivityService } from './ConnectivityService';
-
-const API_URL = Platform.OS === 'web' ? 'http://localhost:3000/api' : 'http://10.0.2.2:3000/api';
 
 export class SyncService {
   /**
@@ -35,6 +33,7 @@ export class SyncService {
             mode: 'FULL'
           };
 
+      const API_URL = await getApiBaseUrl();
       const response = await fetch(`${API_URL}/sync/encounters`, {
         method: 'POST',
         headers: {
@@ -61,6 +60,7 @@ export class SyncService {
    */
   public static async pullKnowledge(): Promise<{ success: boolean; count?: number; error?: string }> {
     try {
+      const API_URL = await getApiBaseUrl();
       const response = await fetch(`${API_URL}/sync/knowledge`);
       const items = await response.json();
 

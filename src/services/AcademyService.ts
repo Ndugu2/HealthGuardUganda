@@ -1,3 +1,7 @@
+import { getSetting, saveSetting } from '../db/Database';
+
+const PROGRESS_KEY = 'healthguard_academy_progress';
+
 export interface QuizQuestion {
   id: string;
   text: string;
@@ -201,13 +205,13 @@ export const ACADEMY_CONTENT: LessonModule[] = [
 
 export class AcademyService {
   public static async getProgress(): Promise<Record<string, boolean>> {
-    const data = localStorage.getItem('healthguard_academy_progress');
+    const data = await getSetting(PROGRESS_KEY);
     return data ? JSON.parse(data) : {};
   }
 
   public static async markCompleted(moduleId: string): Promise<void> {
     const progress = await this.getProgress();
     progress[moduleId] = true;
-    localStorage.setItem('healthguard_academy_progress', JSON.stringify(progress));
+    await saveSetting(PROGRESS_KEY, JSON.stringify(progress));
   }
 }

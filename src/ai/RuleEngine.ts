@@ -361,7 +361,6 @@ const TOPIC_KEYWORDS: Record<string, string> = {
   "ensekere": "stds",
   "warts": "stds",
   "hpv": "stds",
-  "syphilis": "stds",
   "sifilis": "stds"
 };
 

@@ -89,7 +89,7 @@ const AcademyScreen = () => {
              {ACADEMY_CONTENT.map((module, index) => {
                const isCompleted = progress[module.id];
                return (
-                 <AnimatedCard key={module.id} delay={index * 100} style={[styles.moduleCard, { backgroundColor: colors.surface }, isDesktop ? styles.desktopCard : undefined] as any}>
+                 <AnimatedCard key={module.id} delay={index * 100} style={[styles.moduleCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }, isDesktop ? styles.desktopCard : {}] as any}>
                   <TouchableOpacity onPress={() => startModule(module)} style={styles.moduleRow}>
                      <View style={[styles.iconCircle, { backgroundColor: isCompleted ? colors.primary[50] : colors.neutral[50] }]}>
                         <Icon source={module.icon} size={28} color={isCompleted ? colors.primary[900] : colors.neutral[400]} />
@@ -97,13 +97,13 @@ const AcademyScreen = () => {
                      <View style={styles.moduleMeta}>
                         <View style={styles.moduleHeaderRow}>
                            <Text style={[styles.moduleCategory, { color: colors.primary[700] }]}>{i18n.language === 'lg' ? module.category_lg || module.category : module.category}</Text>
-                           {isCompleted && <View style={styles.completedPill}><Text style={styles.completedText}>{t('academy.module_completed')}</Text></View>}
+                           {isCompleted && <View style={[styles.completedPill, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[50] }]}><Text style={[styles.completedText, { color: mode === 'light' ? '#1B5E20' : colors.primary[900] }]}>{t('academy.module_completed')}</Text></View>}
                         </View>
                         <Text style={[styles.moduleTitle, { color: colors.neutral[900] }]}>{i18n.language === 'lg' ? module.title_lg || module.title : module.title}</Text>
                         <Text style={[styles.moduleDesc, { color: colors.neutral[500] }]} numberOfLines={2}>{i18n.language === 'lg' ? module.description_lg || module.description : module.description}</Text>
                         <View style={styles.moduleFooter}>
                            <Icon source="clock-outline" size={14} color={colors.neutral[400]} />
-                           <Text style={styles.moduleTime}>{module.estimatedMinutes} {t('academy.mins')}</Text>
+                           <Text style={[styles.moduleTime, { color: colors.neutral[400] }]}>{module.estimatedMinutes} {t('academy.mins')}</Text>
                         </View>
                      </View>
                      <Icon source="chevron-right" size={24} color={colors.neutral[300]} />

@@ -8,7 +8,22 @@
     "reports": "Reports",
     "facilities": "Facilities",
     "academy": "Academy",
-    "settings": "Settings"
+    "settings": "Settings",
+    "more": "More",
+    "profile": "Health Profile",
+    "emergency": "Emergency",
+    "alerts": "Alerts",
+    "queue": "Queue"
+  },
+  "more": {
+    "subtitle": "Profile, emergency contacts, and account tools",
+    "profile_sub": "Your health information and preferences",
+    "emergency_sub": "Hotlines and nearest emergency services"
+  },
+  "status": {
+    "offline": "Offline · Local data",
+    "online_demo": "Online · Demo session",
+    "online_server": "Online · National server"
   },
   "sidebar": {
     "sync_db": "Sync Database",
@@ -263,6 +278,8 @@
     "dark_mode": "Dark Mode",
     "dark_mode_sub": "Use high-contrast dark theme",
     "api_config": "API Configuration",
+    "server_url": "National Server URL",
+    "server_url_help": "Full API base URL including /api (e.g. http://192.168.1.10:3000/api). Leave blank for default.",
     "openrouter_key": "OpenRouter API Key (Expert AI)",
     "expert_ai_help": "Required for 'Consult Global Expert' feature.",
     "ors_key": "OpenRouteService Key (Navigation)",
@@ -273,7 +290,10 @@
     "save_btn": "Save Configurations",
     "save_success": "Settings Saved",
     "save_success_msg": "Your API configurations have been updated successfully.",
-    "developed_by": "Developed by the Advanced Agentic Coding Team"
+    "developed_by": "Developed by the Advanced Agentic Coding Team",
+    "logout": "Log Out",
+    "logout_confirm_title": "Confirm Logout",
+    "logout_confirm_msg": "Are you sure you want to log out of HealthGuard?"
   },
   "auth": {
     "title": "HealthGuard Uganda",

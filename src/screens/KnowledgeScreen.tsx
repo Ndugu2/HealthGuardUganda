@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, FlatList, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native';
-import { Text, Searchbar, Chip, Icon } from 'react-native-paper';
+import { Text, Searchbar, Chip, Icon, Modal, Portal } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { searchKnowledge, KnowledgeItem } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
-import { colors, spacing, radii, shadows, topicColors } from '../theme';
+import { colors, spacing, radii, shadows, topicColors, darkTopicColors } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 
 const TOPIC_FILTERS = [
@@ -20,11 +20,17 @@ const TOPIC_FILTERS = [
   { key: 'stds',         i18nKey: 'knowledge.filter_stds' },
 ];
 
-const KnowledgeScreen = () => {
+interface KnowledgeScreenProps {
+  userRole?: string;
+  onLogout?: () => void;
+}
+
+const KnowledgeScreen: React.FC<KnowledgeScreenProps> = ({ userRole }) => {
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;
+  const isCommunity = userRole === 'COMMUNITY';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [items, setItems] = useState<KnowledgeItem[]>([]);
@@ -32,7 +38,8 @@ const KnowledgeScreen = () => {
 
   const [recentSearches, setRecentSearches] = useState<string[]>(['Malaria nets', 'COVID vaccine', 'HIV ARV']);
   const [isSearching, setIsSearching] = useState(false);
-  const [viewMode, setViewMode] = useState<'browse' | 'training'>('browse');
+  const [viewMode, setViewMode] = useState<'browse' | 'training' | 'guidelines'>('browse');
+  const [selectedItem, setSelectedItem] = useState<KnowledgeItem | null>(null);
 
   // Quiz state
   const [quizIndex, setQuizIndex] = useState(0);
@@ -127,36 +134,40 @@ const KnowledgeScreen = () => {
   const filteredItems = topic === 'all' ? items : items.filter(i => i.topic === topic);
 
   const renderItem = ({ item, index }: { item: KnowledgeItem; index: number }) => {
-    const tc = topicColors[item.topic] || topicColors.general;
+    const tc = mode === 'light'
+      ? (topicColors[item.topic] || topicColors.general)
+      : (darkTopicColors[item.topic] || darkTopicColors.general);
 
     return (
-      <AnimatedCard delay={index * 30} style={[styles.itemCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }, isDesktop ? styles.desktopItemCard : ({} as any)]}>
-        <View style={styles.itemHeader}>
-           <View style={[styles.topicBadge, { backgroundColor: mode === 'light' ? tc.bg : tc.accent + '30' }]}>
-             <Text style={[styles.topicText, { color: mode === 'light' ? tc.text : tc.accent }]}>{item.topic.toUpperCase()}</Text>
-           </View>
-           <Text style={[styles.sourceLabel, { color: colors.neutral[500] }]}>{item.source}</Text>
-        </View>
-        
-        {item.myth_text_en ? (
-          <View style={[styles.mythBox, { backgroundColor: mode === 'light' ? '#FDECEA' : colors.danger[900] + '20' }]}>
-            <Text style={[styles.mythLabel, { color: colors.danger[900] }]}>MYTH</Text>
-            <Text style={[styles.mythText, { color: colors.danger[900] }]}>"{item.myth_text_en}"</Text>
+      <AnimatedCard delay={index * 30} style={[styles.itemCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }, isDesktop ? styles.desktopItemCard : ({} as any)]}>
+        <TouchableOpacity activeOpacity={0.7} onPress={() => setSelectedItem(item)} style={{ flex: 1 }}>
+          <View style={styles.itemHeader}>
+             <View style={[styles.topicBadge, { backgroundColor: tc.bg }]}>
+               <Text style={[styles.topicText, { color: tc.text }]}>{item.topic.toUpperCase()}</Text>
+             </View>
+             <Text style={[styles.sourceLabel, { color: colors.neutral[500] }]}>{item.source}</Text>
           </View>
-        ) : null}
+          
+          {item.myth_text_en ? (
+            <View style={[styles.mythBox, { backgroundColor: mode === 'light' ? '#FDECEA' : 'rgba(239, 68, 68, 0.15)', borderColor: mode === 'light' ? '#FCA5A5' : 'rgba(239, 68, 68, 0.3)', borderWidth: 1 }]}>
+              <Text style={[styles.mythLabel, { color: mode === 'light' ? colors.danger[900] : '#FCA5A5' }]}>MYTH</Text>
+              <Text style={[styles.mythText, { color: mode === 'light' ? colors.danger[900] : '#FECACA' }]}>"{item.myth_text_en}"</Text>
+            </View>
+          ) : null}
 
-        <Text style={[styles.correctText, { color: colors.neutral[800] }]}>
-          {i18n.language === 'lg' ? item.correct_text_lg || item.correct_text_en : item.correct_text_en}
-        </Text>
+          <Text style={[styles.correctText, { color: colors.neutral[800] }]}>
+            {i18n.language === 'lg' ? item.correct_text_lg || item.correct_text_en : item.correct_text_en}
+          </Text>
 
-        <View style={[styles.itemFooter, { borderTopColor: colors.neutral[50] }]}>
-           <TouchableOpacity style={styles.actionBtn}>
-             <Icon source="share-variant-outline" size={18} color={colors.neutral[500]} />
-           </TouchableOpacity>
-           <TouchableOpacity style={styles.actionBtn}>
-             <Icon source="bookmark-outline" size={18} color={colors.neutral[500]} />
-           </TouchableOpacity>
-        </View>
+          <View style={[styles.itemFooter, { borderTopColor: colors.neutral[200] }]}>
+             <TouchableOpacity style={styles.actionBtn}>
+               <Icon source="share-variant-outline" size={18} color={colors.neutral[500]} />
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.actionBtn}>
+               <Icon source="bookmark-outline" size={18} color={colors.neutral[500]} />
+             </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
       </AnimatedCard>
     );
   };
@@ -164,35 +175,47 @@ const KnowledgeScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {!isDesktop && (
-        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[100] }]}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[200] }]}>
           <Text style={[styles.headerTitle, { color: colors.primary[900] }]}>
-            {viewMode === 'browse' ? t('knowledge.title') : t('knowledge.training_quizzes')}
+            {isCommunity ? 'Health Facts' : (viewMode === 'browse' ? t('knowledge.title') : t('knowledge.training_quizzes'))}
           </Text>
-          <View style={[styles.offlinePill, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.neutral[100] }]}>
+          <View style={[styles.offlinePill, { backgroundColor: colors.primary[50] }]}>
             <Icon source="cloud-check-outline" size={14} color={colors.primary[800]} />
             <Text style={[styles.offlineText, { color: colors.primary[900] }]}>{t('home.offline_ready')}</Text>
           </View>
         </View>
       )}
 
-      <View style={[styles.modeSelector, { backgroundColor: colors.surface }]}>
+      <View style={[styles.modeSelector, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[200] }]}>
          <TouchableOpacity 
            onPress={() => setViewMode('browse')} 
            style={[styles.modeBtn, viewMode === 'browse' && { borderBottomColor: colors.primary[900] }]}
          >
-            <Text style={[styles.modeBtnText, { color: viewMode === 'browse' ? colors.primary[900] : colors.neutral[400] }]}>{t('knowledge.browse_facts')}</Text>
+            <Text style={[styles.modeBtnText, { color: viewMode === 'browse' ? colors.primary[900] : colors.neutral[400] }]}>
+              {isCommunity ? 'Browse Facts' : t('knowledge.browse_facts') || 'Browse Facts'}
+            </Text>
          </TouchableOpacity>
          <TouchableOpacity 
-           onPress={() => setViewMode('training')} 
-           style={[styles.modeBtn, viewMode === 'training' && { borderBottomColor: colors.primary[900] }]}
+           onPress={() => setViewMode('guidelines')} 
+           style={[styles.modeBtn, viewMode === 'guidelines' && { borderBottomColor: colors.primary[900] }]}
          >
-            <Text style={[styles.modeBtnText, { color: viewMode === 'training' ? colors.primary[900] : colors.neutral[400] }]}>{t('knowledge.training_mode')}</Text>
+            <Text style={[styles.modeBtnText, { color: viewMode === 'guidelines' ? colors.primary[900] : colors.neutral[400] }]}>Guidelines Hub</Text>
          </TouchableOpacity>
+         {!isCommunity && (
+           <TouchableOpacity 
+             onPress={() => setViewMode('training')} 
+             style={[styles.modeBtn, viewMode === 'training' && { borderBottomColor: colors.primary[900] }]}
+           >
+              <Text style={[styles.modeBtnText, { color: viewMode === 'training' ? colors.primary[900] : colors.neutral[400] }]}>
+                {t('knowledge.training_mode') || 'Training'}
+              </Text>
+           </TouchableOpacity>
+         )}
       </View>
 
-      {viewMode === 'browse' ? (
+      {viewMode === 'browse' && (
         <>
-          <View style={[styles.searchSection, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[100] }]}>
+          <View style={[styles.searchSection, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[200] }]}>
             <View style={isDesktop ? styles.desktopSearchWrap : null}>
               <Searchbar
                 placeholder={t('knowledge.search') || 'Search health topics...'}
@@ -274,7 +297,105 @@ const KnowledgeScreen = () => {
             }
           />
         </>
-      ) : (
+      )}
+
+      {viewMode === 'guidelines' && (
+        <ScrollView contentContainerStyle={[styles.trainingContainer, isDesktop && styles.desktopTrainingContainer]}>
+          <View style={[styles.quizCard, { backgroundColor: colors.surface }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <Icon source="book-open-page-variant" size={26} color={colors.primary[900]} />
+              <Text style={{ fontSize: 20, fontWeight: '900', color: colors.neutral[900] }}>Official Guidelines Hub</Text>
+            </View>
+            <Text style={{ fontSize: 14, color: colors.neutral[500], marginBottom: 24 }}>
+              Authoritative medical scope from the World Health Organization (WHO) and Ministry of Health (MOH) Uganda.
+            </Text>
+
+            {/* Malaria Guideline */}
+            <View style={styles.guidelineSectionCard}>
+              <View style={[styles.guidelineHeader, { backgroundColor: '#F7FAFC', borderLeftColor: '#3182CE' }]}>
+                <Icon source="shield-bug-outline" size={24} color="#3182CE" />
+                <Text style={styles.guidelineTitle}>Malaria Management Guideline (MOH)</Text>
+              </View>
+              <View style={styles.guidelineBody}>
+                <Text style={styles.guidelineSubheading}>1. Diagnosis & Testing</Text>
+                <Text style={styles.guidelineText}>• Always test using a Malaria Rapid Diagnostic Test (RDT) or microscopy before treating. Never treat based on fever symptoms alone.</Text>
+                
+                <Text style={styles.guidelineSubheading}>2. First-Line Treatment</Text>
+                <Text style={styles.guidelineText}>• Artemether-Lumefantrine (Coartem) is the recommended first-line drug for uncomplicated malaria. Dose depends on patient weight/age.</Text>
+                
+                <Text style={styles.guidelineSubheading}>3. Severe Malaria</Text>
+                <Text style={styles.guidelineText}>• Give intravenous or intramuscular Artesunate immediately (pre-referral dose if in rural area), and refer the patient to a higher facility immediately.</Text>
+
+                <Text style={styles.guidelineSubheading}>4. Prevention</Text>
+                <Text style={styles.guidelineText}>• Sleep under a long-lasting insecticide-treated net (LLIN) every night. Clean stagnant water near houses. Utilize indoor residual spraying.</Text>
+              </View>
+            </View>
+
+            {/* HIV Guideline */}
+            <View style={styles.guidelineSectionCard}>
+              <View style={[styles.guidelineHeader, { backgroundColor: '#F7FAFC', borderLeftColor: '#E53E3E' }]}>
+                <Icon source="ribbon" size={24} color="#E53E3E" />
+                <Text style={styles.guidelineTitle}>HIV Prevention & Care Protocol (WHO)</Text>
+              </View>
+              <View style={styles.guidelineBody}>
+                <Text style={styles.guidelineSubheading}>1. Testing Algorithm</Text>
+                <Text style={styles.guidelineText}>• Routine HIV testing is recommended. Pre-test and post-test counseling is mandatory. Standard rapid diagnostic test kits (e.g. Determine, Stat-Pak) must be used.</Text>
+                
+                <Text style={styles.guidelineSubheading}>2. Immediately Start ART ("Test & Treat")</Text>
+                <Text style={styles.guidelineText}>• All individuals testing positive for HIV must be initiated on Antiretroviral Therapy (ART) immediately, regardless of CD4 count.</Text>
+                
+                <Text style={styles.guidelineSubheading}>3. Recommended First-Line Regimen</Text>
+                <Text style={styles.guidelineText}>• The preferred first-line regimen for adults and adolescents is TLD (Tenofovir disoproxil fumarate + Lamivudine + Dolutegravir).</Text>
+
+                <Text style={styles.guidelineSubheading}>4. Prevention (PrEP / PEP)</Text>
+                <Text style={styles.guidelineText}>• Post-Exposure Prophylaxis (PEP) must be started within 72 hours of potential exposure. Pre-Exposure Prophylaxis (PrEP) is recommended for people at high ongoing risk of infection.</Text>
+              </View>
+            </View>
+
+            {/* Maternal Standards */}
+            <View style={styles.guidelineSectionCard}>
+              <View style={[styles.guidelineHeader, { backgroundColor: '#F7FAFC', borderLeftColor: '#805AD5' }]}>
+                <Icon source="baby-carriage" size={24} color="#805AD5" />
+                <Text style={styles.guidelineTitle}>Maternal Health & ANC Standards (MOH)</Text>
+              </View>
+              <View style={styles.guidelineBody}>
+                <Text style={styles.guidelineSubheading}>1. Antenatal Care Contacts</Text>
+                <Text style={styles.guidelineText}>• At least 8 ANC contacts are recommended by MOH Uganda to detect complications early (weeks 12, 20, 26, 30, 34, 36, 38, 40).</Text>
+                
+                <Text style={styles.guidelineSubheading}>2. Iron & Folic Acid Supplementation</Text>
+                <Text style={styles.guidelineText}>• Pregnant women should receive daily oral iron (60mg) and folic acid (400mcg) supplements to prevent maternal anaemia and birth defects.</Text>
+                
+                <Text style={styles.guidelineSubheading}>3. Facility Delivery</Text>
+                <Text style={styles.guidelineText}>• Clean and safe deliveries must be conducted at a certified health facility under the supervision of a skilled birth attendant (midwife or doctor).</Text>
+
+                <Text style={styles.guidelineSubheading}>4. Postnatal Care (PNC)</Text>
+                <Text style={styles.guidelineText}>• A minimum of four postnatal contacts is recommended: within 24 hours, on day 3, between days 7-14, and at 6 weeks.</Text>
+              </View>
+            </View>
+
+            {/* Sanitation Protocols */}
+            <View style={styles.guidelineSectionCard}>
+              <View style={[styles.guidelineHeader, { backgroundColor: '#F7FAFC', borderLeftColor: '#319795' }]}>
+                <Icon source="hand-water" size={24} color="#319795" />
+                <Text style={styles.guidelineTitle}>Sanitation & Wash Protocols (WHO)</Text>
+              </View>
+              <View style={styles.guidelineBody}>
+                <Text style={styles.guidelineSubheading}>1. Safe Water Management</Text>
+                <Text style={styles.guidelineText}>• Boil all drinking water or use water purification chemicals. Store drinking water in clean, covered containers with a narrow opening.</Text>
+                
+                <Text style={styles.guidelineSubheading}>2. Latrines & Waste Disposal</Text>
+                <Text style={styles.guidelineText}>• Every household must have access to a clean, ventilated improved pit latrine (VIP). Latrines must be sited at least 30 meters away from water sources.</Text>
+                
+                <Text style={styles.guidelineSubheading}>3. Critical Handwashing Times</Text>
+                <Text style={styles.guidelineText}>• Wash hands with soap and running water: after visiting the toilet, after cleaning a child’s bottom, before preparing food, and before eating.</Text>
+              </View>
+            </View>
+
+          </View>
+        </ScrollView>
+      )}
+
+      {viewMode === 'training' && (
         <ScrollView contentContainerStyle={[styles.trainingContainer, isDesktop && styles.desktopTrainingContainer]}>
             <View style={[styles.quizCard, { backgroundColor: colors.surface }]}>
               <View style={styles.quizHeader}>
@@ -302,7 +423,7 @@ const KnowledgeScreen = () => {
                          style={[
                            styles.optionBtn, 
                            { borderColor: colors.neutral[200] },
-                           showAnswer && isCorrect && { borderColor: colors.primary[600], backgroundColor: '#E2F0D9' },
+                           showAnswer && isCorrect && { borderColor: colors.primary[600], backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[50] },
                            showAnswer && !isCorrect && { opacity: 0.5 }
                          ]}
                        >
@@ -351,6 +472,93 @@ const KnowledgeScreen = () => {
            </View>
         </ScrollView>
       )}
+      {/* Detail Modal */}
+      <Portal>
+        <Modal visible={!!selectedItem} onDismiss={() => setSelectedItem(null)} contentContainerStyle={[styles.modalContainer, { backgroundColor: colors.surface, maxWidth: 600, alignSelf: 'center', width: '90%', maxHeight: '85%' }]}>
+          {selectedItem && (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <View style={styles.modalHeader}>
+                <View style={[styles.topicBadge, { backgroundColor: (mode === 'light' ? (topicColors[selectedItem.topic] || topicColors.general) : (darkTopicColors[selectedItem.topic] || darkTopicColors.general)).bg }]}>
+                  <Text style={[styles.topicText, { color: (mode === 'light' ? (topicColors[selectedItem.topic] || topicColors.general) : (darkTopicColors[selectedItem.topic] || darkTopicColors.general)).text }]}>{selectedItem.topic.toUpperCase()}</Text>
+                </View>
+                <TouchableOpacity onPress={() => setSelectedItem(null)}>
+                  <Icon source="close" size={24} color={colors.neutral[500]} />
+                </TouchableOpacity>
+              </View>
+
+              {selectedItem.myth_text_en && (
+                <View style={[styles.mythBox, { backgroundColor: mode === 'light' ? '#FDECEA' : 'rgba(239, 68, 68, 0.15)', borderColor: mode === 'light' ? '#FCA5A5' : 'rgba(239, 68, 68, 0.3)', borderWidth: 1, marginBottom: 16 }]}>
+                  <Text style={[styles.mythLabel, { color: mode === 'light' ? colors.danger[900] : '#FCA5A5' }]}>MYTH</Text>
+                  <Text style={[styles.mythText, { color: mode === 'light' ? colors.danger[900] : '#FECACA', fontSize: 16 }]}>"{selectedItem.myth_text_en}"</Text>
+                </View>
+              )}
+
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.neutral[900], marginBottom: 8 }}>Verified Fact</Text>
+              <Text style={{ fontSize: 16, color: colors.neutral[800], lineHeight: 24, marginBottom: 24 }}>
+                {i18n.language === 'lg' ? selectedItem.correct_text_lg || selectedItem.correct_text_en : selectedItem.correct_text_en}
+              </Text>
+
+              {selectedItem.detailed_guidance_en && (
+                <View style={{ backgroundColor: colors.primary[50], padding: 16, borderRadius: radii.md, marginBottom: 24, borderWidth: 1, borderColor: colors.primary[100] }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <Icon source="information" size={20} color={colors.primary[900]} />
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: colors.primary[900] }}>Detailed Guidance</Text>
+                  </View>
+                  <Text style={{ fontSize: 15, color: colors.neutral[800], lineHeight: 22 }}>
+                    {i18n.language === 'lg' ? selectedItem.detailed_guidance_lg || selectedItem.detailed_guidance_en : selectedItem.detailed_guidance_en}
+                  </Text>
+                </View>
+              )}
+
+              {(selectedItem.symptoms || selectedItem.prevention || selectedItem.treatment) && (
+                <View style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '800', color: colors.neutral[900], marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>Disease Education</Text>
+                  
+                  {selectedItem.symptoms && (
+                    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                      <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.warning[50], alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon source="thermometer" size={18} color={colors.warning[900]} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.warning[900], marginBottom: 4 }}>Symptoms</Text>
+                        <Text style={{ fontSize: 15, color: colors.neutral[700], lineHeight: 22 }}>{selectedItem.symptoms}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedItem.prevention && (
+                    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                      <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary[50], alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon source="shield-plus" size={18} color={colors.primary[900]} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.primary[900], marginBottom: 4 }}>Prevention</Text>
+                        <Text style={{ fontSize: 15, color: colors.neutral[700], lineHeight: 22 }}>{selectedItem.prevention}</Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {selectedItem.treatment && (
+                    <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                      <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: colors.danger[50], alignItems: 'center', justifyContent: 'center' }}>
+                        <Icon source="medication" size={18} color={colors.danger[900]} />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '700', color: colors.danger[900], marginBottom: 4 }}>Treatment</Text>
+                        <Text style={{ fontSize: 15, color: colors.neutral[700], lineHeight: 22 }}>{selectedItem.treatment}</Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              <View style={{ borderTopWidth: 1, borderTopColor: colors.neutral[200], paddingTop: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 13, color: colors.neutral[500] }}>Source: {selectedItem.source}</Text>
+              </View>
+            </ScrollView>
+          )}
+        </Modal>
+      </Portal>
     </View>
   );
 };
@@ -402,9 +610,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   searchBar: {
-    borderRadius: radii.md,
-    backgroundColor: colors.neutral[100],
+    borderRadius: radii.full,
+    backgroundColor: colors.neutral[50],
     marginBottom: spacing.md,
+    borderWidth: 0,
   },
   searchInput: {
     fontSize: 15,
@@ -442,12 +651,11 @@ const styles = StyleSheet.create({
   },
   itemCard: {
     backgroundColor: '#FFF',
-    borderRadius: radii.lg,
+    borderRadius: radii.xl,
     padding: spacing.md,
     marginBottom: spacing.md,
     ...shadows.sm,
-    borderWidth: 1,
-    borderColor: colors.neutral[100],
+    borderWidth: 0,
   },
   desktopItemCard: {
     flex: 1,
@@ -477,8 +685,9 @@ const styles = StyleSheet.create({
   mythBox: {
     backgroundColor: '#FDECEA',
     padding: spacing.md,
-    borderRadius: radii.md,
+    borderRadius: radii.lg,
     marginBottom: spacing.md,
+    borderWidth: 0,
   },
   mythLabel: {
     fontSize: 10,
@@ -655,6 +864,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: radii.full,
     gap: 12,
+    backgroundColor: '#2C5E3E',
   },
   nextBtnText: {
     color: '#FFF',
@@ -679,6 +889,63 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 13,
     lineHeight: 18,
+  },
+  communityBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderBottomWidth: 1,
+  },
+  communityBannerText: {
+    fontSize: 13,
+    fontWeight: '700',
+    flex: 1,
+  },
+  modalContainer: {
+    padding: spacing.xl,
+    borderRadius: radii.xl,
+    ...shadows.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  guidelineSectionCard: {
+    marginBottom: spacing.lg,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  guidelineHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    padding: spacing.md,
+    borderLeftWidth: 4,
+  },
+  guidelineTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    flex: 1,
+  },
+  guidelineBody: {
+    padding: spacing.md,
+  },
+  guidelineSubheading: {
+    fontSize: 13,
+    fontWeight: '800',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  guidelineText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 8,
   },
 });
 

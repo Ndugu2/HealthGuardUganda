@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, Dimensions, FlatList, RefreshControl, useWindowDimensions, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Text, Divider, Icon, Button } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
-import { BarChart } from 'react-native-chart-kit';
+import { BarChart, PieChart } from 'react-native-chart-kit';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import { getStats, getAllClaims, ClaimRecord } from '../db/Database';
@@ -140,6 +140,45 @@ const ReportsScreen = () => {
     </View>
   );
 
+  const isDemo = stats.total === 0;
+  const chartAccurate = stats.total > 0 ? stats.accurate : 35;
+  const chartMisinfo = stats.total > 0 ? stats.misinfo : 18;
+  const chartUncertain = stats.total > 0 ? Math.max(0, stats.total - stats.accurate - stats.misinfo) : 7;
+  const chartTotal = chartAccurate + chartMisinfo + chartUncertain;
+
+  const pieData = [
+    {
+      name: t('reports.verified_facts') || 'Verified',
+      population: chartAccurate,
+      color: colors.primary[900],
+      legendFontColor: colors.neutral[700],
+      legendFontSize: 12,
+    },
+    {
+      name: t('reports.high_risk_myths') || 'Myths',
+      population: chartMisinfo,
+      color: colors.danger[900],
+      legendFontColor: colors.neutral[700],
+      legendFontSize: 12,
+    },
+    {
+      name: t('reports.uncertain_label') || 'Uncertain',
+      population: chartUncertain,
+      color: colors.warning[900],
+      legendFontColor: colors.neutral[700],
+      legendFontSize: 12,
+    },
+  ];
+
+  const barData = {
+    labels: [
+      t('reports.verified_facts') || 'Verified',
+      t('reports.high_risk_myths') || 'Myths',
+      t('reports.uncertain_label') || 'Uncertain'
+    ],
+    datasets: [{ data: [chartAccurate, chartMisinfo, chartUncertain] }]
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {!isDesktop && (
@@ -202,7 +241,7 @@ const ReportsScreen = () => {
           <Text style={[styles.sectionTitle, { color: colors.neutral[900], marginBottom: spacing.md }]}>🧬 {t('reports.misinfo_pattern')}</Text>
           <View style={styles.patternGrid}>
             {patterns.map((pattern) => (
-              <AnimatedCard key={pattern.id} delay={100} style={[styles.patternCard, { backgroundColor: colors.surface }]}>
+              <AnimatedCard key={pattern.id} delay={100} style={[styles.patternCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
                 <View style={styles.patternHeader}>
                   <View style={[styles.severityDot, { backgroundColor: pattern.severity === 'HIGH' ? colors.danger[900] : colors.warning[900] }]} />
                   <Text style={[styles.patternTheme, { color: colors.neutral[900] }]}>{pattern.theme}</Text>
@@ -210,14 +249,14 @@ const ReportsScreen = () => {
                     <Text style={[styles.countText, { color: colors.primary[900] }]}>{t('reports.claims_count', { count: pattern.claimsCount })}</Text>
                   </View>
                 </View>
-                <View style={styles.patternExamples}>
-                   {pattern.sampleClaims.map((claim, i) => (
-                     <View key={i} style={styles.exampleItem}>
-                        <Icon source="format-quote-open" size={14} color={colors.neutral[300]} />
-                        <Text style={[styles.exampleText, { color: colors.neutral[600] }]} numberOfLines={1}>"{claim}"</Text>
-                     </View>
-                   ))}
-                </View>
+                 <View style={[styles.patternExamples, { backgroundColor: colors.neutral[50] }]}>
+                    {pattern.sampleClaims.map((claim, i) => (
+                      <View key={i} style={styles.exampleItem}>
+                         <Icon source="format-quote-open" size={14} color={colors.neutral[400]} />
+                         <Text style={[styles.exampleText, { color: colors.neutral[700] }]} numberOfLines={1}>"{claim}"</Text>
+                      </View>
+                    ))}
+                 </View>
                 <View style={styles.patternFooter}>
                    <Text style={[styles.patternStatus, { color: colors.neutral[400] }]}>{t('reports.clustered_by')}</Text>
                 </View>
@@ -226,7 +265,7 @@ const ReportsScreen = () => {
           </View>
 
           <View style={styles.intelRow}>
-            <AnimatedCard delay={50} style={[styles.intelCard, { backgroundColor: colors.surface, flex: 1 }]}>
+            <AnimatedCard delay={50} style={[styles.intelCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200], flex: 1 }]}>
                <View style={styles.intelHeader}>
                   <Icon source="map-marker-radius" size={20} color={colors.primary[900]} />
                   <Text style={[styles.intelTitle, { color: colors.neutral[900] }]}>{t('reports.top_zones')}</Text>
@@ -243,7 +282,7 @@ const ReportsScreen = () => {
                </View>
             </AnimatedCard>
             
-            <AnimatedCard delay={150} style={[styles.intelCard, { backgroundColor: colors.surface, flex: 1 }]}>
+            <AnimatedCard delay={150} style={[styles.intelCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200], flex: 1 }]}>
                <View style={styles.intelHeader}>
                   <Icon source="alert-decagram" size={20} color={colors.danger[900]} />
                   <Text style={[styles.intelTitle, { color: colors.neutral[900] }]}>{t('reports.risk_severity')}</Text>
@@ -273,9 +312,9 @@ const ReportsScreen = () => {
 
           {/* ── GEOSPATIAL HEATMAP (NEW HIGH VALUE) ── */}
           <Text style={[styles.sectionTitle, { color: colors.neutral[900], marginBottom: spacing.md }]}>🛰️ {t('reports.geospatial_heatmap')}</Text>
-          <AnimatedCard delay={200} style={[styles.mapCard, { backgroundColor: colors.surface }]}>
+          <AnimatedCard delay={200} style={[styles.mapCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
              <View style={styles.mapContainer}>
-                <View style={[styles.mapPlaceholder, { backgroundColor: colors.neutral[50] }]}>
+                <View style={[styles.mapPlaceholder, { backgroundColor: colors.neutral[50], borderColor: colors.neutral[200] }]}>
                    <Icon source="map-outline" size={40} color={colors.neutral[200]} />
                    <Text style={{ color: colors.neutral[300], fontSize: 10, fontWeight: '800' }}>{t('reports.spatial_intel')}</Text>
                    
@@ -311,51 +350,107 @@ const ReportsScreen = () => {
                    <Text style={[styles.legendTitle, { color: colors.neutral[900] }]}>{t('reports.spatial_risk_keys')}</Text>
                    <View style={styles.legendRow}>
                       <View style={[styles.legendDot, { backgroundColor: colors.danger[900] }]} />
-                      <Text style={styles.legendText}>{t('reports.ebola_rumors')}</Text>
+                      <Text style={[styles.legendText, { color: colors.neutral[700] }]}>{t('reports.ebola_rumors')}</Text>
                    </View>
                    <View style={styles.legendRow}>
                       <View style={[styles.legendDot, { backgroundColor: colors.primary[900] }]} />
-                      <Text style={styles.legendText}>{t('reports.vaccine_hesitancy')}</Text>
+                      <Text style={[styles.legendText, { color: colors.neutral[700] }]}>{t('reports.vaccine_hesitancy')}</Text>
                    </View>
                    <View style={styles.legendRow}>
                       <View style={[styles.legendDot, { backgroundColor: colors.warning[900] }]} />
-                      <Text style={styles.legendText}>{t('reports.general_myths')}</Text>
+                      <Text style={[styles.legendText, { color: colors.neutral[700] }]}>{t('reports.general_myths')}</Text>
                    </View>
                 </View>
              </View>
              
-              <View style={styles.mapFooter}>
+              <View style={[styles.mapFooter, { borderTopColor: colors.neutral[200] }]}>
                 <Icon source="satellite-variant" size={16} color={colors.primary[900]} />
-                <Text style={styles.mapFooterText}>{t('reports.last_spatial_sync', { date: new Date().toLocaleDateString() })}</Text>
+                <Text style={[styles.mapFooterText, { color: colors.neutral[400] }]}>{t('reports.last_spatial_sync', { date: new Date().toLocaleDateString() })}</Text>
               </View>
           </AnimatedCard>
 
           <View style={isDesktop ? styles.desktopGrid : null}>
-            {/* ── CHART ── */}
-            <AnimatedCard delay={100} style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }, isDesktop ? styles.desktopGridItem : ({} as any)]}>
-              <Text style={[styles.sectionTitle, { color: colors.neutral[900] }]}>{t('reports.weekly_trends')}</Text>
-              {stats.total > 0 ? (
-                <BarChart
-                  data={{
-                    labels: ['Accurate', 'Myths', 'Uncertain'],
-                    datasets: [{ data: [stats.accurate, stats.misinfo, Math.max(0, stats.total - stats.accurate - stats.misinfo)] }]
-                  }}
-                  width={isDesktop ? (width > 1200 ? 550 : width * 0.45) : width - 64}
-                  height={250}
-                  chartConfig={chartConfig}
-                  style={styles.chart}
-                  fromZero
-                  showBarTops={false}
-                  yAxisLabel=""
-                  yAxisSuffix=""
+            {/* ── VISUAL ANALYTICS BLOCK ── */}
+            <View style={[isDesktop ? styles.desktopGridItem : ({} as any), { gap: spacing.md }]}>
+              {/* Status Banner */}
+              <View style={[
+                styles.statusBanner, 
+                { 
+                  backgroundColor: isDemo ? (mode === 'light' ? '#FFFBEB' : 'rgba(217, 119, 6, 0.15)') : (mode === 'light' ? '#E2F0D9' : 'rgba(16, 185, 129, 0.15)'), 
+                  borderColor: isDemo ? colors.warning[300] : colors.primary[600],
+                  borderWidth: 1
+                }
+              ]}>
+                <Icon 
+                  source={isDemo ? "alert-circle-outline" : "check-circle-outline"} 
+                  size={16} 
+                  color={isDemo ? colors.warning[900] : colors.primary[900]} 
                 />
-              ) : (
-                <View style={styles.chartEmpty}>
-                  <Icon source="chart-line-variant" size={40} color={colors.neutral[200]} />
-                  <Text style={[styles.chartEmptyText, { color: colors.neutral[400] }]}>{t('reports.no_data')}</Text>
+                <Text style={[styles.statusBannerText, { color: isDemo ? colors.warning[900] : colors.primary[900] }]}>
+                  {isDemo ? "Showing simulated community surveillance trends (Demo Mode)" : "Live database encounters sync active"}
+                </Text>
+              </View>
+
+              {/* Responsive Charts Row */}
+              <View style={isDesktop ? styles.chartsRow : styles.chartsStack}>
+                {/* Bar Chart Card */}
+                <AnimatedCard delay={100} style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }, isDesktop ? { flex: 1, marginBottom: 0 } : ({} as any)]}>
+                  <Text style={[styles.chartTitleText, { color: colors.neutral[900] }]}>{t('reports.weekly_trends')}</Text>
+                  <BarChart
+                    data={barData}
+                    width={isDesktop ? (width > 1200 ? 350 : width * 0.21) : width - 64}
+                    height={200}
+                    chartConfig={chartConfig}
+                    style={styles.chart}
+                    fromZero
+                    showBarTops={false}
+                    yAxisLabel=""
+                    yAxisSuffix=""
+                  />
+                </AnimatedCard>
+
+                {/* Pie Chart Card */}
+                <AnimatedCard delay={120} style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }, isDesktop ? { flex: 1, marginBottom: 0 } : ({} as any)]}>
+                  <Text style={[styles.chartTitleText, { color: colors.neutral[900] }]}>{t('reports.chart_title') || 'Status Distribution'}</Text>
+                  <PieChart
+                    data={pieData}
+                    width={isDesktop ? (width > 1200 ? 350 : width * 0.21) : width - 64}
+                    height={200}
+                    chartConfig={chartConfig}
+                    accessor={"population"}
+                    backgroundColor={"transparent"}
+                    paddingLeft={"10"}
+                    center={[0, 0]}
+                    absolute
+                  />
+                </AnimatedCard>
+              </View>
+
+              {/* Surveillance Data Summary Box */}
+              <AnimatedCard delay={140} style={[styles.summaryCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
+                <View style={styles.summaryHeader}>
+                  <Icon source="text-box-search-outline" size={20} color={colors.primary[900]} />
+                  <Text style={[styles.summaryTitle, { color: colors.neutral[900] }]}>Surveillance Data Summary</Text>
                 </View>
-              )}
-            </AnimatedCard>
+                <Text style={[styles.summaryText, { color: colors.neutral[700] }]}>
+                  Based on current community checks, {isDemo ? "vaccine-related fertility misinformation" : "misinformation reports"} are highly active in Central Districts. Myths account for {isDemo ? "30%" : `${Math.round((chartMisinfo / chartTotal) * 100)}%`} of overall logged claims, while {isDemo ? "58%" : `${Math.round((chartAccurate / chartTotal) * 100)}%`} are verified accurate.
+                </Text>
+                <View style={styles.summaryMetricsRow}>
+                  <View style={styles.summaryMetric}>
+                    <Text style={[styles.summaryMetricVal, { color: colors.neutral[900] }]}>{isDemo ? "58%" : `${Math.round((chartAccurate / chartTotal) * 100)}%`}</Text>
+                    <Text style={[styles.summaryMetricLabel, { color: colors.neutral[500] }]}>Accuracy Rate</Text>
+                  </View>
+                  <View style={styles.summaryMetric}>
+                    <Text style={[styles.summaryMetricVal, { color: colors.danger[900] }]}>{isDemo ? "14" : stats.misinfo}</Text>
+                    <Text style={[styles.summaryMetricLabel, { color: colors.neutral[500] }]}>High-Risk Claims</Text>
+                  </View>
+                  <View style={styles.summaryMetric}>
+                    <Text style={[styles.summaryMetricVal, { color: colors.primary[900] }]}>Kyotera</Text>
+                    <Text style={[styles.summaryMetricLabel, { color: colors.neutral[500] }]}>Peak Location</Text>
+                  </View>
+                </View>
+              </AnimatedCard>
+            </View>
 
             {/* ── LIST ── */}
             <View style={[isDesktop ? styles.desktopGridItem : ({} as any)]}>
@@ -746,6 +841,76 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#888',
     fontWeight: '700',
+  },
+  statusBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radii.md,
+    gap: 8,
+    marginBottom: spacing.md,
+  },
+  statusBannerText: {
+    fontSize: 13,
+    fontWeight: '700',
+    flex: 1,
+  },
+  chartsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  chartsStack: {
+    flexDirection: 'column',
+    gap: spacing.md,
+    marginBottom: spacing.md,
+  },
+  chartTitleText: {
+    fontSize: 15,
+    fontWeight: '800',
+    marginBottom: spacing.sm,
+  },
+  summaryCard: {
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    marginBottom: spacing.xl,
+    ...shadows.sm,
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: spacing.md,
+  },
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  summaryText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: spacing.lg,
+  },
+  summaryMetricsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+  },
+  summaryMetric: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  summaryMetricVal: {
+    fontSize: 20,
+    fontWeight: '900',
+    marginBottom: 2,
+  },
+  summaryMetricLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
 });
 

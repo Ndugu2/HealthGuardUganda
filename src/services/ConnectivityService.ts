@@ -1,8 +1,5 @@
 import { Platform } from 'react-native';
-
-const API_URL = Platform.OS === 'web'
-  ? 'http://localhost:3000'
-  : 'http://10.0.2.2:3000';
+import { getServerUrl } from '../db/apiConfig';
 
 export interface SyncPacket {
   id: string;
@@ -71,7 +68,8 @@ export class ConnectivityService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      const response = await fetch(`${API_URL}/health`, {
+      const serverUrl = await getServerUrl();
+      const response = await fetch(`${serverUrl}/health`, {
         method: 'GET',
         signal: controller.signal,
       });
@@ -104,7 +102,8 @@ export class ConnectivityService {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
 
-      const response = await fetch(`${API_URL}/health`, {
+      const serverUrl = await getServerUrl();
+      const response = await fetch(`${serverUrl}/health`, {
         method: 'GET',
         signal: controller.signal,
       });

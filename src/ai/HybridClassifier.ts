@@ -1,15 +1,9 @@
-import { NativeModules, Platform } from 'react-native';
 import { ClassificationResult, RuleEngine } from './RuleEngine';
 import { MLModel } from './MLModel';
 import { BERTModel } from './BERTModel';
 
-const { HealthGuardEngine } = NativeModules;
-
 /**
- * HybridClassifier — Two-tier classification pipeline:
- *
- * Tier 1: Rule Engine (deterministic, hardcoded MoH rules) -> Instant result.
- * Tier 2: Scientific ML Model (probabilistic, Logistic Regression + TF-IDF) -> Intelligent inference.
+ * HybridClassifier — Rule engine + logistic regression + semantic assist (all on-device JS).
  */
 export class HybridClassifier {
   private ruleEngine: RuleEngine;
@@ -23,27 +17,15 @@ export class HybridClassifier {
   }
 
   public async classify(input: string): Promise<ClassificationResult> {
-    if (Platform.OS === 'android' && HealthGuardEngine) {
-      try {
-        return await HealthGuardEngine.classify(input);
-      } catch (e) {
-        console.error('Native classification failed', e);
-      }
-    }
-
-    // --- MULTI-MODEL COMPARISON ENGINE ---
     const clinicalInfo = this.ruleEngine.detectClinicalFlags(input);
     const culturalInfo = this.ruleEngine.detectCulturalContext(input);
-    
-    // 1. Run All Three Engines
+
     const ruleRes = this.ruleEngine.check(input);
     const mlRes = this.mlModel.predict(input);
     const bertRes = this.bertModel.predict(input);
 
-    // 2. Select Final Result (Preference: Rule > ML > BERT)
-    const finalResult = ruleRes || { ...mlRes };
-    
-    // 3. Fallback: If rule engine missed but ML caught it, try to find a relevant topic keyword
+    const finalResult = ruleRes ? { ...ruleRes } : { ...mlRes };
+
     if (!ruleRes && finalResult.label !== 'UNCERTAIN' && !finalResult.triggerKeyword) {
       const keywords = this.ruleEngine.keywordScore(input);
       if (keywords.triggerKeyword) {
@@ -52,33 +34,31 @@ export class HybridClassifier {
       }
     }
 
-    // 4. INTENT ANALYSIS: If it's a genuine health-seeking question, favor informational labels
     const isHealthSeeking = /(how|can i|where|what|why|is there|how to)/i.test(input);
     if (isHealthSeeking && finalResult.label === 'INACCURATE' && finalResult.confidence < 0.95) {
-       finalResult.label = 'UNCERTAIN';
-       finalResult.reliabilityNote = "Informational query identified. Providing relevant health guidance.";
+      finalResult.label = 'UNCERTAIN';
+      finalResult.reliabilityNote =
+        'Informational query identified. Providing relevant health guidance.';
     }
 
-    // 5. RELIABILITY LAYER
-    const isReliable = finalResult.confidence > 0.85 || finalResult.triggerKeyword !== null;
-    
-    // 4. Perform Consensus Analysis
+    finalResult.isReliable =
+      finalResult.confidence > 0.85 || finalResult.triggerKeyword !== null;
+
     const models = [
-      { name: 'Rule Engine', res: ruleRes || { label: 'UNCERTAIN', confidence: 0 } },
+      { name: 'Rule Engine', res: ruleRes || { label: 'UNCERTAIN' as const, confidence: 0 } },
       { name: 'Logistic Regression', res: mlRes },
-      { name: 'DistilBERT (Transformer)', res: bertRes }
+      { name: 'Semantic assist', res: bertRes },
     ];
 
-    finalResult.modelComparisons = models.map(m => ({
+    finalResult.modelComparisons = models.map((m) => ({
       model: m.name,
       label: m.res.label,
-      confidence: m.res.confidence
+      confidence: m.res.confidence,
     }));
 
-    // Calculate Consensus
-    const labels = models.map(m => m.res.label).filter(l => l !== 'UNCERTAIN');
+    const labels = models.map((m) => m.res.label).filter((l) => l !== 'UNCERTAIN');
     const uniqueLabels = new Set(labels);
-    
+
     if (uniqueLabels.size === 1 && labels.length === 3) {
       finalResult.consensusStatus = 'UNANIMOUS';
     } else if (uniqueLabels.size === 1 || (uniqueLabels.size === 2 && labels.length === 3)) {
@@ -93,17 +73,16 @@ export class HybridClassifier {
     finalResult.respectfulPrefix = culturalInfo.prefix;
 
     if (culturalInfo.active && finalResult.reasoning) {
-       finalResult.reasoning = culturalInfo.prefix + finalResult.reasoning.charAt(0).toLowerCase() + finalResult.reasoning.slice(1);
+      finalResult.reasoning =
+        culturalInfo.prefix +
+        finalResult.reasoning.charAt(0).toLowerCase() +
+        finalResult.reasoning.slice(1);
     }
 
     return finalResult;
   }
 
   public async improve(text: string, actualLabel: string): Promise<void> {
-    if (Platform.OS === 'android' && HealthGuardEngine) {
-      await HealthGuardEngine.updateFeedback(0, actualLabel);
-    } else {
-      console.log('Feedback recorded (Web Fallback):', text, actualLabel);
-    }
+    console.log('[HybridClassifier] Feedback recorded:', text.substring(0, 40), actualLabel);
   }
 }

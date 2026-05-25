@@ -8,13 +8,10 @@
  */
 
 import { getSetting } from '../db/Database';
-import { Platform } from 'react-native';
+import { getApiBaseUrl } from '../db/apiConfig';
 
 const OPENROUTER_URL   = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODEL = 'meta-llama/llama-3-8b-instruct:free';
-const BACKEND_URL      = Platform.OS === 'web'
-  ? 'http://localhost:3000/api'
-  : 'http://10.0.2.2:3000/api';
 
 export interface ExpertAnalysis {
   label: 'ACCURATE' | 'INACCURATE' | 'UNCERTAIN';
@@ -45,9 +42,10 @@ export class AIService {
 
     // ── TIER 2: National Backend Server ──────────────────────────────────────
     try {
+      const backendUrl = await getApiBaseUrl();
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(`${BACKEND_URL}/ai/consult`, {
+      const res = await fetch(`${backendUrl}/ai/consult`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ claim, language }),
