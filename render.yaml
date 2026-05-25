@@ -2,9 +2,8 @@ services:
   - type: web
     name: healthguard-backend
     env: node
-    rootDir: server
-    buildCommand: npm install && npx prisma generate && npm run build
-    startCommand: npm start
+    buildCommand: npm install && npm run build
+    startCommand: npx serve dist
     envVars:
       - key: NODE_VERSION
         value: 20.x
