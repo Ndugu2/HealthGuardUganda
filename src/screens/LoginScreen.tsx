@@ -29,8 +29,10 @@ interface LoginScreenProps {
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleHint }) => {
   const { t } = useTranslation();
   const { colors: themeColors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isDesktop = width > 900;
+  const isMobile = width < 768;
+  const isSmall = width < 400 || height < 700;
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -592,13 +594,20 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
           </View>
         </View>
       ) : (
-        <View style={styles.mobileLayout}>
-          <View style={styles.mobileHeader}>
-             <Icon source="shield-plus" size={48} color={portal.primary} />
-             <Text style={[styles.mobileTitle, { color: portal.primary }]}>HealthGuard</Text>
-          </View>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[styles.mobileLayout, isSmall && styles.mobileLayoutSmall]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {!isSmall && (
+            <View style={[styles.mobileHeader, isSmall && styles.mobileHeaderSmall]}>
+               <Icon source="shield-plus" size={isSmall ? 36 : 48} color={portal.primary} />
+               <Text style={[styles.mobileTitle, { color: portal.primary }, isSmall && { fontSize: 22 }]}>HealthGuard</Text>
+            </View>
+          )}
           {isRegisterMode ? renderRegisterForm() : renderLoginForm()}
-        </View>
+        </ScrollView>
       )}
     </KeyboardAvoidingView>
   );
@@ -667,23 +676,33 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   mobileLayout: {
-    flex: 1,
+    flexGrow: 1,
     padding: spacing.lg,
     justifyContent: 'center',
+    paddingBottom: 40,
+  },
+  mobileLayoutSmall: {
+    padding: spacing.md,
+    paddingTop: 16,
+    paddingBottom: 24,
+    justifyContent: 'flex-start',
   },
   mobileHeader: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
+  },
+  mobileHeaderSmall: {
+    marginBottom: 12,
   },
   mobileTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '900',
-    marginTop: 10,
+    marginTop: 8,
   },
   loginCard: {
     width: '100%',
     maxWidth: 450,
-    padding: 40,
+    padding: spacing.xl,
     borderRadius: radii.xl,
     ...shadows.lg,
     position: 'relative',

@@ -66,6 +66,13 @@ body {
   color: var(--text-primary);
 }
 /* Table */
+.info-table {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0 2rem 0;
+  border-radius: 8px;
+}
 .info-table table {
   width: 100%;
   border-collapse: collapse;
@@ -82,8 +89,14 @@ body {
   color: var(--text-light);
   font-weight: 600;
 }
+.info-table tr {
+  transition: background-color 0.2s ease;
+}
 .info-table tr:nth-child(even) {
   background: rgba(255,255,255,0.15);
+}
+.info-table tr:hover {
+  background: rgba(255,255,255,0.25);
 }
 /* Text alignment */
 .left-align { text-align: left; }
@@ -127,6 +140,14 @@ body {
   border-radius: 6px;
   background: rgba(255,255,255,0.8);
   font-family: inherit;
+  transition: all 0.3s ease;
+}
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 105, 92, 0.2);
+  background: #fff;
 }
 .contact-form button {
   margin-top: 1rem;
@@ -136,14 +157,61 @@ body {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(255, 82, 82, 0.4);
 }
 .contact-form button:hover {
   background: #ff1744;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 82, 82, 0.6);
 }
-/* Responsive */
+.contact-form button:active {
+  transform: translateY(0);
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
-  .site-header { flex-direction: column; text-align: center; }
-  .logo { margin-bottom: 0.5rem; }
-  .container { padding: 1rem; }
+  .site-header {
+    flex-direction: column;
+    text-align: center;
+    padding: 1rem;
+  }
+  .logo {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
+  .site-title {
+    font-size: 1.5rem;
+  }
+  .container {
+    padding: 1rem;
+  }
+  .hero h2 {
+    font-size: 1.8rem;
+  }
+  .hero p {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h2 {
+    font-size: 1.5rem;
+  }
+  .hero p {
+    font-size: 1rem;
+  }
+  .contact-form {
+    padding: 1.25rem;
+    margin: 1.5rem auto;
+  }
+  .lists ul,
+  .lists ol {
+    margin-left: 1.25rem;
+  }
+  .left-align,
+  .right-align {
+    text-align: center;
+  }
 }
