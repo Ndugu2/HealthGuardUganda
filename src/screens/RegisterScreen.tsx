@@ -3,6 +3,7 @@ import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView } from 're
 import { Text, TextInput, Button, Icon, useTheme } from 'react-native-paper';
 import { AuthService } from '../services/AuthService';
 import { useTranslation } from 'react-i18next';
+import { ValidationService } from '../services/ValidationService';
 
 interface RegisterScreenProps {
   onRegisterSuccess: () => void;
@@ -21,6 +22,23 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({ onRegisterSuccess, onBa
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
+    if (!ValidationService.isValidFullName(name)) {
+      setError('Please enter a valid full name (letters only)');
+      return;
+    }
+    if (!ValidationService.isValidUgandanPhone(phone)) {
+      setError('Please enter a valid Ugandan phone number (e.g. 07XXXXXXXX or +2567XXXXXXXX)');
+      return;
+    }
+    if (email && !/\S+@\S+\.\S+/.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    const pwdStrength = ValidationService.isStrongPassword(password);
+    if (!pwdStrength.isValid) {
+      setError(pwdStrength.errors[0]);
+      return;
+    }
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;

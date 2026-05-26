@@ -16,6 +16,7 @@ import SettingsScreen from './SettingsScreen';
 import AlertCenterScreen from './AlertCenterScreen';
 import PatientQueueScreen from './PatientQueueScreen';
 import AcademyScreen from './AcademyScreen';
+import InventoryScreen from './InventoryScreen';
 
 type MoreView = 
   | 'menu' 
@@ -30,7 +31,8 @@ type MoreView =
   | 'settings'
   | 'alerts'
   | 'queue'
-  | 'academy';
+  | 'academy'
+  | 'inventory';
 
 interface MoreScreenProps {
   navigateToTab?: (key: string) => void;
@@ -190,6 +192,18 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole }) => {
     );
   }
 
+  if (view === 'inventory') {
+    return (
+      <View style={styles.flex}>
+        <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
+          <Icon source="arrow-left" size={22} color={colors.primary[900]} />
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('nav.more') || 'Back'}</Text>
+        </TouchableOpacity>
+        <InventoryScreen />
+      </View>
+    );
+  }
+
   // Generate dynamic items based on user role
   const getMenuItems = () => {
     const baseItems = [
@@ -213,6 +227,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole }) => {
     return [
       { key: 'profile' as const, icon: 'account-circle', title: t('nav.profile') || 'Health Profile', sub: t('more.profile_sub') || 'Your health information and preferences' },
       { key: 'queue' as const, icon: 'account-multiple', title: 'Patient Queue', sub: 'Manage local clinical visits & triaged patients' },
+      { key: 'inventory' as const, icon: 'medical-bag', title: 'Drug Inventory', sub: 'Manage clinic supplies and deduct stock' },
       { key: 'academy' as const, icon: 'school', title: 'CHW Academy', sub: 'Interactive lessons & training simulation quizzes' },
       ...baseItems.filter(i => i.key !== 'profile'),
     ];

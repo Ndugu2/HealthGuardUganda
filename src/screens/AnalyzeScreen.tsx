@@ -22,6 +22,7 @@ import AnimatedCard from '../components/AnimatedCard';
 import { colors, spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 import { AIService, ExpertAnalysis } from '../services/AIService';
+import { ValidationService } from '../services/ValidationService';
 import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Easing } from 'react-native';
@@ -160,6 +161,16 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
 
   const handleVerify = async () => {
     if (!claim) return;
+    
+    const validation = ValidationService.isValidClaimText(claim);
+    if (!validation.isValid) {
+      Alert.alert(
+        i18n.language === 'lg' ? 'Kino Tekyetaagisa' : 'Invalid Health Claim',
+        validation.error || 'Please enter a rightful health claim.'
+      );
+      return;
+    }
+
     setLoading(true);
     setAnalysisStage(0);
 

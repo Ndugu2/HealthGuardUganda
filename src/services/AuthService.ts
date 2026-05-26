@@ -22,6 +22,10 @@ export interface User {
 }
 
 export class AuthService {
+  public static generateOTP(): string {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
   public static async login(phone: string, password: string, roleHint?: 'COMMUNITY' | 'HW' | 'ADMIN'): Promise<{ success: boolean; error?: string }> {
     const API_URL = await getApiBaseUrl();
 

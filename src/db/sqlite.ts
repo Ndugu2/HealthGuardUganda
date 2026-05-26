@@ -1,6 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { Platform } from 'react-native';
-import type { KnowledgeItem, ClaimRecord, Facility, Broadcast, PatientRecord, MythBusterItem, AilmentGuide, MaternalRecord, ChildRecord } from './types';
+import type { KnowledgeItem, ClaimRecord, Facility, Broadcast, PatientRecord, MythBusterItem, AilmentGuide, MaternalRecord, ChildRecord, InventoryItem } from './types';
 
 const DB_NAME = 'healthguard.db';
 let dbInstance: SQLite.SQLiteDatabase | null = null;
@@ -15,6 +15,13 @@ const INITIAL_MOCK_PATIENTS: PatientRecord[] = [
   { id: 6, name: 'Ssekandi Moses', age: 60, gender: 'M', village: 'Makindye', symptoms: 'Chest pains, shortness of breath', status: 'referred', priority: 'critical', screenedDate: '17 May', referredTo: 'Nsambya Hospital' },
   { id: 7, name: 'Babirye Esther', age: 19, gender: 'F', village: 'Rubaga', symptoms: 'Missed period, nausea', status: 'completed', priority: 'medium', screenedDate: '16 May' },
   { id: 8, name: 'Kato Brian', age: 8, gender: 'M', village: 'Nakawa', symptoms: 'Malaria (confirmed RDT+)', status: 'follow-up', priority: 'medium', screenedDate: '15 May', followUpDate: '22 May 2026' },
+];
+
+const INITIAL_INVENTORY: InventoryItem[] = [
+  { id: 1, name: 'Coartem (Artemether/Lumefantrine)', quantity: 150, unit: 'doses', minimumThreshold: 50, lastUpdated: new Date().toISOString() },
+  { id: 2, name: 'Paracetamol 500mg', quantity: 500, unit: 'tablets', minimumThreshold: 100, lastUpdated: new Date().toISOString() },
+  { id: 3, name: 'Amoxicillin 250mg', quantity: 40, unit: 'capsules', minimumThreshold: 100, lastUpdated: new Date().toISOString() },
+  { id: 4, name: 'ORS Sachets', quantity: 200, unit: 'sachets', minimumThreshold: 50, lastUpdated: new Date().toISOString() },
 ];
 
 const WebStore = {
@@ -43,6 +50,10 @@ const WebStore = {
     const patientsRaw = localStorage.getItem('healthguard_patients');
     if (!patientsRaw) {
       localStorage.setItem('healthguard_patients', JSON.stringify(INITIAL_MOCK_PATIENTS));
+    }
+    const inventoryRaw = localStorage.getItem('healthguard_inventory');
+    if (!inventoryRaw) {
+      localStorage.setItem('healthguard_inventory', JSON.stringify(INITIAL_INVENTORY));
     }
     console.log('[Database] Web localStorage initialized');
   },
@@ -333,6 +344,48 @@ const WebStore = {
 
   async saveAilmentGuides(guides: AilmentGuide[]): Promise<void> {
     localStorage.setItem('healthguard_ailments', JSON.stringify(guides));
+  },
+
+  async getInventory(): Promise<InventoryItem[]> {
+    const raw = localStorage.getItem('healthguard_inventory');
+    if (!raw) return [...INITIAL_INVENTORY];
+    try { return JSON.parse(raw); } catch (_) { return [...INITIAL_INVENTORY]; }
+  },
+
+  async addInventoryItem(item: Omit<InventoryItem, 'id' | 'lastUpdated'>): Promise<InventoryItem> {
+    const existing = await this.getInventory();
+    const newItem: InventoryItem = { ...item, id: Date.now(), lastUpdated: new Date().toISOString() };
+    existing.push(newItem);
+    localStorage.setItem('healthguard_inventory', JSON.stringify(existing));
+    return newItem;
+  },
+
+  async deductInventory(id: number, amount: number): Promise<boolean> {
+    const existing = await this.getInventory();
+    let found = false;
+    const updated = existing.map(x => {
+      if (x.id === id) {
+        found = true;
+        return { ...x, quantity: Math.max(0, x.quantity - amount), lastUpdated: new Date().toISOString() };
+      }
+      return x;
+    });
+    if (found) localStorage.setItem('healthguard_inventory', JSON.stringify(updated));
+    return found;
+  },
+
+  async addInventoryStock(id: number, amount: number): Promise<boolean> {
+    const existing = await this.getInventory();
+    let found = false;
+    const updated = existing.map(x => {
+      if (x.id === id) {
+        found = true;
+        return { ...x, quantity: x.quantity + amount, lastUpdated: new Date().toISOString() };
+      }
+      return x;
+    });
+    if (found) localStorage.setItem('healthguard_inventory', JSON.stringify(updated));
+    return found;
   }
 };
 
@@ -456,6 +509,14 @@ CREATE TABLE IF NOT EXISTS child_records (
   birthDate TEXT NOT NULL,
   gender TEXT NOT NULL,
   immunizationsJson TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS inventory (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  quantity INTEGER NOT NULL,
+  unit TEXT NOT NULL,
+  minimumThreshold INTEGER NOT NULL,
+  lastUpdated TEXT NOT NULL
 );
 `;
 
@@ -1122,4 +1183,51 @@ export async function deleteChildRecord(id: number): Promise<void> {
   if (Platform.OS === 'web') return WebStore.deleteChildRecord(id);
   const db = await getDb();
   await db.runAsync('DELETE FROM child_records WHERE id = ?', [id]);
+}
+
+export async function getInventory(): Promise<InventoryItem[]> {
+  if (Platform.OS === 'web') return WebStore.getInventory();
+  const db = await getDb();
+  const rows = await db.getAllAsync<Record<string, unknown>>('SELECT * FROM inventory ORDER BY name ASC');
+  return rows.map((r) => ({
+    id: Number(r.id),
+    name: String(r.name),
+    quantity: Number(r.quantity),
+    unit: String(r.unit),
+    minimumThreshold: Number(r.minimumThreshold),
+    lastUpdated: String(r.lastUpdated),
+  }));
+}
+
+export async function addInventoryItem(item: Omit<InventoryItem, 'id' | 'lastUpdated'>): Promise<InventoryItem> {
+  if (Platform.OS === 'web') return WebStore.addInventoryItem(item);
+  const db = await getDb();
+  const lastUpdated = new Date().toISOString();
+  const result = await db.runAsync(
+    `INSERT INTO inventory (name, quantity, unit, minimumThreshold, lastUpdated) VALUES (?, ?, ?, ?, ?)`,
+    [item.name, item.quantity, item.unit, item.minimumThreshold, lastUpdated]
+  );
+  return { ...item, id: result.lastInsertRowId, lastUpdated };
+}
+
+export async function deductInventory(id: number, amount: number): Promise<boolean> {
+  if (Platform.OS === 'web') return WebStore.deductInventory(id, amount);
+  const db = await getDb();
+  const lastUpdated = new Date().toISOString();
+  const result = await db.runAsync(
+    `UPDATE inventory SET quantity = MAX(0, quantity - ?), lastUpdated = ? WHERE id = ?`,
+    [amount, lastUpdated, id]
+  );
+  return result.changes > 0;
+}
+
+export async function addInventoryStock(id: number, amount: number): Promise<boolean> {
+  if (Platform.OS === 'web') return WebStore.addInventoryStock(id, amount);
+  const db = await getDb();
+  const lastUpdated = new Date().toISOString();
+  const result = await db.runAsync(
+    `UPDATE inventory SET quantity = quantity + ?, lastUpdated = ? WHERE id = ?`,
+    [amount, lastUpdated, id]
+  );
+  return result.changes > 0;
 }

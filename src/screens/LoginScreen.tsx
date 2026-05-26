@@ -15,8 +15,10 @@ import {
 import { Text, Icon, ActivityIndicator, Divider } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { AuthService } from '../services/AuthService';
+import { NotificationService } from '../services/NotificationService';
 import { colors, spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
+import { ValidationService } from '../services/ValidationService';
 import AnimatedCard from '../components/AnimatedCard';
 
 interface LoginScreenProps {
@@ -52,6 +54,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
   const [adminCode, setAdminCode] = useState('');
   const [showRegPassword, setShowRegPassword] = useState(false);
   const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
+
+  const [registrationStep, setRegistrationStep] = useState<'FORM' | 'OTP'>('FORM');
+  const [generatedOTP, setGeneratedOTP] = useState<string | null>(null);
+  const [enteredOTP, setEnteredOTP] = useState('');
+  const [districtSuggestions, setDistrictSuggestions] = useState<string[]>([]);
+
+  const [loginErrors, setLoginErrors] = useState<{ phone?: string; password?: string }>({});
+  const [regErrors, setRegErrors] = useState<{
+    name?: string;
+    email?: string;
+    phone?: string;
+    district?: string;
+    village?: string;
+    password?: string;
+    confirmPassword?: string;
+    adminCode?: string;
+  }>({});
 
   const getPortalTheme = () => {
     if (roleHint === 'COMMUNITY') {
@@ -103,10 +122,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
   const portal = getPortalTheme();
 
   const handleLogin = async () => {
-    if (!phone || !password) {
-      Alert.alert(t('auth.missing_info'), t('auth.enter_credentials'));
-      return;
-    }
+    const errors: { phone?: string; password?: string } = {};
+    if (!phone.trim()) errors.phone = t('auth.phone_required') || 'Phone number is required';
+    if (!password) errors.password = t('auth.password_required') || 'Password is required';
+    setLoginErrors(errors);
+    
+    if (Object.keys(errors).length > 0) return;
 
     setLoading(true);
     const result = await AuthService.login(phone, password, roleHint);
@@ -120,16 +141,68 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
   };
 
   const handleRegister = async () => {
-    if (!regName || !regEmail || !regPhone || !regPassword || !regConfirmPassword || !regDistrict || !regVillage) {
-      Alert.alert('Missing Information', 'Please fill in all fields.');
-      return;
+    const errors: typeof regErrors = {};
+    if (!regName.trim()) {
+      errors.name = 'Full name is required';
+    } else if (!ValidationService.isValidFullName(regName)) {
+      errors.name = 'Enter both first and last name (letters only)';
     }
+    
+    if (!regEmail.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(regEmail)) {
+      errors.email = 'Email address is invalid';
+    }
+
+    if (!regPhone.trim()) {
+      errors.phone = 'Phone number is required';
+    } else if (!ValidationService.isValidUgandanPhone(regPhone)) {
+      errors.phone = 'Enter a valid Ugandan phone number (e.g. 07XXXXXXXX or +2567XXXXXXXX)';
+    }
+
+    if (!regDistrict.trim()) {
+      errors.district = 'District is required';
+    } else if (!ValidationService.isValidDistrict(regDistrict)) {
+      errors.district = 'Please enter a valid district in Uganda';
+    }
+
+    if (!regVillage.trim()) {
+      errors.village = 'Village/Parish is required';
+    }
+
+    if (!regPassword) {
+      errors.password = 'Password is required';
+    } else {
+      const pwdStrength = ValidationService.isStrongPassword(regPassword);
+      if (!pwdStrength.isValid) {
+        errors.password = pwdStrength.errors[0]; // show the first validation error
+      }
+    }
+
     if (regPassword !== regConfirmPassword) {
-      Alert.alert('Password Mismatch', 'Passwords do not match.');
-      return;
+      errors.confirmPassword = 'Passwords do not match';
     }
+
     if (regRole === 'ADMIN' && adminCode !== 'MoH-Admin-2026') {
-      Alert.alert('Invalid Admin Code', 'The administrative verification code entered is incorrect.');
+      errors.adminCode = 'Invalid Admin Code';
+    }
+
+    setRegErrors(errors);
+
+    if (Object.keys(errors).length > 0) return;
+
+    setLoading(true);
+    const otp = AuthService.generateOTP();
+    setGeneratedOTP(otp);
+    await NotificationService.sendOTP(regPhone, otp);
+    setLoading(false);
+    
+    setRegistrationStep('OTP');
+  };
+
+  const handleVerifyOTP = async () => {
+    if (enteredOTP !== generatedOTP) {
+      Alert.alert('Invalid Code', 'The verification code you entered is incorrect.');
       return;
     }
 
@@ -146,6 +219,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
     setLoading(false);
 
     if (result.success) {
+      if (regEmail) {
+        await NotificationService.sendWelcomeEmail(regEmail, regName);
+      }
+
       let msg = '✅ Account created successfully! You can now sign in.';
       if (regRole === 'HW') {
         msg = '✅ Account created! It is pending administrator approval before you can sign in.';
@@ -155,11 +232,47 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
       setPhone(regPhone);
       setPassword(regPassword);
       setSuccessMessage(msg);
+      
+      setRegistrationStep('FORM');
       setIsRegisterMode(false);
-      // Auto-hide the banner after 6 seconds
+      setEnteredOTP('');
+      setGeneratedOTP(null);
+      
       setTimeout(() => setSuccessMessage(null), 6000);
     } else {
       Alert.alert('Registration Failed', result.error || 'Could not register user.');
+    }
+  };
+
+  const handleBlur = (field: keyof typeof regErrors) => {
+    let error: string | undefined;
+    if (field === 'name') {
+      if (!regName.trim()) error = 'Full name is required';
+      else if (!ValidationService.isValidFullName(regName)) error = 'Enter both first and last name (letters only)';
+    } else if (field === 'email') {
+      if (!regEmail.trim()) error = 'Email is required';
+      else if (!/\S+@\S+\.\S+/.test(regEmail)) error = 'Email address is invalid';
+    } else if (field === 'phone') {
+      if (!regPhone.trim()) error = 'Phone number is required';
+      else if (!ValidationService.isValidUgandanPhone(regPhone)) error = 'Phone number is invalid';
+    } else if (field === 'district') {
+      if (!regDistrict.trim()) error = 'District is required';
+      else if (!ValidationService.isValidDistrict(regDistrict)) error = 'Please enter a valid district in Uganda';
+    } else if (field === 'password') {
+      if (!regPassword) {
+        error = 'Password is required';
+      } else {
+        const pwdStrength = ValidationService.isStrongPassword(regPassword);
+        if (!pwdStrength.isValid) {
+          error = pwdStrength.errors[0];
+        }
+      }
+    } else if (field === 'confirmPassword') {
+      if (regPassword !== regConfirmPassword) error = 'Passwords do not match';
+    }
+    
+    if (error) {
+      setRegErrors(prev => ({ ...prev, [field]: error }));
     }
   };
 
@@ -209,15 +322,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: themeColors.neutral[500] }]}>PHONE NUMBER</Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: 0, justifyContent: 'center' }]}>
+            <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: loginErrors.phone ? 1 : 0, borderColor: loginErrors.phone ? '#EF4444' : undefined, justifyContent: 'center' }]}>
               <Icon source="web" size={16} color={themeColors.neutral[400]} />
               <Text style={{ fontSize: 13, fontWeight: '600', color: themeColors.neutral[800] }}>Uganda (+256)</Text>
             </View>
-            <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+            <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: loginErrors.phone ? 1 : 0, borderColor: loginErrors.phone ? '#EF4444' : undefined }]}>
               <Icon source="phone-outline" size={16} color={themeColors.neutral[400]} />
               <TextInput
                 value={phone}
-                onChangeText={setPhone}
+                onChangeText={(val) => { setPhone(val); setLoginErrors(prev => ({ ...prev, phone: undefined })); }}
                 placeholder="700 000 000"
                 placeholderTextColor={themeColors.neutral[400]}
                 keyboardType="phone-pad"
@@ -226,15 +339,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
               />
             </View>
           </View>
+          {loginErrors.phone && <Text style={styles.errorText}>{loginErrors.phone}</Text>}
         </View>
 
         <View style={styles.inputGroup}>
           <Text style={[styles.label, { color: themeColors.neutral[500] }]}>PASSWORD</Text>
-          <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+          <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: loginErrors.password ? 1 : 0, borderColor: loginErrors.password ? '#EF4444' : undefined }]}>
             <Icon source="lock-outline" size={20} color={themeColors.neutral[400]} />
             <TextInput
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(val) => { setPassword(val); setLoginErrors(prev => ({ ...prev, password: undefined })); }}
               placeholder="••••••••"
               placeholderTextColor={themeColors.neutral[400]}
               secureTextEntry={!showPassword}
@@ -245,6 +359,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
               <Icon source={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={themeColors.neutral[400]} />
             </TouchableOpacity>
           </View>
+          {loginErrors.password && <Text style={styles.errorText}>{loginErrors.password}</Text>}
         </View>
 
         <TouchableOpacity style={styles.forgotBtn}>
@@ -309,36 +424,79 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
           <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: portal.badgeText, marginRight: 6 }} />
           <Text style={{ fontSize: 10, fontWeight: '800', color: portal.badgeText, letterSpacing: 0.5 }}>{portal.badgeLabel}</Text>
         </View>
-        <Text style={[styles.title, { color: themeColors.neutral[900], fontSize: 26, fontWeight: '800', textAlign: 'center' }]}>Join HealthGuard</Text>
-        <Text style={[styles.subtitle, { color: themeColors.neutral[500], fontSize: 14, textAlign: 'center', marginTop: 4 }]}>Create your account for the portal</Text>
+        <Text style={[styles.title, { color: themeColors.neutral[900], fontSize: 26, fontWeight: '800', textAlign: 'center' }]}>
+          {registrationStep === 'OTP' ? 'Verify Phone' : 'Join HealthGuard'}
+        </Text>
+        <Text style={[styles.subtitle, { color: themeColors.neutral[500], fontSize: 14, textAlign: 'center', marginTop: 4 }]}>
+          {registrationStep === 'OTP' ? `Enter the 6-digit code sent to ${regPhone}` : 'Create your account for the portal'}
+        </Text>
       </View>
 
+      {registrationStep === 'OTP' ? (
+        <View style={styles.form}>
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: themeColors.neutral[500] }]}>VERIFICATION CODE</Text>
+            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+              <Icon source="message-processing-outline" size={20} color={themeColors.neutral[400]} />
+              <TextInput
+                value={enteredOTP}
+                onChangeText={setEnteredOTP}
+                placeholder="000000"
+                placeholderTextColor={themeColors.neutral[400]}
+                keyboardType="number-pad"
+                maxLength={6}
+                style={[styles.input, { color: themeColors.neutral[900], fontSize: 24, letterSpacing: 8, textAlign: 'center' }]}
+              />
+            </View>
+          </View>
+          
+          <TouchableOpacity 
+            style={[styles.loginBtn, { backgroundColor: portal.primary, borderRadius: radii.md, height: 50, flexDirection: 'row', justifyContent: 'center', paddingHorizontal: 24, marginTop: 10 }]} 
+            onPress={handleVerifyOTP}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={[styles.loginBtnText, { fontSize: 15, fontWeight: '700' }]}>Verify & Complete</Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => setRegistrationStep('FORM')} style={{ marginTop: 20, alignItems: 'center' }}>
+            <Text style={{ color: themeColors.neutral[600], fontSize: 14, textDecorationLine: 'underline' }}>Change Phone Number</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <>
       <ScrollView style={{ maxHeight: isDesktop ? 500 : 380 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.md }}>
         <View style={styles.form}>
           {/* Full Name */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: themeColors.neutral[500] }]}>FULL NAME</Text>
-            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: regErrors.name ? 1 : 0, borderColor: regErrors.name ? '#EF4444' : undefined }]}>
               <Icon source="account-outline" size={20} color={themeColors.neutral[400]} />
               <TextInput
                 value={regName}
-                onChangeText={setRegName}
+                onChangeText={(val) => { setRegName(val); setRegErrors(prev => ({ ...prev, name: undefined })); }}
+                onBlur={() => handleBlur('name')}
                 placeholder="e.g. Dr. Mukasa John"
                 placeholderTextColor={themeColors.neutral[400]}
                 autoComplete="name"
                 style={[styles.input, { color: themeColors.neutral[900] }]}
               />
             </View>
+            {regErrors.name && <Text style={styles.errorText}>{regErrors.name}</Text>}
           </View>
 
           {/* Email */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: themeColors.neutral[500] }]}>EMAIL ADDRESS</Text>
-            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: regErrors.email ? 1 : 0, borderColor: regErrors.email ? '#EF4444' : undefined }]}>
               <Icon source="email-outline" size={20} color={themeColors.neutral[400]} />
               <TextInput
                 value={regEmail}
-                onChangeText={setRegEmail}
+                onChangeText={(val) => { setRegEmail(val); setRegErrors(prev => ({ ...prev, email: undefined })); }}
+                onBlur={() => handleBlur('email')}
                 placeholder="joe@example.com"
                 placeholderTextColor={themeColors.neutral[400]}
                 keyboardType="email-address"
@@ -347,21 +505,23 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
                 style={[styles.input, { color: themeColors.neutral[900] }]}
               />
             </View>
+            {regErrors.email && <Text style={styles.errorText}>{regErrors.email}</Text>}
           </View>
 
           {/* Phone */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: themeColors.neutral[500] }]}>PHONE NUMBER</Text>
             <View style={{ flexDirection: 'row', gap: 12 }}>
-              <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: 0, justifyContent: 'center' }]}>
+              <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: regErrors.phone ? 1 : 0, borderColor: regErrors.phone ? '#EF4444' : undefined, justifyContent: 'center' }]}>
                 <Icon source="web" size={16} color={themeColors.neutral[400]} />
                 <Text style={{ fontSize: 13, fontWeight: '600', color: themeColors.neutral[800] }}>Uganda (+256)</Text>
               </View>
-              <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+              <View style={[styles.inputBox, { flex: 0.5, backgroundColor: themeColors.neutral[50], borderWidth: regErrors.phone ? 1 : 0, borderColor: regErrors.phone ? '#EF4444' : undefined }]}>
                 <Icon source="phone-outline" size={16} color={themeColors.neutral[400]} />
                 <TextInput
                   value={regPhone}
-                  onChangeText={setRegPhone}
+                  onChangeText={(val) => { setRegPhone(val); setRegErrors(prev => ({ ...prev, phone: undefined })); }}
+                  onBlur={() => handleBlur('phone')}
                   placeholder="700 000 000"
                   placeholderTextColor={themeColors.neutral[400]}
                   keyboardType="phone-pad"
@@ -370,6 +530,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
                 />
               </View>
             </View>
+            {regErrors.phone && <Text style={styles.errorText}>{regErrors.phone}</Text>}
           </View>
 
           {/* Profile Picture */}
@@ -389,43 +550,87 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
           {/* District */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: themeColors.neutral[500] }]}>DISTRICT</Text>
-            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: regErrors.district ? 1 : 0, borderColor: regErrors.district ? '#EF4444' : undefined }]}>
               <Icon source="map-marker-outline" size={20} color={themeColors.neutral[400]} />
               <TextInput
                 value={regDistrict}
-                onChangeText={setRegDistrict}
+                onChangeText={(val) => {
+                  setRegDistrict(val);
+                  setRegErrors(prev => ({ ...prev, district: undefined }));
+                  setDistrictSuggestions(ValidationService.getDistrictSuggestions(val));
+                }}
+                onBlur={() => {
+                  setTimeout(() => {
+                    handleBlur('district');
+                  }, 200);
+                }}
                 placeholder="e.g. Kampala"
                 placeholderTextColor={themeColors.neutral[400]}
                 autoComplete="off"
                 style={[styles.input, { color: themeColors.neutral[900] }]}
               />
             </View>
+            {districtSuggestions.length > 0 && (
+              <View style={{
+                backgroundColor: themeColors.surface,
+                borderColor: themeColors.neutral[200],
+                borderWidth: 1,
+                borderRadius: 8,
+                marginTop: 4,
+                zIndex: 1000,
+                elevation: 5,
+              }}>
+                {districtSuggestions.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={{
+                      padding: 12,
+                      borderBottomWidth: index === districtSuggestions.length - 1 ? 0 : 1,
+                      borderBottomColor: themeColors.neutral[100],
+                    }}
+                    onPress={() => {
+                      setRegDistrict(item);
+                      setDistrictSuggestions([]);
+                      setRegErrors(prev => ({ ...prev, district: undefined }));
+                    }}
+                  >
+                    <Text style={{ color: themeColors.neutral[800], fontSize: 14, fontWeight: '600' }}>
+                      {item}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            {regErrors.district && <Text style={styles.errorText}>{regErrors.district}</Text>}
           </View>
 
           {/* Village */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: themeColors.neutral[500] }]}>VILLAGE / PARISH</Text>
-            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: regErrors.village ? 1 : 0, borderColor: regErrors.village ? '#EF4444' : undefined }]}>
               <Icon source="home-outline" size={20} color={themeColors.neutral[400]} />
               <TextInput
                 value={regVillage}
-                onChangeText={setRegVillage}
+                onChangeText={(val) => { setRegVillage(val); setRegErrors(prev => ({ ...prev, village: undefined })); }}
+                onBlur={() => handleBlur('village')}
                 placeholder="e.g. Kalerwe"
                 placeholderTextColor={themeColors.neutral[400]}
                 autoComplete="off"
                 style={[styles.input, { color: themeColors.neutral[900] }]}
               />
             </View>
+            {regErrors.village && <Text style={styles.errorText}>{regErrors.village}</Text>}
           </View>
 
           {/* Password */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: themeColors.neutral[500] }]}>PASSWORD</Text>
-            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: regErrors.password ? 1 : 0, borderColor: regErrors.password ? '#EF4444' : undefined }]}>
               <Icon source="lock-outline" size={20} color={themeColors.neutral[400]} />
               <TextInput
                 value={regPassword}
-                onChangeText={setRegPassword}
+                onChangeText={(val) => { setRegPassword(val); setRegErrors(prev => ({ ...prev, password: undefined, confirmPassword: undefined })); }}
+                onBlur={() => handleBlur('password')}
                 placeholder="••••••••"
                 placeholderTextColor={themeColors.neutral[400]}
                 secureTextEntry={!showRegPassword}
@@ -436,16 +641,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
                 <Icon source={showRegPassword ? "eye-off-outline" : "eye-outline"} size={20} color={themeColors.neutral[400]} />
               </TouchableOpacity>
             </View>
+            {regErrors.password && <Text style={styles.errorText}>{regErrors.password}</Text>}
           </View>
 
           {/* Confirm Password */}
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: themeColors.neutral[500] }]}>CONFIRM PASSWORD</Text>
-            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+            <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: regErrors.confirmPassword ? 1 : 0, borderColor: regErrors.confirmPassword ? '#EF4444' : undefined }]}>
               <Icon source="lock-check-outline" size={20} color={themeColors.neutral[400]} />
               <TextInput
                 value={regConfirmPassword}
-                onChangeText={setRegConfirmPassword}
+                onChangeText={(val) => { setRegConfirmPassword(val); setRegErrors(prev => ({ ...prev, confirmPassword: undefined })); }}
+                onBlur={() => handleBlur('confirmPassword')}
                 placeholder="••••••••"
                 placeholderTextColor={themeColors.neutral[400]}
                 secureTextEntry={!showRegConfirmPassword}
@@ -456,6 +663,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
                 <Icon source={showRegConfirmPassword ? "eye-off-outline" : "eye-outline"} size={20} color={themeColors.neutral[400]} />
               </TouchableOpacity>
             </View>
+            {regErrors.confirmPassword && <Text style={styles.errorText}>{regErrors.confirmPassword}</Text>}
           </View>
 
           {/* Role Toggle Selector */}
@@ -512,11 +720,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
           {regRole === 'ADMIN' && (
             <View style={styles.inputGroup}>
               <Text style={[styles.label, { color: themeColors.neutral[500] }]}>ADMIN VERIFICATION CODE</Text>
-              <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: 0 }]}>
+              <View style={[styles.inputBox, { backgroundColor: themeColors.neutral[50], borderWidth: regErrors.adminCode ? 1 : 0, borderColor: regErrors.adminCode ? '#EF4444' : undefined }]}>
                 <Icon source="key-outline" size={20} color={themeColors.neutral[400]} />
                 <TextInput
                   value={adminCode}
-                  onChangeText={setAdminCode}
+                  onChangeText={(val) => { setAdminCode(val); setRegErrors(prev => ({ ...prev, adminCode: undefined })); }}
+                  onBlur={() => handleBlur('adminCode')}
                   placeholder="Enter MoH Admin Code"
                   placeholderTextColor={themeColors.neutral[400]}
                   secureTextEntry
@@ -524,6 +733,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
                   style={[styles.input, { color: themeColors.neutral[900] }]}
                 />
               </View>
+              {regErrors.adminCode && <Text style={styles.errorText}>{regErrors.adminCode}</Text>}
             </View>
           )}
         </View>
@@ -557,6 +767,8 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleH
           </TouchableOpacity>
         </View>
       </View>
+      </>
+      )}
     </AnimatedCard>
   );
 
@@ -834,6 +1046,13 @@ const styles = StyleSheet.create({
   roleToggleText: {
     fontSize: 12,
     fontWeight: '700',
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
+    marginLeft: 4,
   },
 });
 

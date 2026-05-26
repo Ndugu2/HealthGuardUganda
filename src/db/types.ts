@@ -120,3 +120,12 @@ export interface ChildRecord {
   immunizationsJson: string; // JSON array of: { name: string, dueWeeks: number, status: 'pending' | 'given', givenDate?: string }
 }
 
+export interface InventoryItem {
+  id: number;
+  name: string;
+  quantity: number;
+  unit: string;
+  minimumThreshold: number;
+  lastUpdated: string;
+}
+
