@@ -8,7 +8,7 @@ import statsRoutes from './routes/stats';
 import federatedRoutes from './routes/federated';
 import aiRoutes from './routes/ai';
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,4 +30,5 @@ app.use('/api/ai', aiRoutes);
 
 app.listen(PORT, () => {
   console.log(`HealthGuard AI Backend running on port ${PORT}`);
+  console.log(`[ENV] SMTP_HOST=${process.env.SMTP_HOST || '(not set)'}, SMTP_USER=${process.env.SMTP_USER || '(not set)'}, SMTP_PASS=${process.env.SMTP_PASS ? '***configured***' : '(not set)'}`);
 });
