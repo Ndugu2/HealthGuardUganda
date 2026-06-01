@@ -24,11 +24,11 @@
                 </div>
             </div>
             <nav class="nav-menu">
-                <a href="#" class="nav-item active"><span class="icon">📊</span> Dashboard</a>
-                <a href="#" class="nav-item"><span class="icon">🗺️</span> Heatmap AI</a>
-                <a href="#" class="nav-item"><span class="icon">🛡️</span> Intervention Tracker</a>
-                <a href="#" class="nav-item"><span class="icon">🔬</span> Research Lab</a>
-                <a href="#" class="nav-item"><span class="icon">⚙️</span> Node Settings</a>
+                <a href="#" class="nav-item active" data-tab="dashboard"><span class="icon">📊</span> Dashboard</a>
+                <a href="#" class="nav-item" data-tab="heatmap"><span class="icon">🗺️</span> Heatmap AI</a>
+                <a href="#" class="nav-item" data-tab="intervention"><span class="icon">🛡️</span> Intervention Tracker</a>
+                <a href="#" class="nav-item" data-tab="research"><span class="icon">🔬</span> Research Lab</a>
+                <a href="#" class="nav-item" data-tab="settings"><span class="icon">⚙️</span> Node Settings</a>
             </nav>
             <div class="sidebar-footer">
                 <div class="status-pill online">
@@ -41,8 +41,8 @@
         <main class="content">
             <header class="top-bar">
                 <div class="page-title">
-                    <h2>Uganda Health Misinformation Analytics</h2>
-                    <p>Real-time surveillance & predictive risk monitoring</p>
+                    <h2 id="view-title">Uganda Health Misinformation Analytics</h2>
+                    <p id="view-subtitle">Real-time surveillance & predictive risk monitoring</p>
                 </div>
                 <div class="header-actions">
                     <button class="btn btn-outline">Export Report</button>
@@ -54,79 +54,208 @@
                 </div>
             </header>
 
-            <div class="dashboard-grid">
-                <!-- Stats Row -->
-                <div class="stats-row">
-                    <div class="stat-card">
-                        <div class="stat-label">Total Claims Logged</div>
-                        <div id="total-claims" class="stat-value">---</div>
-                        <div class="stat-trend up" id="total-trend">+0.0%</div>
+            <!-- Dashboard View -->
+            <div id="view-dashboard" class="portal-view active">
+                <div class="dashboard-grid">
+                    <!-- Stats Row -->
+                    <div class="stats-row">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Claims Logged</div>
+                            <div id="total-claims" class="stat-value">---</div>
+                            <div class="stat-trend up" id="total-trend">+0.0%</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Myths Identified</div>
+                            <div id="myths-identified" class="stat-value">---</div>
+                            <div class="stat-trend neutral">Live Tracking</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">CHW Engagement</div>
+                            <div id="chw-engagement" class="stat-value">---</div>
+                            <div class="stat-trend up">Active</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Risk Index (National)</div>
+                            <div id="national-risk" class="stat-value high">---</div>
+                            <div class="stat-trend up">Calculated</div>
+                        </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Myths Identified</div>
-                        <div id="myths-identified" class="stat-value">---</div>
-                        <div class="stat-trend neutral">Live Tracking</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">CHW Engagement</div>
-                        <div id="chw-engagement" class="stat-value">---</div>
-                        <div class="stat-trend up">Active</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Risk Index (National)</div>
-                        <div id="national-risk" class="stat-value high">---</div>
-                        <div class="stat-trend up">Calculated</div>
-                    </div>
-                </div>
 
-                <!-- Charts Row -->
-                <div class="charts-row">
-                    <div class="card chart-card">
-                        <div class="card-header">
-                            <h3>Misinformation Trends (90 Days)</h3>
-                            <select class="card-select">
-                                <option>National</option>
-                                <option>Wakiso</option>
-                                <option>Kampala</option>
-                            </select>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="trendChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card distribution-card">
-                        <div class="card-header">
-                            <h3>Myth Categories</h3>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="categoryChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Bottom Row -->
-                <div class="bottom-row">
-                    <div class="card map-card">
-                        <div class="card-header">
-                            <h3>Regional Risk Hotspots</h3>
-                        </div>
-                        <div class="map-placeholder" id="uganda-map">
-                            <!-- Simulated Map Visualization -->
-                            <div id="map-hotspots"></div>
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Uganda_districts_2020.svg/800px-Uganda_districts_2020.svg.png" alt="Uganda Districts">
-                            <div id="map-tooltip" class="map-tooltip"></div>
-                        </div>
-                    </div>
-                    <div class="card recent-claims">
-                        <div class="card-header">
-                            <h3>Live Federated Claims Feed</h3>
-                            <div class="live-indicator">
-                                <span class="dot"></span> LIVE
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h3>Misinformation Trends (90 Days)</h3>
+                                <select class="card-select">
+                                    <option>National</option>
+                                    <option>Wakiso</option>
+                                    <option>Kampala</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="trendChart"></canvas>
                             </div>
                         </div>
-                        <div id="claims-feed" class="claims-list">
-                            <!-- Populated by script.js -->
-                            <div class="claim-placeholder">Fetching latest encounters...</div>
+                        <div class="card distribution-card">
+                            <div class="card-header">
+                                <h3>Myth Categories</h3>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Row -->
+                    <div class="bottom-row">
+                        <div class="card map-card">
+                            <div class="card-header">
+                                <h3>Regional Risk Hotspots</h3>
+                            </div>
+                            <div class="map-placeholder" id="uganda-map">
+                                <!-- Simulated Map Visualization -->
+                                <div id="map-hotspots"></div>
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Uganda_districts_2020.svg/800px-Uganda_districts_2020.svg.png" alt="Uganda Districts">
+                                <div id="map-tooltip" class="map-tooltip"></div>
+                            </div>
+                        </div>
+                        <div class="card recent-claims">
+                            <div class="card-header">
+                                <h3>Live Federated Claims Feed</h3>
+                                <div class="live-indicator">
+                                    <span class="dot"></span> LIVE
+                                </div>
+                            </div>
+                            <div id="claims-feed" class="claims-list">
+                                <!-- Populated by script.js -->
+                                <div class="claim-placeholder">Fetching latest encounters...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heatmap View (Placeholder) -->
+            <div id="view-heatmap" class="portal-view hidden">
+                <div class="card">
+                    <h3>Heatmap AI Surveillance</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px;">Interactive geographic mapping is active. Showing historical hot-spots of disease claims across Uganda's 135+ districts.</p>
+                </div>
+            </div>
+
+            <!-- Intervention View (Placeholder) -->
+            <div id="view-intervention" class="portal-view hidden">
+                <div class="card">
+                    <h3>National Intervention Tracking</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px;">Monitor localized broadcasts, radio announcements, and community workshops launched to counter active rumors.</p>
+                </div>
+            </div>
+
+            <!-- Settings View (Placeholder) -->
+            <div id="view-settings" class="portal-view hidden">
+                <div class="card">
+                    <h3>Node Settings</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px;">Configure API keys, synchronization schedules, and federated learning intervals.</p>
+                </div>
+            </div>
+
+            <!-- Research Lab View (Consult Expert Portal) -->
+            <div id="view-research" class="portal-view hidden">
+                <div class="research-grid">
+                    <div class="card input-card">
+                        <div class="card-header">
+                            <h3>Analyze Claim or Rumor</h3>
+                            <div class="lang-selector">
+                                <button class="btn-lang active" data-lang="en">EN</button>
+                                <button class="btn-lang" data-lang="lg">LG</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="claim-input">Enter health claim, rumor, or question:</label>
+                            <textarea id="claim-input" placeholder="e.g. Does drinking garlic tea cure COVID-19? or what causes syphilis?" maxlength="300"></textarea>
+                            <div class="char-counter"><span id="char-count">0</span>/300</div>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="btn-clear-claim" class="btn btn-outline">Clear</button>
+                            <button id="btn-analyze-claim" class="btn btn-primary">
+                                <span class="btn-icon">🔬</span> Verify Claim
+                            </button>
+                        </div>
+
+                        <div class="suggestions-box">
+                            <h4>Suggested Queries:</h4>
+                            <div class="suggestion-pills">
+                                <span class="pill">what causes syphilis?</span>
+                                <span class="pill">does garlic tea cure malaria?</span>
+                                <span class="pill">can pregnant women eat eggs?</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card analysis-result-card">
+                        <div class="card-header">
+                            <h3>Diagnostic Report</h3>
+                            <div id="verdict-badge" class="badge-verdict hidden">UNCERTAIN</div>
+                        </div>
+                        
+                        <!-- Initial Placeholder -->
+                        <div id="result-placeholder" class="result-placeholder-content">
+                            <div class="placeholder-icon">🔬</div>
+                            <p>Enter a claim on the left to run diagnostic verification through the hybrid rules engine and global clinical experts.</p>
+                        </div>
+
+                        <!-- Progress indicator -->
+                        <div id="analysis-progress" class="analysis-progress-container hidden">
+                            <div class="progress-spinner"></div>
+                            <div class="progress-steps">
+                                <div class="step" id="step-0">Checking syntax & rules...</div>
+                                <div class="step" id="step-1">Traversing local knowledge base...</div>
+                                <div class="step" id="step-2">Consulting global clinical experts...</div>
+                            </div>
+                        </div>
+
+                        <!-- Main Results Panel -->
+                        <div id="result-details" class="result-details-content hidden">
+                            <div class="result-metric-row">
+                                <div class="metric-box">
+                                    <span class="metric-label">AI Consensus</span>
+                                    <span id="result-consensus" class="metric-value">MAJORITY</span>
+                                </div>
+                                <div class="metric-box">
+                                    <span class="metric-label">Confidence Index</span>
+                                    <span id="result-confidence" class="metric-value">90%</span>
+                                </div>
+                                <div class="metric-box">
+                                    <span class="metric-label">Risk Rating</span>
+                                    <span id="result-risk" class="metric-value">LOW</span>
+                                </div>
+                            </div>
+
+                            <div class="result-section">
+                                <h4>Expert Verdict:</h4>
+                                <p id="result-explanation" class="result-text">...</p>
+                            </div>
+
+                            <div class="result-section">
+                                <h4>Clinical Guidance & Action:</h4>
+                                <p id="result-recommendation" class="result-text">...</p>
+                            </div>
+
+                            <div class="result-section-split">
+                                <div class="split-box">
+                                    <h5>Symptoms</h5>
+                                    <p id="result-symptoms">N/A</p>
+                                </div>
+                                <div class="split-box">
+                                    <h5>Treatment Protocol</h5>
+                                    <p id="result-treatment">N/A</p>
+                                </div>
+                            </div>
+
+                            <div class="result-footer">
+                                <span class="source-info">Source: <strong id="result-source">WHO / MOH Uganda</strong></span>
+                                <span id="source-badge" class="badge-source">ONLINE</span>
+                            </div>
                         </div>
                     </div>
                 </div>

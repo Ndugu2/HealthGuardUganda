@@ -69,6 +69,8 @@ const INACCURATE_RULES: Record<string, string> = {
   "malaria is caused by sugarcane": "malaria:sugarcane_malaria",
   "malaria is caused by dirty water": "malaria:water_myth",
   "you can't get malaria twice": "malaria:reinfection_myth",
+  "eating posho causes malaria": "malaria:posho_myth",
+  "posho causes malaria": "malaria:posho_myth",
 
   // Maternal health myths
   "hospital delivery is dangerous": "maternal:hospital_danger",

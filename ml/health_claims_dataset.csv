@@ -55,3 +55,99 @@ claim,label,language
 "okukola emirimu egyamaanyi ngolina olubuto kulungi","inaccurate",lg
 "okuvaamu omusaayi ngoli lubuto kabonero ka kabi","accurate",lg
 "enkola zekisawo zireeta obutazaala","inaccurate",lg
+"tuberculosis is spread through the air when an infected person coughs","accurate",en
+"tb can be cured by smoking local herbs","inaccurate",en
+"tb drugs must be taken consistently for six months","accurate",en
+"eating too much sugar causes diabetes directly","inaccurate",en
+"diabetes is managed by balanced diet and insulin if prescribed","accurate",en
+"high blood pressure has no physical symptoms and is a silent killer","accurate",en
+"putting salt on your food at the table reduces high blood pressure","inaccurate",en
+"obulwadde bwa mukenenya tebulina ddagala liwonya naye bulikoobwa ne ART","accurate",lg
+"okusula mu katimba k'ensiri kukuuma omwana ku musujja","accurate",lg
+"amagi ne mukene biwa omwana protein ne calcium ennungi","accurate",lg
+"okuyonsa omwana amabeere gakka emyezi omukaaga kikuuma olummeeme","accurate",lg
+"obulwadde bwa ebola busaasaanyizibwa mu kwata ku mazzi g'omufu","accurate",lg
+"amabeere ga nnyina galimu amazzi agamala omwana mu myezi 6","accurate",lg
+"omubiri gw'omuntu gwetaaga amazzi okusinga ccayi oba soda","accurate",lg
+"okwongera omunnyo omungi mu mmere kuleeta pulesha ey'amaanyi","accurate",lg
+"ebikajjo oba musana bireeta omusujja gwa malaria ewaka","inaccurate",lg
+"obupiira bwe kikaba bulimu bituli ebitonotono ebisobozesa akawuka okuyitamu","inaccurate",lg
+"ebsekere oba warts zireetebwa nsuwa ku mubiri n'obucaafu","inaccurate",lg
+"kabotongo lulwadde lwa busaafu olugenda lwokka awatali ddagala","inaccurate",lg
+"enziku oba gonorrhea eva mu nkuba oba mu mpewo y'empewo","inaccurate",lg
+"okusula ku kabuyonjo ey'obucaafu kuleeta endwadde z'ekikaba zonna","inaccurate",lg
+"obulwadde bwa hepatitis B busaasaanyizibwa mu mmere n'amalusu","inaccurate",lg
+"obulogo ne masannyalaze ga 5G gasaasaanya akawuka ka corona","inaccurate",lg
+"okunywa amazzi agaseeseetemu oba agaomugga kusaasaanya cholera","accurate",lg
+"cholera ava ku kulya ennyo emmere mu bifo eby'enjawulo","inaccurate",lg
+"omwana asobola okulya emmere y'abakulu ku myezi esatu gyecca","inaccurate",lg
+"amagi galeeta ebisiriiza n'endokwa mu baana abato","inaccurate",lg
+"abaana abampi bakutta lwa bugagga n'ebika by'abazadde","inaccurate",lg
+"abakyala abayonsa tebeetaaga kulya mmere yongerevu","inaccurate",lg
+"abakadde tebeetaaga mmere nnyingi kubanga tebakola mirimu","inaccurate",lg
+"abakadde basaanidde okunywa amazzi amatono okuziyiza okugenda ku kabuyonjo","inaccurate",lg
+"eddagala lya kunywa eririmu omunnyo ne ssukaali liyamba ku cholera","accurate",lg
+"yellow fever can be prevented through a single vaccine dose","accurate",en
+"yellow fever is caused by eating raw yellow bananas","inaccurate",en
+"cervical cancer is caused by sitting on hot stones","inaccurate",en
+"hpv vaccine protects girls from cervical cancer","accurate",en
+"washing the vagina with lemon juice after sex prevents pregnancy","inaccurate",en
+"condoms are highly effective in preventing both pregnancy and stis","accurate",en
+"taking a hot bath after unprotected sex prevents hiv","inaccurate",en
+"pep must be started within 72 hours of possible hiv exposure","accurate",en
+"circumcision reduces female-to-male hiv transmission risk by 60 percent","accurate",en
+"sharing a toilet seat with an hiv positive person spreads the virus","inaccurate",en
+"hepatitis b is one hundred times more infectious than hiv","accurate",en
+"eating clay or soil is healthy for pregnant women","inaccurate",en
+"iron and folic acid supplements prevent anemia during pregnancy","accurate",en
+"anemia during pregnancy can lead to premature birth and low birth weight","accurate",en
+"exclusive breastfeeding for six months is sufficient for infant nutrition","accurate",en
+"giving porridge to a two month old infant prevents malnutrition","inaccurate",en
+"deworming children every six months helps prevent malnutrition","accurate",en
+"silverfish mukene is an excellent source of calcium for growing bones","accurate",en
+"stunting in children is strictly genetic and cannot be prevented","inaccurate",en
+"orange fleshed sweet potatoes are excellent sources of vitamin a","accurate",en
+"lack of vitamin a causes night blindness in children","accurate",en
+"rolex chapati and eggs and sodas constitute a healthy balanced diet","inaccurate",en
+"pregnant women should eat less so they can deliver small babies","inaccurate",en
+"pregnant women need at least one extra balanced meal every day","accurate",en
+"adding raw egg to baby porridge prevents chest infections","inaccurate",en
+"diabetics should completely eliminate all fruits from their diet","inaccurate",en
+"some local herbs may reduce inflammation but cannot cure diabetes","uncertain",en
+"traditional medicine has some benefits but clinical guidance is needed","uncertain",en
+"further clinical trials are required to assess this herbal remedy","uncertain",en
+"eating honey instead of sugar has no effect on blood glucose levels","inaccurate",en
+"guavas and oranges are relatively safe low sugar fruits for diabetics","accurate",en
+"reusing cooking oil multiple times creates harmful trans fats","accurate",en
+"drinking tea or soda is just as hydrating as clean water","inaccurate",en
+"healthy adults should aim to drink eight glasses of water daily","accurate",en
+"a high salt diet is directly linked to hypertension","accurate",en
+"packaged spices like maggi cubes are high in hidden sodium","accurate",en
+"elderly people need protein to maintain muscle strength and balance","accurate",en
+"dehydration in the elderly can cause confusion and kidney damage","accurate",en
+"people living with hiv need ten to thirty percent more calories daily","accurate",en
+"you must always take arvs on an extremely full stomach","inaccurate",en
+"most arvs can be taken with or without food safely","accurate",en
+"typhoid is caused by drinking clean boiled well water","inaccurate",en
+"typhoid is transmitted through water contaminated with feces","accurate",en
+"malaria RDT testing should always be done before taking malaria drugs","accurate",en
+"chlamydia is a silent infection because most women show no symptoms","accurate",en
+"syphilis kabotongo is a minor skin rash that resolves without penicillin","inaccurate",en
+"untreated syphilis can cause permanent brain and heart damage","accurate",en
+"gonorrhea can be contracted from swimming in cold public pools","inaccurate",en
+"gonorrhea is cured easily with standard antibiotic courses","accurate",en
+"using a dirty latrine seat is the primary way people get chlamydia","inaccurate",en
+"trichomoniasis is a curable sexually transmitted infection","accurate",en
+"isolated cholera cases require immediate IV fluids if dehydration is severe","accurate",en
+"ebola is highly contagious through direct contact with dead body fluids","accurate",en
+"sprinkling salt in your house keeps ebola out of your compound","inaccurate",en
+"washing your body with warm salt water protects you from ebola","inaccurate",en
+"eating bushmeat like monkeys and bats increases ebola spillover risk","accurate",en
+"measles is a highly contagious airborne viral disease of children","accurate",en
+"measles is caused by a spiritual curse from unhappy ancestors","inaccurate",en
+"the measles vaccine is safe and highly effective for children","accurate",en
+"polio causes irreversible paralysis and can be prevented by oral vaccines","accurate",en
+"only sick children need to go for catch up vaccination sessions","inaccurate",en
+"vitamins and minerals in dodo amaranth protect children from diseases","accurate",en
+"washing utensils with dirty water spreads cholera and typhoid","accurate",en
+"boiling drinking water kills harmful disease causing germs","accurate",en

@@ -1,8 +1,15 @@
 import * as SQLite from 'expo-sqlite';
 import { Platform } from 'react-native';
 import type { KnowledgeItem, ClaimRecord, Facility, Broadcast, PatientRecord, MythBusterItem, AilmentGuide, MaternalRecord, ChildRecord, InventoryItem } from './types';
+import { importFacilities, importInventory, importDiseases } from './csvImporter';
+import { FACILITIES_CSV, INVENTORY_CSV, DISEASES_CSV } from './csvSeeds';
 
 const DB_NAME = 'healthguard.db';
+
+// Bump this version whenever uganda_diseases.csv content is updated
+// to force a re-seed on all clients (web + native).
+const AILMENTS_DATA_VERSION = 2;
+
 let dbInstance: SQLite.SQLiteDatabase | null = null;
 let initPromise: Promise<void> | null = null;
 
@@ -26,13 +33,13 @@ const INITIAL_INVENTORY: InventoryItem[] = [
 
 const WebStore = {
   async init(): Promise<void> {
-    const hasSeeded = localStorage.getItem('knowledge_seeded_v75');
+    const hasSeeded = localStorage.getItem('knowledge_seeded_v76');
     if (!hasSeeded) {
       try {
         const localData = require('./knowledge_base.json');
         if (Array.isArray(localData)) {
           localStorage.setItem('healthguard_knowledge', JSON.stringify(localData));
-          localStorage.setItem('knowledge_seeded_v75', 'true');
+          localStorage.setItem('knowledge_seeded_v76', 'true');
         }
       } catch (e) {
         console.error('Web seed knowledge failed', e);
@@ -41,7 +48,7 @@ const WebStore = {
     const facilitiesRaw = localStorage.getItem('healthguard_facilities');
     if (!facilitiesRaw) {
       try {
-        const seed = require('./facilities_seed.json') as Facility[];
+        const seed = importFacilities(FACILITIES_CSV);
         localStorage.setItem('healthguard_facilities', JSON.stringify(seed));
       } catch (e) {
         console.error('Web seed facilities failed', e);
@@ -53,9 +60,27 @@ const WebStore = {
     }
     const inventoryRaw = localStorage.getItem('healthguard_inventory');
     if (!inventoryRaw) {
-      localStorage.setItem('healthguard_inventory', JSON.stringify(INITIAL_INVENTORY));
+      try {
+        const seed = importInventory(INVENTORY_CSV);
+        localStorage.setItem('healthguard_inventory', JSON.stringify(seed));
+      } catch (e) {
+        localStorage.setItem('healthguard_inventory', JSON.stringify(INITIAL_INVENTORY));
+      }
     }
-    console.log('[Database] Web localStorage initialized');
+    // Versioned ailment seeding — re-seeds when AILMENTS_DATA_VERSION is bumped
+    const storedAilmentVer = localStorage.getItem('healthguard_ailments_version');
+    const needsAilmentReseed = storedAilmentVer !== String(AILMENTS_DATA_VERSION);
+    if (needsAilmentReseed) {
+      try {
+        const seed = importDiseases(DISEASES_CSV);
+        localStorage.setItem('healthguard_ailments', JSON.stringify(seed));
+        localStorage.setItem('healthguard_ailments_version', String(AILMENTS_DATA_VERSION));
+        console.log(`[Database] Ailments re-seeded to v${AILMENTS_DATA_VERSION} (${seed.length} guides)`);
+      } catch (e) {
+        console.error('Web seed ailments failed', e);
+      }
+    }
+    console.log('[Database] Web localStorage initialized from CSV');
   },
 
   async saveEncounter(
@@ -184,6 +209,12 @@ const WebStore = {
     const newItem = { ...broadcast, id: Date.now() };
     existing.unshift(newItem);
     localStorage.setItem('healthguard_broadcasts', JSON.stringify(existing));
+  },
+
+  async markBroadcastAsRead(id: number): Promise<void> {
+    const existing = JSON.parse(localStorage.getItem('healthguard_broadcasts') || '[]');
+    const updated = existing.map((b: any) => b.id === id ? { ...b, isRead: true } : b);
+    localStorage.setItem('healthguard_broadcasts', JSON.stringify(updated));
   },
 
   async getBroadcasts(): Promise<Broadcast[]> {
@@ -386,6 +417,68 @@ const WebStore = {
     });
     if (found) localStorage.setItem('healthguard_inventory', JSON.stringify(updated));
     return found;
+  },
+
+  async getCommunityShelf(): Promise<InventoryItem[]> {
+    const raw = localStorage.getItem('healthguard_community_shelf');
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch (_) { return []; }
+  },
+
+  async addCommunityShelfItem(item: Omit<InventoryItem, 'id' | 'lastUpdated'>): Promise<InventoryItem> {
+    const existing = await this.getCommunityShelf();
+    const lastUpdated = new Date().toISOString();
+    const existingIndex = existing.findIndex(x => x.name.toLowerCase() === item.name.toLowerCase());
+    
+    if (existingIndex !== -1) {
+      existing[existingIndex] = {
+        ...existing[existingIndex],
+        quantity: item.quantity,
+        minimumThreshold: item.minimumThreshold,
+        lastUpdated
+      };
+      localStorage.setItem('healthguard_community_shelf', JSON.stringify(existing));
+      return existing[existingIndex];
+    } else {
+      const newItem: InventoryItem = { ...item, id: Date.now(), lastUpdated };
+      existing.push(newItem);
+      localStorage.setItem('healthguard_community_shelf', JSON.stringify(existing));
+      return newItem;
+    }
+  },
+
+  async deductCommunityShelf(id: number, amount: number): Promise<boolean> {
+    const existing = await this.getCommunityShelf();
+    let found = false;
+    const updated = existing.map(x => {
+      if (x.id === id) {
+        found = true;
+        return { ...x, quantity: Math.max(0, x.quantity - amount), lastUpdated: new Date().toISOString() };
+      }
+      return x;
+    });
+    if (found) localStorage.setItem('healthguard_community_shelf', JSON.stringify(updated));
+    return found;
+  },
+
+  async addCommunityShelfStock(id: number, amount: number): Promise<boolean> {
+    const existing = await this.getCommunityShelf();
+    let found = false;
+    const updated = existing.map(x => {
+      if (x.id === id) {
+        found = true;
+        return { ...x, quantity: x.quantity + amount, lastUpdated: new Date().toISOString() };
+      }
+      return x;
+    });
+    if (found) localStorage.setItem('healthguard_community_shelf', JSON.stringify(updated));
+    return found;
+  },
+
+  async deleteCommunityShelfItem(id: number): Promise<void> {
+    const existing = await this.getCommunityShelf();
+    const filtered = existing.filter(x => x.id !== id);
+    localStorage.setItem('healthguard_community_shelf', JSON.stringify(filtered));
   }
 };
 
@@ -518,6 +611,14 @@ CREATE TABLE IF NOT EXISTS inventory (
   minimumThreshold INTEGER NOT NULL,
   lastUpdated TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS community_shelf (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL UNIQUE,
+  quantity INTEGER NOT NULL,
+  unit TEXT NOT NULL,
+  minimumThreshold INTEGER NOT NULL,
+  lastUpdated TEXT NOT NULL
+);
 `;
 
 function mapKnowledgeRow(row: Record<string, unknown>): KnowledgeItem {
@@ -624,7 +725,7 @@ async function migrateFromLocalStorage(db: SQLite.SQLiteDatabase): Promise<void>
         );
       } catch (_) {}
     }
-    if (!key.startsWith('healthguard_') && key !== 'knowledge_seeded_v75') {
+    if (!key.startsWith('healthguard_') && key !== 'knowledge_seeded_v76') {
       const val = localStorage.getItem(key);
       if (val != null) {
         await db.runAsync('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)', [key, val]);
@@ -676,7 +777,7 @@ export async function initSqlite(): Promise<void> {
     await migrateFromLocalStorage(db);
     const facilityCount = await db.getFirstAsync<{ c: number }>('SELECT COUNT(*) as c FROM facilities');
     if (!facilityCount?.c) {
-      const seed = require('./facilities_seed.json') as Facility[];
+      const seed = importFacilities(FACILITIES_CSV);
       for (const f of seed) {
         await db.runAsync(
           'INSERT OR REPLACE INTO facilities (id, name, type, latitude, longitude, contact) VALUES (?, ?, ?, ?, ?, ?)',
@@ -684,7 +785,49 @@ export async function initSqlite(): Promise<void> {
         );
       }
     }
-    console.log('[Database] SQLite ready');
+    
+    // Seed inventory from CSV
+    const invCount = await db.getFirstAsync<{ c: number }>('SELECT COUNT(*) as c FROM inventory');
+    if (!invCount?.c) {
+      const seed = importInventory(INVENTORY_CSV);
+      for (const item of seed) {
+        await db.runAsync(
+          'INSERT INTO inventory (name, quantity, unit, minimumThreshold, lastUpdated) VALUES (?, ?, ?, ?, ?)',
+          [item.name, item.quantity, item.unit, item.minimumThreshold, item.lastUpdated]
+        );
+      }
+    }
+
+    // Versioned ailment seeding — re-seeds when AILMENTS_DATA_VERSION is bumped
+    const storedVer = await db.getFirstAsync<{ value: string }>(
+      `SELECT value FROM settings WHERE key = 'ailments_data_version'`
+    );
+    const currentVer = storedVer?.value ? Number(storedVer.value) : 0;
+    if (currentVer < AILMENTS_DATA_VERSION) {
+      await db.runAsync('DELETE FROM ailments');
+      const seed = importDiseases(DISEASES_CSV);
+      for (const item of seed) {
+        await db.runAsync(
+          'INSERT INTO ailments (id, title, title_lg, icon, color, steps_json, steps_lg_json) VALUES (?, ?, ?, ?, ?, ?, ?)',
+          [
+            item.id,
+            item.title,
+            item.title_lg ?? null,
+            item.icon,
+            item.color,
+            JSON.stringify(item.steps),
+            item.steps_lg ? JSON.stringify(item.steps_lg) : null
+          ]
+        );
+      }
+      await db.runAsync(
+        `INSERT OR REPLACE INTO settings (key, value) VALUES ('ailments_data_version', ?)`,
+        [String(AILMENTS_DATA_VERSION)]
+      );
+      console.log(`[Database] Ailments re-seeded to v${AILMENTS_DATA_VERSION} (${seed.length} guides)`);
+    }
+
+    console.log('[Database] SQLite ready and seeded from CSV');
   })();
   return initPromise;
 }
@@ -884,6 +1027,12 @@ export async function getBroadcasts(): Promise<Broadcast[]> {
     timestamp: String(r.timestamp),
     isRead: Boolean(r.isRead),
   }));
+}
+
+export async function markBroadcastAsRead(id: number): Promise<void> {
+  if (Platform.OS === 'web') return WebStore.markBroadcastAsRead(id);
+  const db = await getDb();
+  await db.runAsync('UPDATE broadcasts SET isRead = 1 WHERE id = ?', [id]);
 }
 
 export async function saveSetting(key: string, value: string): Promise<void> {
@@ -1230,4 +1379,62 @@ export async function addInventoryStock(id: number, amount: number): Promise<boo
     [amount, lastUpdated, id]
   );
   return result.changes > 0;
+}
+
+export async function getCommunityShelf(): Promise<InventoryItem[]> {
+  if (Platform.OS === 'web') return WebStore.getCommunityShelf();
+  const db = await getDb();
+  const rows = await db.getAllAsync<Record<string, unknown>>('SELECT * FROM community_shelf ORDER BY name ASC');
+  return rows.map((r) => ({
+    id: Number(r.id),
+    name: String(r.name),
+    quantity: Number(r.quantity),
+    unit: String(r.unit),
+    minimumThreshold: Number(r.minimumThreshold),
+    lastUpdated: String(r.lastUpdated),
+  }));
+}
+
+export async function addCommunityShelfItem(item: Omit<InventoryItem, 'id' | 'lastUpdated'>): Promise<InventoryItem> {
+  if (Platform.OS === 'web') return WebStore.addCommunityShelfItem(item);
+  const db = await getDb();
+  const lastUpdated = new Date().toISOString();
+  const result = await db.runAsync(
+    `INSERT INTO community_shelf (name, quantity, unit, minimumThreshold, lastUpdated) 
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(name) DO UPDATE SET 
+       quantity = excluded.quantity,
+       minimumThreshold = excluded.minimumThreshold,
+       lastUpdated = excluded.lastUpdated`,
+    [item.name, item.quantity, item.unit, item.minimumThreshold, lastUpdated]
+  );
+  return { ...item, id: result.lastInsertRowId, lastUpdated };
+}
+
+export async function deductCommunityShelf(id: number, amount: number): Promise<boolean> {
+  if (Platform.OS === 'web') return WebStore.deductCommunityShelf(id, amount);
+  const db = await getDb();
+  const lastUpdated = new Date().toISOString();
+  const result = await db.runAsync(
+    `UPDATE community_shelf SET quantity = MAX(0, quantity - ?), lastUpdated = ? WHERE id = ?`,
+    [amount, lastUpdated, id]
+  );
+  return result.changes > 0;
+}
+
+export async function addCommunityShelfStock(id: number, amount: number): Promise<boolean> {
+  if (Platform.OS === 'web') return WebStore.addCommunityShelfStock(id, amount);
+  const db = await getDb();
+  const lastUpdated = new Date().toISOString();
+  const result = await db.runAsync(
+    `UPDATE community_shelf SET quantity = quantity + ?, lastUpdated = ? WHERE id = ?`,
+    [amount, lastUpdated, id]
+  );
+  return result.changes > 0;
+}
+
+export async function deleteCommunityShelfItem(id: number): Promise<void> {
+  if (Platform.OS === 'web') return WebStore.deleteCommunityShelfItem(id);
+  const db = await getDb();
+  await db.runAsync('DELETE FROM community_shelf WHERE id = ?', [id]);
 }

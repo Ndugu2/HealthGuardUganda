@@ -160,47 +160,27 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
             </View>
 
             <Divider style={styles.divider} />
-
-            <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>{t('settings.api_config')}</Text>
-              
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.neutral[700] }]}>{t('settings.openrouter_key')}</Text>
-                <TextInput
-                  mode="outlined"
-                  placeholder="sk-or-v1-..."
-                  value={openRouterKey}
-                  onChangeText={setOpenRouterKey}
-                  secureTextEntry
-                  style={styles.input}
-                  outlineColor={colors.neutral[300]}
-                  activeOutlineColor={colors.primary[900]}
-                />
-                <Text style={styles.helpText}>{t('settings.expert_ai_help')}</Text>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={[styles.label, { color: colors.neutral[700] }]}>{t('settings.ors_key')}</Text>
-                <TextInput
-                  mode="outlined"
-                  placeholder="5b3ce..."
-                  value={orsKey}
-                  onChangeText={setOrsKey}
-                  secureTextEntry
-                  style={styles.input}
-                  outlineColor={colors.neutral[300]}
-                  activeOutlineColor={colors.primary[900]}
-                />
-                <Text style={styles.helpText}>{t('settings.navigation_help')}</Text>
-              </View>
-            </View>
-
-            <Divider style={styles.divider} />
           </>
         )}
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>{t('settings.api_config')}</Text>
+          
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: colors.neutral[700] }]}>{t('settings.openrouter_key')}</Text>
+            <TextInput
+              mode="outlined"
+              placeholder="sk-or-v1-..."
+              value={openRouterKey}
+              onChangeText={setOpenRouterKey}
+              secureTextEntry
+              style={styles.input}
+              outlineColor={colors.neutral[300]}
+              activeOutlineColor={colors.primary[900]}
+            />
+            <Text style={styles.helpText}>{t('settings.expert_ai_help')}</Text>
+          </View>
+
           <View style={styles.inputGroup}>
             <Text style={[styles.label, { color: colors.neutral[700] }]}>{t('settings.server_url')}</Text>
             <TextInput
@@ -214,6 +194,21 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
               activeOutlineColor={colors.primary[900]}
             />
             <Text style={styles.helpText}>{t('settings.server_url_help')}</Text>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={[styles.label, { color: colors.neutral[700] }]}>{t('settings.ors_key')}</Text>
+            <TextInput
+              mode="outlined"
+              placeholder="5b3ce..."
+              value={orsKey}
+              onChangeText={setOrsKey}
+              secureTextEntry
+              style={styles.input}
+              outlineColor={colors.neutral[300]}
+              activeOutlineColor={colors.primary[900]}
+            />
+            <Text style={styles.helpText}>{t('settings.navigation_help')}</Text>
           </View>
         </View>
 

@@ -22,6 +22,7 @@ import AnimatedCard from '../components/AnimatedCard';
 import { colors, spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 import { AIService, ExpertAnalysis } from '../services/AIService';
+
 import { ValidationService } from '../services/ValidationService';
 import * as Speech from 'expo-speech';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -57,6 +58,8 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
   const [currentEncounterId, setCurrentEncounterId] = useState<number | null>(null);
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [expertAnalysis, setExpertAnalysis] = useState<ExpertAnalysis | null>(null);
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'user'|'assistant', content: string}>>([]);
+  const [chatInput, setChatInput] = useState('');
   const [expertLoading, setExpertLoading] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -68,8 +71,17 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
   const [historyFilter, setHistoryFilter] = useState<'all' | 'accurate' | 'inaccurate'>('all');
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [hasApiKey, setHasApiKey] = useState(false);
+
   useEffect(() => {
     const initFeatures = async () => {
+      // Check for OpenRouter API Key
+      const key = await getSetting('openrouter_api_key');
+      setApiKeyInput(key || '');
+      setHasApiKey(!!key);
+
       if (isCommunity) {
         const hasSeenOnboarding = await getSetting('has_seen_onboarding');
         if (!hasSeenOnboarding) {
@@ -246,24 +258,47 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
       console.log('Expert Consultation: No claim found');
       return;
     }
-    
     setExpertLoading(true);
     console.log('Expert Consultation: Initiated for claim:', claim);
-    
+    // Initialize chat with user's claim as first message
+    setChatMessages([{ role: 'user', content: claim }]);
     try {
       const expert = await AIService.consultExpert(claim, i18n.language);
       if (expert) {
+        // Append AI response to chat
+        setChatMessages(prev => [...prev, { role: 'assistant', content: expert.explanation }]);
         setExpertAnalysis(expert);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
         Alert.alert(
-          t('analyze.expert_offline'), 
+          t('analyze.expert_offline'),
           t('analyze.expert_offline_msg') || 'Could not reach the global expert network. Please check your internet connection.'
         );
+        setChatMessages([]);
       }
     } catch (e) {
       console.error('Expert Consultation Failed:', e);
       Alert.alert('Consultation Error', 'An unexpected error occurred while contacting the expert network.');
+      setChatMessages([]);
+    } finally {
+      setExpertLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (msg: string) => {
+    // Append user message
+    setChatMessages(prev => [...prev, { role: 'user', content: msg }]);
+    setExpertLoading(true);
+    try {
+      const resp = await AIService.consultExpert(msg, i18n.language);
+      if (resp) {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: resp.explanation }]);
+      } else {
+        setChatMessages(prev => [...prev, { role: 'assistant', content: 'No response from expert.' }]);
+      }
+    } catch (e) {
+      console.error('Chat message failed:', e);
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Error contacting expert.' }]);
     } finally {
       setExpertLoading(false);
     }
@@ -437,75 +472,149 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
 
   const renderForm = () => (
     <View style={isDesktop ? styles.leftColumn : undefined}>
-      <View style={[styles.inputArea, { backgroundColor: colors.surface }]}>
+      <View style={[styles.inputArea, { backgroundColor: colors.surface, borderRightWidth: 3, borderRightColor: colors.primary[900] }]}>
         <View style={styles.inputLabelRow}>
-          <Text style={[styles.inputLabel, { color: colors.neutral[800], fontSize: 13, fontWeight: '700' }]}>{t('analyze.input_label')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Icon source="clipboard-text-play-outline" size={18} color={colors.primary[900]} />
+            <Text style={[styles.inputLabel, { color: colors.neutral[900], fontSize: 14, fontWeight: '800', letterSpacing: 0.3 }]}>
+              {t('analyze.input_label')}
+            </Text>
+          </View>
           <View style={styles.inputMethods}>
-             <TouchableOpacity onPress={() => handleMultimediaPress('voice')} style={[styles.miniMethodBtn, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[900] }]}>
+             <TouchableOpacity 
+               onPress={() => handleMultimediaPress('voice')} 
+               style={[styles.miniMethodBtn, { backgroundColor: mode === 'light' ? 'rgba(44, 94, 62, 0.08)' : colors.neutral[100], shadowColor: 'rgba(0,0,0,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.8, shadowRadius: 3 }]}
+             >
                 <Icon source="microphone" size={16} color={colors.primary[900]} />
              </TouchableOpacity>
-             <TouchableOpacity onPress={() => handleMultimediaPress('image')} style={[styles.miniMethodBtn, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[900] }]}>
+             <TouchableOpacity 
+               onPress={() => handleMultimediaPress('image')} 
+               style={[styles.miniMethodBtn, { backgroundColor: mode === 'light' ? 'rgba(44, 94, 62, 0.08)' : colors.neutral[100], shadowColor: 'rgba(0,0,0,0.06)', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.8, shadowRadius: 3 }]}
+             >
                 <Icon source="image" size={16} color={colors.primary[900]} />
              </TouchableOpacity>
           </View>
         </View>
-        <View style={[styles.inputBox, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}>
+        
+        <View style={[
+          styles.inputBox, 
+          { 
+            backgroundColor: mode === 'light' ? 'rgba(0,0,0,0.015)' : colors.neutral[50], 
+            borderWidth: 1.5, 
+            borderColor: colors.neutral[200],
+            borderRadius: 14,
+            padding: 16
+          }
+        ]}>
           <TextInput
             placeholder={t('analyze.input_placeholder')}
             placeholderTextColor={colors.neutral[400]}
             multiline
             value={claim}
             onChangeText={setClaim}
-            style={[styles.textInput, { color: colors.neutral[900], ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}) }]}
+            style={[styles.textInput, { 
+              color: colors.neutral[900], 
+              fontSize: 16, 
+              lineHeight: 24,
+              fontWeight: '500',
+              ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}) 
+            }]}
           />
         </View>
+
          <View style={styles.inputFooter}>
             <View style={styles.inputFooterLeft}>
-              <Icon source="information-outline" size={16} color={colors.neutral[500]} />
-              <Text style={[styles.inputFooterText, { color: colors.neutral[500] }]}>{t('analyze.input_help')}</Text>
+               <Icon source="information" size={14} color={colors.primary[900]} />
+               <Text style={[styles.inputFooterText, { color: colors.neutral[500], fontSize: 11, fontWeight: '700' }]}>
+                 {t('analyze.input_help')}
+               </Text>
             </View>
-            <Text style={[styles.inputFooterText, { color: colors.neutral[500] }]}>{t('analyze.char_count', { count: claim.length })}</Text>
+            <View style={{ backgroundColor: 'rgba(0,0,0,0.04)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
+              <Text style={[styles.inputFooterText, { color: colors.neutral[600], fontSize: 11, fontWeight: '800' }]}>
+                {t('analyze.char_count', { count: claim.length })}
+              </Text>
+            </View>
          </View>
       </View>
 
       {isCommunity && (
-        <View style={styles.quickQuestionsContainer}>
-          <Text style={[styles.quickQuestionsTitle, { color: colors.neutral[800] }]}>Or tap a common question:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.quickQuestionsScroll}>
+        <View style={{ marginBottom: spacing.lg, paddingHorizontal: 4 }}>
+          <Text style={{ color: colors.neutral[700], fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 10 }}>
+            Or select a trending claim to verify:
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
             {[
               "Does drinking hot water cure COVID?",
               "Can herbal tea cure malaria?",
               "Do vaccines cause infertility?"
             ].map((q, idx) => (
-              <TouchableOpacity key={idx} style={[styles.quickQuestionBtn, { backgroundColor: colors.neutral[100] }]} onPress={() => setClaim(q)}>
-                <Text style={[styles.quickQuestionText, { color: colors.primary[900] }]}>{q}</Text>
+              <TouchableOpacity 
+                key={idx} 
+                style={{ 
+                  paddingHorizontal: 16, 
+                  paddingVertical: 10, 
+                  borderRadius: 20, 
+                  backgroundColor: colors.surface,
+                  borderWidth: 1.5,
+                  borderColor: 'rgba(44, 94, 62, 0.12)',
+                  shadowColor: 'rgba(0,0,0,0.02)',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.8,
+                  shadowRadius: 2,
+                }} 
+                onPress={() => setClaim(q)}
+              >
+                <Text style={{ fontSize: 13, fontWeight: '700', color: colors.primary[900] }}>{q}</Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
       )}
 
-       <TouchableOpacity 
-        style={[styles.analyzeBtn, { backgroundColor: '#2C5E3E' }, (!claim || loading) ? [styles.analyzeBtnDisabled, { backgroundColor: colors.neutral[400] }] : undefined]} 
+      <TouchableOpacity 
         onPress={handleVerify}
         disabled={!claim || loading}
+        style={{ marginBottom: spacing.xl, borderRadius: radii.full, overflow: 'hidden' }}
       >
-        <Icon source="text-box-search-outline" size={24} color="#FFF" />
-        <Text style={[styles.analyzeBtnText, { fontSize: 16, fontWeight: '700' }]}>{loading ? t('analyze.analyzing_btn') : t('analyze.analyze_btn')}</Text>
+        <LinearGradient
+          colors={(!claim || loading) ? ['#BDBDBD', '#9E9E9E'] : ['#2C5E3E', '#438A5E']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            paddingVertical: 18,
+            shadowColor: 'rgba(44, 94, 62, 0.3)',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.8,
+            shadowRadius: 10,
+            elevation: 4,
+          }}
+        >
+          <Icon source="file-document-zoom-outline" size={22} color="#FFF" />
+          <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '800', letterSpacing: 0.5 }}>
+            {loading ? t('analyze.analyzing_btn') : t('analyze.analyze_btn')}
+          </Text>
+        </LinearGradient>
       </TouchableOpacity>
 
-      <View style={styles.graphicCard}>
+      <View style={[styles.graphicCard, { borderRadius: radii.xl, ...shadows.md, borderWidth: 0 }]}>
          <Image 
           source={{ uri: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1000&auto=format&fit=crop' }} 
           style={styles.graphicImage} 
         />
-        <View style={styles.graphicOverlay}>
+        <LinearGradient 
+          colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.85)']} 
+          style={[styles.graphicOverlay, { height: '60%', justifyContent: 'flex-end', padding: spacing.xl }]}
+        >
           <View style={styles.trustedRow}>
-             <Icon source="shield-check" size={16} color={colors.primary[600]} />
-             <Text style={[styles.trustedText, { color: colors.primary[200] }]}>{t('analyze.trusted_engine')}</Text>
+             <Icon source="shield-check" size={16} color="#81C784" />
+             <Text style={[styles.trustedText, { color: '#81C784', fontWeight: '800' }]}>{t('analyze.trusted_engine')}</Text>
           </View>
-          <Text style={styles.graphicTitle}>{t('analyze.verified_moh')}</Text>
-        </View>
+          <Text style={[styles.graphicTitle, { fontSize: 22, fontWeight: '900', lineHeight: 28 }]}>{t('analyze.verified_moh')}</Text>
+        </LinearGradient>
       </View>
     </View>
   );
@@ -513,99 +622,146 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
   const renderSidePanel = () => (
     <View style={styles.rightColumn}>
       {isCommunity ? (
-        <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
-          <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 12 }]}>Your Recent Questions</Text>
+        <View style={[styles.panelCard, { 
+          backgroundColor: colors.surface, 
+          borderWidth: 0, 
+          borderLeftWidth: 3,
+          borderLeftColor: colors.primary[900],
+          ...shadows.sm 
+        }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <Icon source="clock-time-four-outline" size={18} color={colors.primary[900]} />
+            <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 0, fontSize: 15, fontWeight: '800' }]}>Your Recent Questions</Text>
+          </View>
           {recentQuestions.length > 0 ? (
             recentQuestions.map((q, i) => (
-              <View key={i} style={{ paddingVertical: 10, borderBottomWidth: i < recentQuestions.length - 1 ? 1 : 0, borderBottomColor: colors.neutral[100] }}>
-                <Text style={{ color: colors.neutral[800], fontSize: 14, fontWeight: '500' }}>"{q.claim_text}"</Text>
-                <Text style={{ color: q.label === 'ACCURATE' ? colors.primary[700] : colors.danger[600], fontSize: 12, marginTop: 4 }}>
-                  {q.label === 'ACCURATE' ? '✅ Correct' : '❌ Not True'}
-                </Text>
-              </View>
+              <TouchableOpacity key={i} onPress={() => setClaim(q.claim_text)} style={{ 
+                paddingVertical: 10, 
+                borderBottomWidth: i < recentQuestions.length - 1 ? 1 : 0, 
+                borderBottomColor: colors.neutral[100] 
+              }}>
+                <Text style={{ color: colors.neutral[800], fontSize: 13, fontWeight: '600', lineHeight: 18 }} numberOfLines={2}>"{q.claim_text}"</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5 }}>
+                  <View style={{ 
+                    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8,
+                    backgroundColor: q.label === 'ACCURATE' ? colors.primary[50] : colors.danger[50]
+                  }}>
+                    <Text style={{ fontSize: 10, fontWeight: '800', color: q.label === 'ACCURATE' ? colors.primary[900] : colors.danger[900] }}>
+                      {q.label === 'ACCURATE' ? '✅ Correct' : '❌ Not True'}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
             ))
           ) : (
-            <Text style={{ color: colors.neutral[500], fontSize: 14 }}>No recent questions. Try asking one!</Text>
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <Icon source="comment-question-outline" size={32} color={colors.neutral[300]} />
+              <Text style={{ color: colors.neutral[400], fontSize: 13, marginTop: 8, textAlign: 'center' }}>No recent questions yet.{'\n'}Try asking one!</Text>
+            </View>
           )}
         </View>
       ) : (
         <>
-       {/* Status */}
-       <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
-          <View style={styles.panelHeaderRow}>
-            <Text style={[styles.panelLabel, { color: colors.neutral[600] }]}>CURRENT STATUS</Text>
-            <View style={styles.statusDotRow}>
-               <View style={[styles.statusDot, { backgroundColor: colors.primary[600] }]} />
-               <Text style={[styles.statusDotText, { color: colors.primary[700] }]}>System Ready</Text>
-            </View>
+       {/* Status Card */}
+       <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm, overflow: 'hidden' }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: '#4CAF50' }} />
+            <Text style={[styles.panelLabel, { color: '#4CAF50', fontSize: 10, fontWeight: '800', letterSpacing: 0.8 }]}>SYSTEM ONLINE</Text>
           </View>
-          <View style={[styles.syncBox, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}>
-             <Icon source="database-sync-outline" size={20} color={colors.primary[900]} />
-             <Text style={[styles.syncText, { color: colors.neutral[800] }]}>Last Database Sync: 12m ago</Text>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            {[
+              { icon: 'database-check-outline', label: 'DB', value: 'Synced' },
+              { icon: 'brain', label: 'AI', value: 'Active' },
+              { icon: 'shield-check-outline', label: 'MOH', value: 'Linked' },
+            ].map((item, i) => (
+              <View key={i} style={{ 
+                flex: 1, alignItems: 'center', padding: 10, borderRadius: 10,
+                backgroundColor: mode === 'light' ? 'rgba(44, 94, 62, 0.06)' : colors.neutral[100] 
+              }}>
+                <Icon source={item.icon} size={18} color={colors.primary[900]} />
+                <Text style={{ fontSize: 10, fontWeight: '800', color: colors.neutral[900], marginTop: 4 }}>{item.label}</Text>
+                <Text style={{ fontSize: 9, fontWeight: '700', color: '#4CAF50', marginTop: 2 }}>{item.value}</Text>
+              </View>
+            ))}
           </View>
        </View>
 
        {/* Other inputs */}
        <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
-          <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 16 }]}>Other Input Methods</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <Icon source="swap-horizontal" size={18} color={colors.primary[900]} />
+            <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 0, fontSize: 15, fontWeight: '800' }]}>Other Input Methods</Text>
+          </View>
           <TouchableOpacity 
             onPress={() => handleMultimediaPress('voice')}
-            style={[styles.methodItem, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}
+            style={{ 
+              flexDirection: 'row', alignItems: 'center', 
+              backgroundColor: mode === 'light' ? 'rgba(44,94,62,0.04)' : colors.neutral[100],
+              borderRadius: 12, padding: 12, marginBottom: 8
+            }}
           >
-             <View style={[styles.methodIconCircle, { backgroundColor: '#2C5E3E' }]}>
+             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#2C5E3E', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                <Icon source="microphone" size={20} color="#FFF" />
              </View>
-             <View style={styles.methodTextWrap}>
-               <Text style={[styles.methodTitle, { color: colors.neutral[900] }]}>Record Audio</Text>
-               <Text style={[styles.methodSub, { color: colors.neutral[500] }]}>Upload radio clips or recordings</Text>
+             <View style={{ flex: 1 }}>
+               <Text style={{ fontSize: 14, fontWeight: '700', color: colors.neutral[900] }}>Record Audio</Text>
+               <Text style={{ fontSize: 11, color: colors.neutral[500], marginTop: 1 }}>Upload radio clips or recordings</Text>
              </View>
-             <Icon source="chevron-right" size={20} color={colors.neutral[400]} />
+             <Icon source="chevron-right" size={18} color={colors.neutral[300]} />
           </TouchableOpacity>
           <TouchableOpacity 
             onPress={() => handleMultimediaPress('image')}
-            style={[styles.methodItem, { backgroundColor: colors.neutral[50], borderWidth: 0 }]}
+            style={{ 
+              flexDirection: 'row', alignItems: 'center',
+              backgroundColor: mode === 'light' ? 'rgba(44,94,62,0.04)' : colors.neutral[100],
+              borderRadius: 12, padding: 12
+            }}
           >
-             <View style={[styles.methodIconCircle, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[900] }]}>
+             <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: mode === 'light' ? '#E2F0D9' : colors.primary[900], alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                <Icon source="image-outline" size={20} color={colors.primary[900]} />
              </View>
-             <View style={styles.methodTextWrap}>
-               <Text style={[styles.methodTitle, { color: colors.neutral[900] }]}>Upload Image</Text>
-               <Text style={[styles.methodSub, { color: colors.neutral[500] }]}>Scan posters or news snippets</Text>
+             <View style={{ flex: 1 }}>
+               <Text style={{ fontSize: 14, fontWeight: '700', color: colors.neutral[900] }}>Upload Image</Text>
+               <Text style={{ fontSize: 11, color: colors.neutral[500], marginTop: 1 }}>Scan posters or news snippets</Text>
              </View>
-             <Icon source="chevron-right" size={20} color={colors.neutral[400]} />
+             <Icon source="chevron-right" size={18} color={colors.neutral[300]} />
           </TouchableOpacity>
        </View>
 
        {/* Tip */}
-       <View style={[styles.panelCard, { backgroundColor: mode === 'light' ? '#EEF4E8' : colors.neutral[100], borderWidth: 0 }]}>
-          <View style={styles.tipHeader}>
-             <Icon source="lightbulb-outline" size={18} color={colors.primary[900]} />
-             <Text style={[styles.tipTitle, { color: colors.primary[900] }]}>VERIFICATION TIP</Text>
-          </View>
-          <Text style={[styles.tipText, { color: colors.neutral[800] }]}>
-            Claims often use "urgent" language or emotional triggers to bypass critical thinking. If a health message asks you to "Share quickly before it's deleted," it's a major red flag for misinformation.
-          </Text>
-           <TouchableOpacity style={styles.learnMoreRow}>
-             <Text style={[styles.learnMoreText, { color: colors.primary[900] }]}>Learn about Red Flags</Text>
-             <Icon source="open-in-new" size={14} color={colors.primary[900]} />
-          </TouchableOpacity>
+       <View style={{ borderRadius: 16, overflow: 'hidden', ...shadows.sm }}>
+         <LinearGradient colors={['#1B5E20', '#2E7D32']} style={{ padding: 18 }}>
+           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+             <Icon source="lightbulb-on" size={18} color="#FFD54F" />
+             <Text style={{ fontSize: 11, fontWeight: '800', color: '#FFD54F', letterSpacing: 0.8 }}>VERIFICATION TIP</Text>
+           </View>
+           <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 20, marginBottom: 12 }}>
+             Claims often use "urgent" language to bypass critical thinking. If a message says "Share before it's deleted," that's a red flag for misinformation.
+           </Text>
+           <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+             <Text style={{ fontSize: 13, fontWeight: '800', color: '#A5D6A7', textDecorationLine: 'underline' }}>Learn about Red Flags</Text>
+             <Icon source="arrow-right" size={14} color="#A5D6A7" />
+           </TouchableOpacity>
+         </LinearGradient>
        </View>
 
        {/* Claims History — Health Worker Only */}
        <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, ...shadows.sm }]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Icon source="history" size={18} color={colors.primary[900]} />
-              <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 0 }]}>Claims History</Text>
+              <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 0, fontSize: 15, fontWeight: '800' }]}>Claims History</Text>
             </View>
-            <Text style={{ fontSize: 11, fontWeight: '700', color: colors.neutral[400] }}>{claimsHistory.length} total</Text>
+            <View style={{ backgroundColor: colors.primary[50], paddingHorizontal: 9, paddingVertical: 3, borderRadius: 10 }}>
+              <Text style={{ fontSize: 11, fontWeight: '800', color: colors.primary[900] }}>{claimsHistory.length}</Text>
+            </View>
           </View>
           
           <View style={{ flexDirection: 'row', gap: 6, marginBottom: 12 }}>
             {[
               { key: 'all', label: 'All' },
               { key: 'accurate', label: '✅ Accurate' },
-              { key: 'inaccurate', label: '❌ Inaccurate' },
+              { key: 'inaccurate', label: '❌ Myths' },
             ].map(f => (
               <TouchableOpacity 
                 key={f.key}
@@ -626,7 +782,11 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
             .map((c, i) => (
               <TouchableOpacity 
                 key={i} 
-                style={{ paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.neutral[50] }}
+                style={{ 
+                  paddingVertical: 10, 
+                  borderBottomWidth: 1, 
+                  borderBottomColor: colors.neutral[50] 
+                }}
                 onPress={() => setClaim(c.claim_text)}
               >
                 <Text style={{ color: colors.neutral[800], fontSize: 13, fontWeight: '500' }} numberOfLines={2}>"{c.claim_text}"</Text>
@@ -645,7 +805,10 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
             ))
           }
           {claimsHistory.length === 0 && (
-            <Text style={{ color: colors.neutral[500], fontSize: 13, textAlign: 'center', paddingVertical: 16 }}>No claims analyzed yet.</Text>
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <Icon source="chart-timeline-variant-shimmer" size={32} color={colors.neutral[300]} />
+              <Text style={{ color: colors.neutral[400], fontSize: 13, marginTop: 8, textAlign: 'center' }}>No claims yet.{'\n'}Analyze one to get started.</Text>
+            </View>
           )}
        </View>
        </>
@@ -700,53 +863,88 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
              {renderForm()}
              {isDesktop && renderSidePanel()}
           </View>
-          
-          {!isDesktop && (
-             <View>
-               <View style={styles.mediaRow}>
+            {!isDesktop && (
+             <View style={{ paddingBottom: 12 }}>
+               {/* Mobile Media Input Cards */}
+               <View style={{ flexDirection: 'row', gap: 12, marginHorizontal: 20, marginTop: 16, marginBottom: 4 }}>
                  <TouchableOpacity 
                    onPress={() => handleMultimediaPress('voice')}
-                   style={[styles.mediaCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
+                   style={{ 
+                     flex: 1, alignItems: 'center', justifyContent: 'center',
+                     paddingVertical: 20, borderRadius: 16,
+                     backgroundColor: '#2C5E3E',
+                     gap: 8,
+                   }}
                  >
-                   <Icon source="microphone-outline" size={28} color={colors.primary[900]} />
-                   <Text style={[styles.mediaLabel, { color: colors.neutral[800] }]}>Voice Recording</Text>
+                   <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' }}>
+                     <Icon source="microphone" size={24} color="#FFF" />
+                   </View>
+                   <Text style={{ fontSize: 12, fontWeight: '800', color: '#FFF', letterSpacing: 0.3 }}>Record Audio</Text>
+                   <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', textAlign: 'center' }}>Radio & voice clips</Text>
                  </TouchableOpacity>
                  <TouchableOpacity 
                    onPress={() => handleMultimediaPress('image')}
-                   style={[styles.mediaCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
+                   style={{ 
+                     flex: 1, alignItems: 'center', justifyContent: 'center',
+                     paddingVertical: 20, borderRadius: 16,
+                     backgroundColor: colors.surface,
+                     borderWidth: 2, borderColor: colors.neutral[100],
+                     gap: 8,
+                   }}
                  >
-                   <Icon source="camera-outline" size={28} color={colors.primary[900]} />
-                   <Text style={[styles.mediaLabel, { color: colors.neutral[800] }]}>Upload Image</Text>
+                   <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: '#E2F0D9', alignItems: 'center', justifyContent: 'center' }}>
+                     <Icon source="image-outline" size={24} color={colors.primary[900]} />
+                   </View>
+                   <Text style={{ fontSize: 12, fontWeight: '800', color: colors.neutral[900], letterSpacing: 0.3 }}>Upload Image</Text>
+                   <Text style={{ fontSize: 10, color: colors.neutral[500], textAlign: 'center' }}>Posters & news</Text>
                  </TouchableOpacity>
                </View>
 
+               {/* Mobile Recent Questions (Community) */}
                {isCommunity && (
-                 <View style={[styles.panelCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200], marginHorizontal: 20, marginTop: 20 }]}>
-                    <Text style={[styles.panelTitle, { color: colors.neutral[900], marginBottom: 12 }]}>Your Recent Questions</Text>
+                 <View style={[styles.panelCard, { backgroundColor: colors.surface, borderWidth: 0, marginHorizontal: 20, marginTop: 20, borderLeftWidth: 3, borderLeftColor: colors.primary[900] }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <Icon source="clock-time-four-outline" size={16} color={colors.primary[900]} />
+                      <Text style={{ fontSize: 14, fontWeight: '800', color: colors.neutral[900] }}>Your Recent Questions</Text>
+                    </View>
                     {recentQuestions.length > 0 ? (
                       recentQuestions.map((q, i) => (
-                        <View key={i} style={{ paddingVertical: 10, borderBottomWidth: i < recentQuestions.length - 1 ? 1 : 0, borderBottomColor: colors.neutral[100] }}>
-                          <Text style={{ color: colors.neutral[800], fontSize: 14, fontWeight: '500' }}>"{q.claim_text}"</Text>
-                          <Text style={{ color: q.label === 'ACCURATE' ? colors.primary[700] : colors.danger[600], fontSize: 12, marginTop: 4 }}>
-                            {q.label === 'ACCURATE' ? '✅ Correct' : '❌ Not True'}
-                          </Text>
-                        </View>
+                        <TouchableOpacity key={i} onPress={() => setClaim(q.claim_text)} style={{ 
+                          paddingVertical: 10, 
+                          borderBottomWidth: i < recentQuestions.length - 1 ? 1 : 0, 
+                          borderBottomColor: colors.neutral[100] 
+                        }}>
+                          <Text style={{ color: colors.neutral[800], fontSize: 13, fontWeight: '600' }} numberOfLines={2}>"{q.claim_text}"</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                            <View style={{ paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8, backgroundColor: q.label === 'ACCURATE' ? colors.primary[50] : colors.danger[50] }}>
+                              <Text style={{ fontSize: 10, fontWeight: '800', color: q.label === 'ACCURATE' ? colors.primary[900] : colors.danger[900] }}>
+                                {q.label === 'ACCURATE' ? '✅ Correct' : '❌ Not True'}
+                              </Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
                       ))
                     ) : (
-                      <Text style={{ color: colors.neutral[500], fontSize: 14 }}>No recent questions. Try asking one!</Text>
+                      <View style={{ alignItems: 'center', paddingVertical: 16 }}>
+                        <Icon source="comment-question-outline" size={28} color={colors.neutral[300]} />
+                        <Text style={{ color: colors.neutral[400], fontSize: 13, marginTop: 8, textAlign: 'center' }}>No recent questions yet.{"\n"}Try asking one!</Text>
+                      </View>
                     )}
                  </View>
                )}
 
+               {/* Mobile Tip Card (Health Worker) */}
                {!isCommunity && (
-                 <View style={[styles.tipCard, { backgroundColor: mode === 'light' ? '#EEF4E8' : colors.neutral[100] }]}>
-                   <View style={styles.tipHeader}>
-                     <Icon source="lightbulb-outline" size={18} color={colors.primary[900]} />
-                     <Text style={[styles.tipTitle, { color: colors.primary[900] }]}>Verification Tip</Text>
-                   </View>
-                   <Text style={[styles.tipText, { color: colors.neutral[800] }]}>
-                     Include the source if possible (e.g., "heard on Radio Simba" or "seen on WhatsApp").
-                   </Text>
+                 <View style={{ marginHorizontal: 20, marginTop: 20, borderRadius: 16, overflow: 'hidden' }}>
+                   <LinearGradient colors={['#1B5E20', '#2E7D32']} style={{ padding: 18 }}>
+                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                       <Icon source="lightbulb-on" size={18} color="#FFD54F" />
+                       <Text style={{ fontSize: 11, fontWeight: '800', color: '#FFD54F', letterSpacing: 0.8 }}>VERIFICATION TIP</Text>
+                     </View>
+                     <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.9)', lineHeight: 20 }}>
+                       Include the source if possible (e.g., "heard on Radio Simba" or "seen on WhatsApp") to improve accuracy.
+                     </Text>
+                   </LinearGradient>
                  </View>
                )}
              </View>
@@ -775,6 +973,94 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
       </Portal>
 
       {renderAnalysisLoader()}
+
+      {/* AI Key Configuration Modal */}
+      <Portal>
+        <Modal 
+          visible={showApiKeyModal} 
+          onDismiss={() => setShowApiKeyModal(false)} 
+          contentContainerStyle={[
+            styles.modalContainer, 
+            { 
+              backgroundColor: colors.surface, 
+              maxWidth: 420, 
+              alignSelf: 'center', 
+              padding: 24, 
+              borderRadius: 16 
+            }
+          ]}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <Icon source="key" size={28} color={colors.primary[900]} />
+            <Text style={{ fontSize: 20, fontWeight: '800', color: colors.primary[900], flex: 1 }}>
+              Configure Expert AI
+            </Text>
+            <TouchableOpacity onPress={() => setShowApiKeyModal(false)}>
+              <Icon source="close" size={20} color={colors.neutral[500]} />
+            </TouchableOpacity>
+          </View>
+          
+          <Text style={{ fontSize: 13, color: colors.neutral[600], lineHeight: 18, marginBottom: 16 }}>
+            By default, HealthGuard uses a free online fallback or local offline analysis. 
+            Add your own <Text style={{ fontWeight: '800' }}>OpenRouter API Key</Text> to connect directly to the premium Llama-3 model for high-fidelity clinical consultation.
+          </Text>
+
+          <TextInput
+            placeholder="Paste sk-or-v1-... key here"
+            placeholderTextColor={colors.neutral[400]}
+            value={apiKeyInput}
+            onChangeText={setApiKeyInput}
+            secureTextEntry
+            style={{
+              padding: 12,
+              borderRadius: 8,
+              borderWidth: 1.5,
+              borderColor: colors.neutral[300],
+              backgroundColor: colors.neutral[50],
+              color: colors.neutral[900],
+              fontSize: 14,
+              marginBottom: 16,
+              ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}),
+            }}
+          />
+
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10 }}>
+            <TouchableOpacity
+              onPress={() => setShowApiKeyModal(false)}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                backgroundColor: colors.neutral[100],
+              }}
+            >
+              <Text style={{ color: colors.neutral[700], fontSize: 14, fontWeight: '700' }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={async () => {
+                const trimmed = apiKeyInput.trim();
+                await saveSetting('openrouter_api_key', trimmed);
+                setHasApiKey(!!trimmed);
+                setShowApiKeyModal(false);
+                Alert.alert("Success", "API Key saved successfully! The online expert network will now use your key.");
+              }}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 16,
+                borderRadius: 8,
+                backgroundColor: colors.primary[900],
+              }}
+            >
+              <Text style={{ color: '#FFF', fontSize: 14, fontWeight: '800' }}>
+                Save Key
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      </Portal>
 
       <Portal>
         <Modal visible={isVoiceMode} onDismiss={() => setIsVoiceMode(false)} contentContainerStyle={styles.voiceAssistantModal}>
@@ -1057,43 +1343,81 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
                     </View>
                   ) : null}
 
-                {/* Expert AI Section */}
-                {!isCommunity && !expertAnalysis ? (
-                  <TouchableOpacity 
-                    style={[styles.expertConsultBtn, { backgroundColor: colors.surface, borderColor: colors.primary[900] }]}
-                    onPress={handleConsultExpert}
-                    disabled={expertLoading}
-                  >
-                    {expertLoading ? (
-                      <ActivityIndicator size="small" color={colors.primary[900]} />
-                    ) : (
-                      <Icon source="brain" size={20} color={colors.primary[900]} />
-                    )}
-                    <Text style={[styles.expertConsultText, { color: colors.primary[900] }]}>
-                      {expertLoading ? t('analyze.expert_loading') : t('analyze.consult_expert')}
-                    </Text>
-                  </TouchableOpacity>
-                ) : !isCommunity && expertAnalysis ? (
-                  <View style={[styles.expertResultBox, { 
-                    backgroundColor: expertAnalysis.source === 'online' ? '#E8F5E9' : expertAnalysis.source === 'backend' ? '#FFF3E0' : '#F5F5F5', 
-                    borderColor: expertAnalysis.source === 'online' ? '#A5D6A7' : expertAnalysis.source === 'backend' ? '#FFE0B2' : '#E0E0E0' 
-                  }]}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 6 }}>
-                      <View style={[styles.expertHeader, { marginBottom: 0 }]}>
-                        <Icon source="certificate" size={22} color={expertAnalysis.source === 'online' ? '#2E7D32' : expertAnalysis.source === 'backend' ? '#E65100' : '#424242'} />
-                        <Text style={[styles.expertTitle, { color: expertAnalysis.source === 'online' ? '#2E7D32' : expertAnalysis.source === 'backend' ? '#E65100' : '#424242' }]}>
-                          {t('analyze.expert_title') || 'Global Expert Opinion'}
-                        </Text>
-                      </View>
-                      
-                      {/* Dynamic Source Indicator Badge */}
+                {/* ── EXPERT CONSULT BUTTON ── */}
+                {chatMessages.length === 0 && (
+                  <View style={{ marginTop: 16 }}>
+                    <TouchableOpacity 
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 10,
+                        padding: 16,
+                        borderRadius: 12,
+                        borderWidth: 1.5,
+                        borderColor: colors.primary[900],
+                        backgroundColor: colors.surface,
+                      }}
+                      onPress={handleConsultExpert}
+                      disabled={expertLoading}
+                    >
+                      {expertLoading ? (
+                        <ActivityIndicator size="small" color={colors.primary[900]} />
+                      ) : (
+                        <Icon source="brain" size={20} color={colors.primary[900]} />
+                      )}
+                      <Text style={{ flex: 1, fontSize: 14, fontWeight: '700', color: colors.primary[900] }}>
+                        {expertLoading ? t('analyze.expert_loading') : t('analyze.consult_expert')}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* AI Configuration Link */}
+                    <TouchableOpacity 
+                      onPress={async () => {
+                        const key = await getSetting('openrouter_api_key');
+                        setApiKeyInput(key || '');
+                        setShowApiKeyModal(true);
+                      }}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6,
+                        marginTop: 8,
+                        paddingVertical: 6,
+                      }}
+                    >
+                      <Icon 
+                        source={hasApiKey ? "cloud-check-outline" : "alert-circle-outline"} 
+                        size={14} 
+                        color={hasApiKey ? colors.primary[600] : colors.neutral[400]} 
+                      />
+                      <Text style={{ 
+                        fontSize: 12, 
+                        fontWeight: '600', 
+                        color: hasApiKey ? colors.primary[900] : colors.neutral[500],
+                        textDecorationLine: 'underline'
+                      }}>
+                        {hasApiKey 
+                          ? "Online AI: OpenRouter Connected (Tap to edit Key)" 
+                          : "Online AI: Using Free Fallback (Tap to add API Key)"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+
+                {/* ── EXPERT ANALYSIS RESULTS ── */}
+                {expertAnalysis && (
+                  <View style={{ marginTop: 16, padding: 16, borderRadius: 12, backgroundColor: colors.neutral[50], borderWidth: 1, borderColor: colors.neutral[200] }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      <Icon source="brain" size={18} color={colors.primary[900]} />
+                      <Text style={{ fontSize: 14, fontWeight: '800', color: colors.primary[900] }}>Expert Analysis</Text>
                       <View style={{
                         paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        borderRadius: 6,
-                        backgroundColor: expertAnalysis.source === 'online' ? '#C8E6C9' : expertAnalysis.source === 'backend' ? '#FFE0B2' : '#E0E0E0',
+                        paddingVertical: 3,
+                        borderRadius: 10,
                         borderWidth: 1,
                         borderColor: expertAnalysis.source === 'online' ? '#81C784' : expertAnalysis.source === 'backend' ? '#FFB74D' : '#BDBDBD',
+                        backgroundColor: expertAnalysis.source === 'online' ? 'rgba(46, 125, 50, 0.08)' : expertAnalysis.source === 'backend' ? 'rgba(230, 81, 0, 0.08)' : 'rgba(0,0,0,0.04)',
                       }}>
                         <Text style={{
                           fontSize: 10,
@@ -1105,21 +1429,133 @@ const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, 
                         </Text>
                       </View>
                     </View>
-                    
-                    <Text style={styles.expertExplanation}>{expertAnalysis.explanation}</Text>
-                    
-                    <View style={[styles.expertRecommendation, { 
-                      backgroundColor: expertAnalysis.source === 'online' ? 'rgba(46, 125, 50, 0.1)' : 'rgba(230, 81, 0, 0.1)'
-                    }]}>
+
+                    <Text style={{ fontSize: 14, lineHeight: 22, color: colors.neutral[800], marginBottom: 12 }}>
+                      {expertAnalysis.explanation}
+                    </Text>
+
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: 12,
+                      borderRadius: 10,
+                      backgroundColor: expertAnalysis.source === 'online' ? 'rgba(46, 125, 50, 0.1)' : 'rgba(230, 81, 0, 0.1)',
+                    }}>
                       <Icon source="lightbulb-on" size={18} color={expertAnalysis.source === 'online' ? '#2E7D32' : '#E65100'} />
-                      <Text style={[styles.expertRecText, { 
-                        color: expertAnalysis.source === 'online' ? '#2E7D32' : '#E65100' 
-                      }]}>
+                      <Text style={{
+                        flex: 1,
+                        fontSize: 13,
+                        fontWeight: '700',
+                        lineHeight: 20,
+                        color: expertAnalysis.source === 'online' ? '#2E7D32' : '#E65100',
+                      }}>
                         {expertAnalysis.recommendation}
                       </Text>
                     </View>
                   </View>
-                ) : null}
+                )}
+
+                {/* ── CHAT UI FOR FOLLOW-UP QUESTIONS ── */}
+                {chatMessages.length > 0 && (
+                  <View style={{ marginTop: 16, borderRadius: 12, borderWidth: 1, borderColor: colors.neutral[200], overflow: 'hidden' }}>
+                    {/* Chat Header with Status */}
+                    <View style={{ 
+                      flexDirection: 'row', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between', 
+                      padding: 10, 
+                      backgroundColor: colors.neutral[50], 
+                      borderBottomWidth: 1, 
+                      borderBottomColor: colors.neutral[200] 
+                    }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Icon source="brain" size={16} color={colors.primary[900]} />
+                        <Text style={{ fontSize: 12, fontWeight: '800', color: colors.neutral[900] }}>
+                          Global Health Expert
+                        </Text>
+                      </View>
+                      <TouchableOpacity 
+                        onPress={async () => {
+                          const key = await getSetting('openrouter_api_key');
+                          setApiKeyInput(key || '');
+                          setShowApiKeyModal(true);
+                        }}
+                        style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}
+                      >
+                        <Icon 
+                          source={hasApiKey ? "cloud-check-outline" : "alert-circle-outline"} 
+                          size={12} 
+                          color={hasApiKey ? colors.primary[700] : colors.warning[900]} 
+                        />
+                        <Text style={{ fontSize: 11, fontWeight: '700', color: hasApiKey ? colors.primary[900] : colors.neutral[600], textDecorationLine: 'underline' }}>
+                          {hasApiKey ? "OpenRouter" : "Free Fallback"}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    <ScrollView style={{ maxHeight: 300, padding: 12 }}>
+                      {chatMessages.map((msg, idx) => (
+                        <View
+                          key={idx}
+                          style={{
+                            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                            maxWidth: '80%',
+                            padding: 12,
+                            borderRadius: 12,
+                            marginBottom: 8,
+                            backgroundColor: msg.role === 'user' ? colors.primary[900] : colors.neutral[100],
+                          }}
+                        >
+                          <Text style={{
+                            fontSize: 14,
+                            lineHeight: 20,
+                            color: msg.role === 'user' ? '#FFF' : colors.neutral[900],
+                          }}>
+                            {msg.content}
+                          </Text>
+                        </View>
+                      ))}
+                    </ScrollView>
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      borderTopWidth: 1,
+                      borderTopColor: colors.neutral[200],
+                      padding: 8,
+                      gap: 8,
+                    }}>
+                      <TextInput
+                        placeholder={t('analyze.type_message') || 'Ask a follow-up question...'}
+                        placeholderTextColor={colors.neutral[400]}
+                        value={chatInput}
+                        onChangeText={setChatInput}
+                        style={{
+                          flex: 1,
+                          padding: 10,
+                          borderRadius: 8,
+                          backgroundColor: colors.neutral[50],
+                          color: colors.neutral[900],
+                          fontSize: 14,
+                          ...(Platform.OS === 'web' ? { outlineStyle: 'none' as any } : {}),
+                        }}
+                      />
+                      <TouchableOpacity
+                        onPress={async () => {
+                          if (chatInput.trim().length === 0) return;
+                          await handleSendMessage(chatInput.trim());
+                          setChatInput('');
+                        }}
+                        disabled={expertLoading}
+                        style={{ padding: 8 }}
+                      >
+                        <Icon source="send" size={20} color={colors.primary[900]} />
+                      </TouchableOpacity>
+                    </View>
+                    {expertLoading && <ActivityIndicator size="small" color={colors.primary[900]} style={{ marginBottom: 8 }} />}
+                  </View>
+                )}
+
+
 
                 {/* ── HEALTH WORKER: CLINICAL ACTIONS PANEL ── */}
                 {!isCommunity && result && (

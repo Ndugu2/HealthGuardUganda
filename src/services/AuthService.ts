@@ -1,4 +1,5 @@
 import { DEMO_ACCOUNTS } from '../config';
+import { NotificationService } from './NotificationService';
 import { getApiBaseUrl } from '../db/apiConfig';
 import {
   saveSession,
@@ -41,7 +42,7 @@ export class AuthService {
       clearTimeout(timeout);
 
       const data = await response.json();
-      if (data.success) {
+      if (response.ok && data.success) {
         const user = data.user as User;
         if (roleHint && user.role !== roleHint) {
           const expectedRoleText = roleHint === 'HW' ? 'Health Worker' : roleHint === 'ADMIN' ? 'Administrator' : 'Community Member';
@@ -77,6 +78,7 @@ export class AuthService {
         role: demo.role,
         district: demo.district,
         village: demo.village,
+        approved: true,
       };
       await saveSession(fakeToken, JSON.stringify(user));
       return { success: true };
@@ -143,36 +145,96 @@ export class AuthService {
     role?: string;
     district?: string;
     village?: string;
-  }): Promise<{ success: boolean; error?: string }> {
+  }): Promise<{ success: boolean; error?: string; otp?: string }> {
+    // Generate a default offline OTP
+    let finalOtp = AuthService.generateOTP();
+    let isOffline = true;
+
     const isApproved = userData.role !== 'HW';
     const user: User = {
       id: userData.phone,
       phone: userData.phone,
       name: userData.name,
       email: userData.email,
-      role: userData.role || 'HW',
+      role: userData.role || 'COMMUNITY',
       district: userData.district,
       village: userData.village,
       approved: isApproved,
     };
+
+    // Persist locally first (works offline)
     await saveRegisteredUser(userData.phone, userData.password, user as unknown as Record<string, unknown>);
 
+    // Attempt server registration
     try {
       const API_URL = await getApiBaseUrl();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
       const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
+      
       const data = await response.json();
-      if (data.success) return { success: true };
-      return { success: false, error: data.error || 'Registration failed' };
-    } catch {
-      return { success: true };
+      if (response.ok) {
+        isOffline = false;
+        if (data.otp) {
+          finalOtp = data.otp; // Sync client with server-generated OTP
+        }
+      } else if (response.status === 400) {
+        return { success: false, error: data.error || 'This phone number is already registered.' };
+      }
+    } catch (e) {
+      console.warn('AuthService: Server unreachable during registration, proceeding offline.', e);
     }
+
+    // Only send offline simulated notifications if the server didn't handle it
+    if (isOffline) {
+      try {
+        await NotificationService.sendOTP(userData.phone, finalOtp);
+      } catch {
+        console.warn('AuthService: SMS OTP delivery failed (non-fatal)');
+      }
+      if (userData.email) {
+        try {
+          await NotificationService.sendOTPViaEmail(userData.email, finalOtp, userData.name);
+        } catch {
+          console.warn('AuthService: Email OTP delivery failed (non-fatal)');
+        }
+      }
+    }
+
+    return { success: true, otp: finalOtp };
   }
 
   public static async getAllRegisteredUsers(): Promise<User[]> {
+    try {
+      const session = await AuthService.getSession();
+      if (session) {
+        const API_URL = await getApiBaseUrl();
+        const response = await fetch(`${API_URL}/auth/users`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.token}`
+          }
+        });
+        if (response.ok) {
+          const users = await response.json() as User[];
+          for (const u of users) {
+            const existing = await getRegisteredUser(u.phone);
+            const pwd = existing ? existing.password : 'synced_user_no_password';
+            await saveRegisteredUser(u.phone, pwd, u as unknown as Record<string, unknown>);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch users from server, using local:', e);
+    }
+
     const pendingPhone = '0703000003';
     const existing = await getRegisteredUser(pendingPhone);
     if (!existing) {
@@ -192,6 +254,120 @@ export class AuthService {
   }
 
   public static async approveUser(phone: string): Promise<boolean> {
-    return updateRegisteredUserApproval(phone, true);
+    await updateRegisteredUserApproval(phone, true);
+
+    try {
+      const session = await AuthService.getSession();
+      if (session) {
+        const API_URL = await getApiBaseUrl();
+        const response = await fetch(`${API_URL}/auth/users/${phone}/approve`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.token}`
+          }
+        });
+        const data = await response.json();
+        return data.success === true;
+      }
+    } catch (e) {
+      console.warn('Could not approve user on server:', e);
+    }
+    return true;
+  }
+
+  /**
+   * Request a password reset code. The backend generates a code and (in production)
+   * would send it via SMS or Email. For this demo, the backend returns the code
+   * so the client can simulate the delivery notification.
+   */
+  public static async forgotPassword(
+    method: 'email' | 'phone',
+    value: string
+  ): Promise<{ success: boolean; code?: string; error?: string }> {
+    try {
+      const API_URL = await getApiBaseUrl();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      const response = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method, value }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      const data = await response.json();
+      if (response.ok && data.success) {
+        return { success: true, code: data.code };
+      }
+      return { success: false, error: data.error || 'Could not initiate password reset' };
+    } catch {
+      // Offline fallback: check local registered users
+      if (method === 'phone') {
+        const cached = await getRegisteredUser(value);
+        if (cached) {
+          const code = AuthService.generateOTP();
+          return { success: true, code };
+        }
+      } else {
+        // Email lookup in local DB not directly supported; search all users
+        const allUsers = await getAllRegisteredUsersFromDb();
+        const match = allUsers.find((u: any) => u.email === value);
+        if (match) {
+          const code = AuthService.generateOTP();
+          return { success: true, code };
+        }
+      }
+      return { success: false, error: 'User not found. Check your phone number or email.' };
+    }
+  }
+
+  /**
+   * Reset the password using the verification code.
+   */
+  public static async resetPassword(
+    method: 'email' | 'phone',
+    value: string,
+    code: string,
+    newPassword: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const API_URL = await getApiBaseUrl();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      const response = await fetch(`${API_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method, value, code, newPassword }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      const data = await response.json();
+      if (response.ok && data.success) {
+        return { success: true };
+      }
+      return { success: false, error: data.error || 'Could not reset password' };
+    } catch {
+      // Offline fallback: update local DB password directly
+      if (method === 'phone') {
+        const cached = await getRegisteredUser(value);
+        if (cached) {
+          await saveRegisteredUser(value, newPassword, cached.user);
+          return { success: true };
+        }
+      } else {
+        const allUsers = await getAllRegisteredUsersFromDb();
+        const match = allUsers.find((u: any) => u.email === value);
+        if (match) {
+          const phone = (match as any).phone;
+          const cached = await getRegisteredUser(phone);
+          if (cached) {
+            await saveRegisteredUser(phone, newPassword, cached.user);
+            return { success: true };
+          }
+        }
+      }
+      return { success: false, error: 'Could not reset password offline.' };
+    }
   }
 }

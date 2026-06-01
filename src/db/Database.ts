@@ -39,6 +39,7 @@ export const getResponseForKeyword = store.getResponseForKeyword;
 export const getAllFacilities = store.getAllFacilities;
 export const saveBroadcast = store.saveBroadcast;
 export const getBroadcasts = store.getBroadcasts;
+export const markBroadcastAsRead = store.markBroadcastAsRead;
 export const saveSetting = store.saveSetting;
 export const getSetting = store.getSetting;
 export const getPatients = store.getPatients;
@@ -55,4 +56,10 @@ export const deleteMaternalRecord = store.deleteMaternalRecord;
 export const getChildRecords = store.getChildRecords;
 export const saveChildRecord = store.saveChildRecord;
 export const deleteChildRecord = store.deleteChildRecord;
+
+export const getCommunityShelf = store.getCommunityShelf;
+export const addCommunityShelfItem = store.addCommunityShelfItem;
+export const deductCommunityShelf = store.deductCommunityShelf;
+export const addCommunityShelfStock = store.addCommunityShelfStock;
+export const deleteCommunityShelfItem = store.deleteCommunityShelfItem;
 

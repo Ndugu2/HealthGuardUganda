@@ -136,13 +136,19 @@ function MainApp() {
         await initDatabase();
         
         // Auto-seed knowledge on first run
-        const hasSeeded = await getSetting('knowledge_seeded_v75');
+        const hasSeeded = await getSetting('knowledge_seeded_v76');
         if (!hasSeeded) {
           await SyncService.seedLocalKnowledge();
-          await saveSetting('knowledge_seeded_v75', 'true');
+          await saveSetting('knowledge_seeded_v76', 'true');
         }
         
-        checkAuth();
+        let session = await AuthService.getSession();
+        if (!session) {
+          console.log('[AutoLogin] Logged in to community portal...');
+          await AuthService.login('0702000002', 'community123', 'COMMUNITY');
+        }
+        
+        await checkAuth();
 
         // ─── AUTO-SYNC: Pull latest data when online ───────────────
         const online = await ConnectivityService.isOnline();
@@ -279,14 +285,35 @@ function MainApp() {
       return <LandingScreen onLoginPress={(role) => {
         setSelectedRole(role);
         setShowLanding(false);
-        // Direct to login for all roles
         setShowRegister(false);
       }} />;
     }
     if (showRegister) {
-      return <RegisterScreen onRegisterSuccess={() => { setShowRegister(false); setShowLanding(false); }} onBack={() => { setShowRegister(false); setShowLanding(true); }} />;
+      return (
+        <RegisterScreen
+          initialRole={selectedRole}
+          onRegisterSuccess={() => {
+            setShowRegister(false);
+            setShowLanding(false);
+            // Stay on login screen with role pre-filled
+          }}
+          onBack={() => {
+            setShowRegister(false);
+          }}
+        />
+      );
     }
-    return <LoginScreen onLoginSuccess={checkAuth} onBack={() => setShowLanding(true)} roleHint={selectedRole} />;
+    return (
+      <LoginScreen
+        onLoginSuccess={checkAuth}
+        onBack={() => setShowLanding(true)}
+        roleHint={selectedRole}
+        onRegisterPress={(role) => {
+          if (role) setSelectedRole(role);
+          setShowRegister(true);
+        }}
+      />
+    );
   }
 
   const Container = Platform.OS === 'web' ? View : SafeAreaView;

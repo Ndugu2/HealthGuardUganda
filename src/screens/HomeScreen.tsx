@@ -11,10 +11,11 @@ import {
   useWindowDimensions,
   Alert,
   Linking,
+  Modal,
 } from 'react-native';
 import { Text, Icon, Avatar, Divider } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
-import { getStats } from '../db/Database';
+import { getStats, markBroadcastAsRead } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import StatusBadge from '../components/StatusBadge';
 import { colors, spacing, radii, shadows, topicColors, gradients } from '../theme';
@@ -29,6 +30,8 @@ import { FacilityLocator } from '../components/home/FacilityLocator';
 import { HealthQuiz } from '../components/home/HealthQuiz';
 import { DailyHealthTips } from '../components/home/DailyHealthTips';
 import { RumorChecker } from '../components/home/RumorChecker';
+import { EmergencyFirstAid } from '../components/home/EmergencyFirstAid';
+import { VillageMedicineShelf } from '../components/home/VillageMedicineShelf';
 
 interface HomeScreenProps {
   navigateToTab: (key: string) => void;
@@ -54,6 +57,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [risks, setRisks] = useState<RiskAlert[]>([]);
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
+  const [selectedAdvisoryAlert, setSelectedAdvisoryAlert] = useState<Broadcast | null>(null);
 
   const loadStats = useCallback(async () => {
     const s = await getStats();
@@ -134,11 +138,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
               <TouchableOpacity
                 style={styles.bannerAction}
                 onPress={() => {
-                  Alert.alert(
-                    i18n.language === 'lg' ? alert.title_lg || alert.title : alert.title,
-                    i18n.language === 'lg' ? alert.message_lg || alert.message : alert.message,
-                    [{ text: t('common.ok') || 'OK', style: 'cancel' }]
-                  );
+                  setSelectedAdvisoryAlert(alert);
                 }}
               >
                 <Text style={styles.bannerActionText}>{t('home.view_btn') || 'VIEW'}</Text>
@@ -157,6 +157,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
 
           <View style={isDesktop ? styles.desktopLayout : null}>
             <View style={isDesktop ? styles.leftSide : null}>
+              {/* ── EMERGENCY SOS BUTTON — COMMUNITY ONLY ── */}
+              {isCommunity && <EmergencyFirstAid />}
+
               {/* ── UNIFIED STATS CARD ── */}
               {isCommunity ? (
                 <AnimatedCard delay={100} style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }]}>
@@ -203,6 +206,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
 
               {isCommunity ? (
                 <>
+                  {/* ── MY VILLAGE MEDICINE SHELF ── */}
+                  <VillageMedicineShelf />
+
                   {/* ── SEASONAL ALERT WIDGET ── */}
                   <AnimatedCard delay={150} style={[styles.seasonalCard, { backgroundColor: mode === 'light' ? '#F0F4F8' : colors.neutral[100] }]}>
                     <View style={styles.seasonalHeader}>
@@ -408,6 +414,125 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
 
         <View style={styles.spacer} />
       </ScrollView>
+
+      {/* ── INTERACTIVE OUTBREAK RESPONSE MODAL ── */}
+      <Modal
+        visible={!!selectedAdvisoryAlert}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setSelectedAdvisoryAlert(null)}
+      >
+        <View style={advisoryStyles.overlay}>
+          <View style={[advisoryStyles.sheet, { backgroundColor: colors.surface }]}>
+            <View style={advisoryStyles.header}>
+              <View style={advisoryStyles.headerIconBox}>
+                <Icon source="alert-decagram" size={28} color="#C53030" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[advisoryStyles.alertTag, { color: '#C53030' }]}>
+                  {i18n.language === 'lg' ? 'OKULABULA OKWAMANGU' : 'URGENT MEDICAL ADVISORY'}
+                </Text>
+                <Text style={[advisoryStyles.title, { color: colors.neutral[900] }]} numberOfLines={2}>
+                  {selectedAdvisoryAlert ? (i18n.language === 'lg' ? selectedAdvisoryAlert.title_lg || selectedAdvisoryAlert.title : selectedAdvisoryAlert.title) : ''}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setSelectedAdvisoryAlert(null)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Icon source="close" size={24} color={colors.neutral[500]} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={advisoryStyles.scrollContent} showsVerticalScrollIndicator={false}>
+              <Text style={[advisoryStyles.msg, { color: colors.neutral[700] }]}>
+                {selectedAdvisoryAlert ? (i18n.language === 'lg' ? selectedAdvisoryAlert.message_lg || selectedAdvisoryAlert.message : selectedAdvisoryAlert.message) : ''}
+              </Text>
+
+              {/* DYNAMIC ACTION PROTOCOLS (E.G. MEASLES DETECTED) */}
+              {selectedAdvisoryAlert?.title.toLowerCase().includes('measles') && (
+                <View style={[advisoryStyles.protocolBox, { backgroundColor: mode === 'light' ? '#FFF5F5' : colors.neutral[100], borderColor: '#FEB2B2' }]}>
+                  <View style={advisoryStyles.protocolHeader}>
+                    <Icon source="hospital-box" size={20} color="#C53030" />
+                    <Text style={[advisoryStyles.protocolTitle, { color: '#9B2C2C' }]}>
+                      {i18n.language === 'lg' ? 'Mumpumpu (Measles) — Ebikolebwa Mangu' : 'Measles Protocol — Essential Offline Triage'}
+                    </Text>
+                  </View>
+                  <View style={advisoryStyles.stepsList}>
+                    <View style={advisoryStyles.stepItem}>
+                      <View style={[advisoryStyles.stepDot, { backgroundColor: '#C53030' }]} />
+                      <Text style={[advisoryStyles.stepText, { color: colors.neutral[700] }]}>
+                        {i18n.language === 'lg' ? 'Mukuume omwana wekka okumala ennaku 5 okutangira okusaasaana' : 'Isolate the child for at least 5 days from rash onset to stop respiratory spread.'}
+                      </Text>
+                    </View>
+                    <View style={advisoryStyles.stepItem}>
+                      <View style={[advisoryStyles.stepDot, { backgroundColor: '#C53030' }]} />
+                      <Text style={[advisoryStyles.stepText, { color: colors.neutral[700] }]}>
+                        {i18n.language === 'lg' ? 'Wa omwana emirundi ebiri egya Vitamin A supplement' : 'Administer two doses of Vitamin A supplements immediately.'}
+                      </Text>
+                    </View>
+                    <View style={advisoryStyles.stepItem}>
+                      <View style={[advisoryStyles.stepDot, { backgroundColor: '#C53030' }]} />
+                      <Text style={[advisoryStyles.stepText, { color: colors.neutral[700] }]}>
+                        {i18n.language === 'lg' ? 'Kozesa Paracetamol ku musujja era labirira amaaso (weewale ekizikiza)' : 'Treat high fever with Paracetamol; clean eyes with sterile water.'}
+                      </Text>
+                    </View>
+                    <View style={advisoryStyles.stepItem}>
+                      <View style={[advisoryStyles.stepDot, { backgroundColor: '#C53030' }]} />
+                      <Text style={[advisoryStyles.stepText, { color: colors.neutral[700] }]}>
+                        {i18n.language === 'lg' ? 'Kakasa nti enkingo ez’obulwadde zombi zaggwaako omwana wansi w’emyaka 5' : 'Verify routine immunizations under the age of 5 (MR 1st dose + MR booster).'}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+
+              {/* INTEGRATED INTERACTIVE ACTIONS */}
+              <View style={advisoryStyles.actionsWrap}>
+                <TouchableOpacity
+                  style={[advisoryStyles.ctaBtn, { backgroundColor: colors.primary[900] }]}
+                  onPress={() => {
+                    setSelectedAdvisoryAlert(null);
+                    navigateToTab('more'); // Leads to immunization card tab
+                  }}
+                >
+                  <Icon source="checkbox-marked-circle-outline" size={20} color="#FFF" />
+                  <Text style={advisoryStyles.ctaText}>
+                    {i18n.language === 'lg' ? 'Kakasa Ekitabo ky\'Enkingo' : 'Verify Child Vaccine Schedule'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[advisoryStyles.ctaBtn, { backgroundColor: '#3182CE' }]}
+                  onPress={() => {
+                    setSelectedAdvisoryAlert(null);
+                    navigateToTab('facilities'); // Opens mapping locator tab
+                  }}
+                >
+                  <Icon source="hospital-marker" size={20} color="#FFF" />
+                  <Text style={advisoryStyles.ctaText}>
+                    {i18n.language === 'lg' ? 'Noonya Amalwaliro g\'Enkingo' : 'Locate Free Vaccine Clinics'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[advisoryStyles.dismissBtn, { borderColor: colors.neutral[300] }]}
+                  onPress={async () => {
+                    if (selectedAdvisoryAlert) {
+                      await markBroadcastAsRead(selectedAdvisoryAlert.id);
+                      // reload list
+                      const b = await BroadcastService.fetchOfflineBroadcasts();
+                      setBroadcasts(b);
+                    }
+                    setSelectedAdvisoryAlert(null);
+                  }}
+                >
+                  <Text style={[advisoryStyles.dismissText, { color: colors.neutral[600] }]}>
+                    {i18n.language === 'lg' ? 'Okitegedde & Ggyako' : 'Acknowledge & Dismiss Alert'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1241,6 +1366,122 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#4A5568',
     lineHeight: 15,
+  },
+});
+
+const advisoryStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: spacing.xl,
+    maxHeight: '90%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 15,
+    elevation: 20,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: spacing.lg,
+  },
+  headerIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#FED7D7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  alertTag: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.2,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '900',
+    lineHeight: 22,
+    marginTop: 2,
+  },
+  scrollContent: {
+    paddingBottom: spacing.xl,
+  },
+  msg: {
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: '500',
+    marginBottom: spacing.lg,
+  },
+  protocolBox: {
+    borderRadius: radii.xl,
+    borderWidth: 1.5,
+    padding: spacing.lg,
+    marginBottom: spacing.xl,
+  },
+  protocolHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: spacing.md,
+  },
+  protocolTitle: {
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  stepsList: {
+    gap: 12,
+  },
+  stepItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  stepDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: 7,
+  },
+  stepText: {
+    flex: 1,
+    fontSize: 13.5,
+    lineHeight: 18,
+    fontWeight: '600',
+  },
+  actionsWrap: {
+    gap: 12,
+  },
+  ctaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: radii.xl,
+  },
+  ctaText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  dismissBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  dismissText: {
+    fontSize: 14,
+    fontWeight: '800',
   },
 });
 

@@ -1,0 +1,101 @@
+id,name,type,latitude,longitude,contact
+1,Mulago National Referral Hospital,National Hospital,0.3385,32.5761,+256 414 554001
+2,Nsambya Hospital,Private Hospital,0.3082,32.5856,+256 414 267611
+3,Entebbe Regional Referral Hospital,Regional Hospital,0.0577,32.4646,+256 414 320141
+4,Kawempe National Referral Hospital,National Hospital,0.3521,32.5654,+256 414 554002
+5,Mbarara Regional Referral Hospital,Regional Hospital,-0.6072,30.6545,+256 485 421234
+6,Gulu Regional Referral Hospital,Regional Hospital,2.7747,32.2988,+256 471 432100
+7,Kibuli Joint Mission Hospital,Private Hospital,0.3105,32.5964,+256 414 235678
+8,Lubaga Hospital,Private Hospital,0.3015,32.5532,+256 414 270200
+9,Jinja Regional Referral Hospital,Regional Hospital,0.4283,33.2081,+256 432 120560
+10,Fort Portal Referral Hospital,Regional Hospital,0.6931,30.2741,+256 483 422026
+11,Mbale Regional Referral Hospital,Regional Hospital,1.0772,34.1752,+256 454 433314
+12,Soroti Regional Referral Hospital,Regional Hospital,1.7135,33.6111,+256 454 461011
+13,Lacor Hospital Gulu,Mission Hospital,2.7562,32.2534,+256 471 435132
+14,Lira Regional Referral Hospital,Regional Hospital,2.2471,32.8993,+256 473 420014
+15,Kabale Regional Referral Hospital,Regional Hospital,-1.2522,29.9884,+256 486 422003
+16,Hoima Regional Referral Hospital,Regional Hospital,1.4281,31.3533,+256 465 440004
+17,Arua Regional Referral Hospital,Regional Hospital,3.0232,30.9112,+256 476 420005
+18,Moroto Regional Referral Hospital,Regional Hospital,2.5312,34.6644,+256 454 470002
+19,Masaka Regional Referral Hospital,Regional Hospital,-0.3348,31.7368,+256 481 420003
+20,Tororo District Hospital,District Hospital,0.6932,34.1814,+256 454 445002
+21,Iganga District Hospital,District Hospital,0.6113,33.4686,+256 432 244001
+22,Kamuli District Hospital,District Hospital,0.9473,33.1188,+256 432 264000
+23,Rukungiri District Hospital,District Hospital,-0.8413,29.9444,+256 486 424001
+24,Bushenyi District Hospital,District Hospital,-0.5557,30.1874,+256 485 424002
+25,Pallisa District Hospital,District Hospital,1.1450,33.7096,+256 454 465001
+26,Rakai District Hospital,District Hospital,-0.7190,31.4091,+256 481 422003
+27,Mukono District Hospital,District Hospital,0.3537,32.7563,+256 414 290011
+28,Wakiso Health Center IV,Health Center IV,0.4001,32.4585,+256 414 310001
+29,Nakasero Hospital,Private Hospital,0.3271,32.5798,+256 414 230000
+30,International Hospital Kampala,Private Hospital,0.3372,32.5851,+256 414 200400
+31,Case Hospital Kampala,Private Hospital,0.3197,32.5897,+256 414 250780
+32,Mengo Hospital,Mission Hospital,0.3102,32.5648,+256 414 270416
+33,Rubaga Hospital,Mission Hospital,0.2991,32.5501,+256 414 272003
+34,Namirembe Hospital,Mission Hospital,0.3074,32.5607,+256 414 233101
+35,Muyenga Health Center III,Health Center III,0.2952,32.6105,+256 414 510044
+36,Kasangati Health Center IV,Health Center IV,0.4512,32.6071,+256 414 286001
+37,Kawanda Health Center III,Health Center III,0.4672,32.5224,+256 414 287001
+38,Kyambogo Health Center II,Health Center II,0.3450,32.6348,+256 772 310001
+39,Nakawa Health Center III,Health Center III,0.3351,32.6213,+256 414 286050
+40,Kireka Health Center II,Health Center II,0.3568,32.6541,+256 772 320002
+41,Mpigi District Hospital,District Hospital,0.2247,32.3113,+256 414 322001
+42,Kayunga District Hospital,District Hospital,0.7045,32.8910,+256 414 298001
+43,Mityana District Hospital,District Hospital,0.4151,32.0241,+256 414 340501
+44,Mubende Regional Referral Hospital,Regional Hospital,0.5582,31.3618,+256 464 420001
+45,Kiboga District Hospital,District Hospital,0.9124,31.7715,+256 464 422002
+46,Kyenjojo District Hospital,District Hospital,0.6208,30.6253,+256 483 424003
+47,Kasese District Hospital,District Hospital,0.1870,30.0849,+256 483 444001
+48,Bundibugyo District Hospital,District Hospital,0.7133,30.0678,+256 483 442001
+49,Ntoroko District Hospital,District Hospital,1.0544,30.4724,+256 483 443001
+50,Kamwenge District Hospital,District Hospital,0.1901,30.4519,+256 483 426001
+51,Ibanda District Hospital,District Hospital,-0.1295,30.5025,+256 485 426001
+52,Kiruhura District Hospital,District Hospital,-0.1946,30.8475,+256 485 428001
+53,Lyantonde District Hospital,District Hospital,-0.4098,31.1574,+256 481 428001
+54,Sembabule District Hospital,District Hospital,-0.0696,31.4661,+256 481 426001
+55,Butebo District Hospital,District Hospital,1.2214,34.1067,+256 454 468001
+56,Sironko District Hospital,District Hospital,1.2337,34.2479,+256 454 466001
+57,Manafwa District Hospital,District Hospital,0.9951,34.2882,+256 454 467001
+58,Bududa District Hospital,District Hospital,1.0062,34.3315,+256 454 469001
+59,Bulambuli District Hospital,District Hospital,1.2021,34.3899,+256 454 470003
+60,Butaleja District Hospital,District Hospital,0.9065,33.9595,+256 454 461002
+61,Namutumba District Hospital,District Hospital,0.8340,33.6701,+256 432 265001
+62,Mayuge District Hospital,District Hospital,0.4498,33.5843,+256 432 266001
+63,Buyende District Hospital,District Hospital,1.1547,33.1469,+256 432 267001
+64,Kaliro District Hospital,District Hospital,1.0414,33.4991,+256 432 268001
+65,Bugiri District Hospital,District Hospital,0.5768,33.7442,+256 432 269001
+66,Busia District Hospital,District Hospital,0.4707,34.0869,+256 454 445003
+67,Namayingo District Hospital,District Hospital,0.2907,33.8768,+256 432 270001
+68,Kibuku District Hospital,District Hospital,1.0580,33.8037,+256 454 462001
+69,Butebo Health Center IV,Health Center IV,1.1914,34.1292,+256 454 468002
+70,Dokolo District Hospital,District Hospital,1.9584,33.1615,+256 473 422001
+71,Apac District Hospital,District Hospital,1.9937,32.5372,+256 473 420002
+72,Alebtong District Hospital,District Hospital,2.2393,33.2994,+256 473 424001
+73,Otuke District Hospital,District Hospital,2.6117,33.3474,+256 473 426001
+74,Kole District Hospital,District Hospital,2.3947,32.7575,+256 473 428001
+75,Amolatar District Hospital,District Hospital,1.6103,32.8064,+256 473 430001
+76,Kitgum District Hospital,District Hospital,3.2799,32.8882,+256 471 422001
+77,Pader District Hospital,District Hospital,2.7846,33.1750,+256 471 424001
+78,Agago District Hospital,District Hospital,3.0044,33.3541,+256 471 426001
+79,Lamwo District Hospital,District Hospital,3.5283,32.5248,+256 471 428001
+80,Nwoya District Hospital,District Hospital,2.6444,31.9316,+256 471 430001
+81,Amuru District Hospital,District Hospital,2.9691,31.9188,+256 471 432001
+82,Adjumani District Hospital,District Hospital,3.3782,31.7937,+256 476 422001
+83,Moyo District Hospital,District Hospital,3.6489,31.7258,+256 476 424001
+84,Yumbe District Hospital,District Hospital,3.4580,31.2388,+256 476 426001
+85,Koboko District Hospital,District Hospital,3.4124,30.9620,+256 476 428001
+86,Maracha District Hospital,District Hospital,3.2820,30.9104,+256 476 430001
+87,Zombo District Hospital,District Hospital,2.5139,30.9089,+256 476 432001
+88,Nebbi District Hospital,District Hospital,2.4700,31.0913,+256 476 434001
+89,Pakwach District Hospital,District Hospital,2.4613,31.4868,+256 476 436001
+90,Buliisa District Hospital,District Hospital,2.1005,31.4194,+256 465 442001
+91,Masindi District Hospital,District Hospital,1.6750,31.7135,+256 465 420001
+92,Kibaale District Hospital,District Hospital,0.8969,31.0991,+256 465 444001
+93,Kagadi District Hospital,District Hospital,0.9436,30.8101,+256 465 446001
+94,Kakumiro District Hospital,District Hospital,0.7817,31.3839,+256 465 448001
+95,Kyankwanzi District Hospital,District Hospital,0.9231,31.8019,+256 465 450001
+96,Sembabule Health Center IV,Health Center IV,-0.0541,31.4432,+256 481 426002
+97,Isingiro District Hospital,District Hospital,-0.8490,30.7998,+256 485 424003
+98,Ntungamo District Hospital,District Hospital,-0.8934,30.2645,+256 485 426002
+99,Sheema District Hospital,District Hospital,-0.5484,30.4204,+256 485 428002
+100,Mitooma District Hospital,District Hospital,-0.6218,30.0322,+256 485 430001

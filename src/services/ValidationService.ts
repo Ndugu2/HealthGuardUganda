@@ -96,6 +96,16 @@ export class ValidationService {
   }
 
   /**
+   * Validates if the email address has a correct syntax format.
+   */
+  public static isValidEmail(email: string): boolean {
+    const clean = email.trim();
+    if (!clean) return false;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return emailRegex.test(clean);
+  }
+
+  /**
    * Validates that full name contains at least a first name and a last name, using only alphabetical chars and spaces.
    */
   public static isValidFullName(name: string): boolean {

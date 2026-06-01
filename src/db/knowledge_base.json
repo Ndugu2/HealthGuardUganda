@@ -619,6 +619,16 @@
     "source": "MOH Uganda"
   },
   {
+    "topic": "malaria",
+    "keyword": "malaria:posho_myth",
+    "correct_text_en": "Fact: Eating posho does not cause malaria. Malaria is caused by Plasmodium parasites transmitted through the bite of an infected female Anopheles mosquito. It can be prevented by sleeping under insecticide-treated mosquito nets (LLINs), using indoor residual spraying, and clearing stagnant water or clearing bushes near homes.",
+    "correct_text_lg": "Kituufu: Okulya posho tekuleeta musujja gw'ensiri. Omusujja gw'ensiri guleetebwa obuwuka bwa Plasmodium obusaasaanyizibwa nsiri yokka esanze ng'erina akawuka. Guziyizibwa okusula mu butimba obulimu eddagala (LLINs), okufuuyira mu nju, n'okuggyawo amazzi agalero agagenda ensiri.",
+    "symptoms": "Fever, chills, headache, nausea, and joint pain.",
+    "prevention": "LLIN nets, IRS spraying, clearing bushes, and removing stagnant water.",
+    "treatment": "Coartem (ACTs) after testing. Complete the full course even if you feel better.",
+    "source": "MOH Uganda"
+  },
+  {
     "topic": "maternal",
     "keyword": "maternal:general",
     "correct_text_en": "Maternal health is prioritized through early ANC visits, facility-based deliveries, and postpartum care. Proper nutrition and rest are essential for a healthy pregnancy.",

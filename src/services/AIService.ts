@@ -84,7 +84,7 @@ Base answers on WHO and Uganda MOH guidelines.`;
 
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 12000);
+      const timer = setTimeout(() => controller.abort(), 20000);
 
       const response = await fetch(OPENROUTER_URL, {
         method: 'POST',
@@ -136,29 +136,44 @@ Base answers on WHO and Uganda MOH guidelines.`;
 
   /**
    * Direct call to Pollinations API (free, no API key).
-   * Uses the GET endpoint which is more reliable than POST for longer prompts.
+   * Uses POST with JSON mode which is extremely reliable for structured outputs.
    */
   private static async callPollinations(
     claim: string,
     language: string
   ): Promise<ExpertAnalysis | null> {
     const lang = language === 'lg' ? 'Luganda' : 'English';
-    const prompt = `You are a senior medical expert advising Ugandan community health workers. Analyse the following health claim and respond ONLY as valid JSON in this exact shape: {"label":"ACCURATE or INACCURATE or UNCERTAIN","explanation":"2-3 sentences in ${lang} addressing the claim directly based on WHO and Uganda MOH guidelines","recommendation":"One actionable sentence for the health worker"}. Health claim to verify: "${claim}"`;
+    const systemPrompt = `You are a senior medical expert advising Ugandan community health workers.
+Analyse the health claim and respond ONLY as valid JSON (no markdown) in this exact shape:
+{"label":"ACCURATE|INACCURATE|UNCERTAIN","explanation":"...","recommendation":"..."}
+- label: ACCURATE if medically correct, INACCURATE if a myth, UNCERTAIN if unclear.
+- explanation: 2-3 sentences in ${lang} addressing the claim directly.
+- recommendation: One actionable sentence for the health worker.
+Base answers on WHO and Uganda MOH guidelines.`;
 
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 20000);
 
-      const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}?json=true`;
-
-      const response = await fetch(url, {
-        method: 'GET',
+      const response = await fetch('https://text.pollinations.ai/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Health claim to verify: "${claim}"` }
+          ],
+          model: 'openai',
+          jsonMode: true,
+        }),
         signal: controller.signal,
       });
       clearTimeout(timer);
 
       if (!response.ok) {
-        console.warn('Pollinations GET error:', response.status);
+        console.warn('Pollinations POST error:', response.status);
         return null;
       }
 

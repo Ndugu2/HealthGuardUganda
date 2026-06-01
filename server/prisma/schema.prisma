@@ -39,12 +39,16 @@ model KnowledgeItem {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  phone     String   @unique
-  name      String
-  role      String   @default("HW") // HW for Health Worker, AD for Admin
-  village   String?
-  district  String?
-  password  String
-  createdAt DateTime @default(now())
+  id                String    @id @default(uuid())
+  phone             String    @unique
+  name              String
+  email             String?
+  role              String    @default("HW") // HW for Health Worker, AD for Admin
+  village           String?
+  district          String?
+  password          String
+  approved          Boolean   @default(true)
+  resetToken        String?
+  resetTokenExpires DateTime?
+  createdAt         DateTime  @default(now())
 }
