@@ -17,6 +17,10 @@ router.post('/register', async (req, res) => {
     // HW needs administrator approval, others default to approved (true)
     const approved = role !== 'HW';
 
+    // Generate the OTP code
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+
     const user = await prisma.user.create({
       data: {
         phone,
@@ -27,11 +31,10 @@ router.post('/register', async (req, res) => {
         village,
         district,
         approved,
+        otpCode: otp,
+        otpExpires,
       }
     });
-
-    // Generate the OTP code
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
     // Trigger real or simulated delivery
     if (email) {
@@ -41,10 +44,45 @@ router.post('/register', async (req, res) => {
       await SMSService.sendSMS(phone, `Your HealthGuard Uganda verification code is: ${otp}`);
     }
 
-    res.json({ success: true, userId: user.id, otp });
+    // Do NOT return the otp code back to the client!
+    res.json({ success: true, userId: user.id });
   } catch (error: any) {
     console.error('Registration error:', error);
     res.status(400).json({ error: 'Phone number already registered' });
+  }
+});
+
+// VERIFY OTP
+router.post('/verify-otp', async (req, res) => {
+  const { phone, code } = req.body;
+  if (!phone || !code) {
+    return res.status(400).json({ error: 'phone and code are required' });
+  }
+  try {
+    const user = await prisma.user.findUnique({ where: { phone } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    if (!user.otpCode || user.otpCode !== code) {
+      return res.status(400).json({ error: 'Invalid verification code' });
+    }
+    if (!user.otpExpires || user.otpExpires < new Date()) {
+      return res.status(400).json({ error: 'Verification code has expired' });
+    }
+
+    // OTP is valid! Clear it
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        otpCode: null,
+        otpExpires: null,
+      }
+    });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Verify OTP error:', error);
+    res.status(500).json({ error: error.message || 'Verification failed' });
   }
 });
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, useWindowDimensions, ScrollView, Alert } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
@@ -37,9 +37,10 @@ type MoreView =
 interface MoreScreenProps {
   navigateToTab?: (key: string) => void;
   userRole?: string;
+  onLogout?: () => void;
 }
 
-const MoreScreen: React.FC<MoreScreenProps> = ({ userRole }) => {
+const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
   const { width } = useWindowDimensions();
@@ -151,7 +152,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole }) => {
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
           <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('nav.more') || 'Back'}</Text>
         </TouchableOpacity>
-        <SettingsScreen />
+        <SettingsScreen onLogout={onLogout} />
       </View>
     );
   }
@@ -235,6 +236,11 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole }) => {
 
   const menuItems = getMenuItems();
 
+  const isDark = mode === 'dark';
+  const logoutBg = isDark ? 'rgba(239, 68, 68, 0.08)' : colors.danger[50];
+  const logoutBorder = isDark ? 'rgba(239, 68, 68, 0.2)' : colors.danger[100];
+  const logoutTextAndIcon = isDark ? '#F87171' : colors.danger[800];
+
   return (
     <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.scrollContent}>
       <View style={isDesktop ? styles.desktopPad : undefined}>
@@ -267,6 +273,43 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole }) => {
             </TouchableOpacity>
           ))}
         </View>
+
+        {!isDesktop && (
+          <TouchableOpacity
+            style={[
+              styles.logoutButton,
+              {
+                backgroundColor: logoutBg,
+                borderColor: logoutBorder,
+              }
+            ]}
+            onPress={() => {
+              Alert.alert(
+                t('settings.logout_confirm_title') || 'Log Out',
+                t('settings.logout_confirm_msg') || 'Are you sure you want to log out?',
+                [
+                  { text: t('common.cancel') || 'Cancel', style: 'cancel' },
+                  {
+                    text: t('settings.logout') || 'Log Out',
+                    style: 'destructive',
+                    onPress: async () => {
+                      const { AuthService } = require('../services/AuthService');
+                      await AuthService.logout();
+                      if (onLogout) {
+                        onLogout();
+                      }
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <Icon source="logout" size={22} color={logoutTextAndIcon} />
+            <Text style={[styles.logoutText, { color: logoutTextAndIcon }]}>
+              {t('settings.logout') || 'Log Out'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
     </ScrollView>
   );
@@ -317,6 +360,25 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   backText: { fontSize: 15, fontWeight: '700' },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+    borderRadius: radii.xl,
+    gap: spacing.md,
+    marginTop: spacing.lg,
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
 });
 
 export default MoreScreen;

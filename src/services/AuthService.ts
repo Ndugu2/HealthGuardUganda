@@ -145,7 +145,7 @@ export class AuthService {
     role?: string;
     district?: string;
     village?: string;
-  }): Promise<{ success: boolean; error?: string; otp?: string }> {
+  }): Promise<{ success: boolean; error?: string; otp?: string; isOffline?: boolean }> {
     // Generate a default offline OTP
     let finalOtp = AuthService.generateOTP();
     let isOffline = true;
@@ -181,9 +181,6 @@ export class AuthService {
       const data = await response.json();
       if (response.ok) {
         isOffline = false;
-        if (data.otp) {
-          finalOtp = data.otp; // Sync client with server-generated OTP
-        }
       } else if (response.status === 400) {
         return { success: false, error: data.error || 'This phone number is already registered.' };
       }
@@ -207,7 +204,38 @@ export class AuthService {
       }
     }
 
-    return { success: true, otp: finalOtp };
+    return { success: true, otp: isOffline ? finalOtp : undefined, isOffline };
+  }
+
+  public static async verifyOTP(
+    phone: string,
+    code: string,
+    localOTP?: string | null
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const API_URL = await getApiBaseUrl();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const response = await fetch(`${API_URL}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, code }),
+        signal: controller.signal,
+      });
+      clearTimeout(timeout);
+      
+      const data = await response.json();
+      if (response.ok && data.success) {
+        return { success: true };
+      }
+      return { success: false, error: data.error || 'Verification failed. Incorrect code.' };
+    } catch (e) {
+      console.warn('AuthService: Server unreachable during OTP verification, falling back to offline check.');
+      if (localOTP && code === localOTP) {
+        return { success: true };
+      }
+      return { success: false, error: 'Incorrect verification code.' };
+    }
   }
 
   public static async getAllRegisteredUsers(): Promise<User[]> {

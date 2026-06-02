@@ -50,5 +50,7 @@ model User {
   approved          Boolean   @default(true)
   resetToken        String?
   resetTokenExpires DateTime?
+  otpCode           String?
+  otpExpires        DateTime?
   createdAt         DateTime  @default(now())
 }

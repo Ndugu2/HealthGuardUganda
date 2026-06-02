@@ -265,7 +265,7 @@ function MainApp() {
       case 'facilities': return <FacilitiesScreen />;
       case 'academy': return <AcademyScreen />;
       case 'settings': return <SettingsScreen onLogout={handleLogout} />;
-      case 'more': return <MoreScreen navigateToTab={navigateToTab} userRole={user?.role} />;
+      case 'more': return <MoreScreen navigateToTab={navigateToTab} userRole={user?.role} onLogout={handleLogout} />;
       case 'queue': return <PatientQueueScreen />;
       case 'alerts': return <AlertCenterScreen userRole={user?.role} />;
       // Knowledge‑enrichment screens
