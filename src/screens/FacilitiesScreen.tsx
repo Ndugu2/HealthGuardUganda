@@ -69,11 +69,16 @@ const FacilitiesScreen = () => {
       setFiltered(facilities);
     } else {
       const q = search.toLowerCase();
-      setFiltered(facilities.filter(f =>
-        f.name.toLowerCase().includes(q) || f.type?.toLowerCase().includes(q)
-      ));
+      setFiltered(facilities.filter(f => {
+        const translatedType = f.type ? t('facilities.types.' + f.type, { defaultValue: f.type }).toLowerCase() : '';
+        return (
+          f.name.toLowerCase().includes(q) ||
+          f.type?.toLowerCase().includes(q) ||
+          translatedType.includes(q)
+        );
+      }));
     }
-  }, [search, facilities]);
+  }, [search, facilities, t]);
 
   const handleCall = (phone: string) => Linking.openURL(`tel:${phone}`);
 
@@ -117,7 +122,7 @@ const FacilitiesScreen = () => {
               <View style={styles.typeBadgeRow}>
                 <View style={[styles.typeBadge, { backgroundColor: colors.neutral[100] }]}>
                   <Text style={[styles.typeText, { color: colors.neutral[600] }]}>
-                    {item.type || t('facilities.facility')}
+                    {item.type ? t('facilities.types.' + item.type, { defaultValue: item.type }) : t('facilities.facility')}
                   </Text>
                 </View>
                 {isNear && (

@@ -78,7 +78,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>Maternal Tracker</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.maternal_title') || 'Maternal Tracker'}</Text>
         </TouchableOpacity>
         <MaternalDashboardScreen />
       </View>
@@ -90,7 +90,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>Immunization Tracker</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.immunization_title') || 'Immunization Tracker'}</Text>
         </TouchableOpacity>
         <ImmunizationTrackerScreen />
       </View>
@@ -102,7 +102,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>Symptom Triage</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.triage_title') || 'Symptom Triage'}</Text>
         </TouchableOpacity>
         <SymptomTriageScreen />
       </View>
@@ -114,7 +114,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>Disease Outbreaks</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.stats_title') || 'Disease Outbreaks'}</Text>
         </TouchableOpacity>
         <DiseaseStatsScreen />
       </View>
@@ -126,7 +126,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>Medication Safety</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.drugs_title') || 'Medication Safety'}</Text>
         </TouchableOpacity>
         <DrugInfoScreen />
       </View>
@@ -138,7 +138,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>Interactive FAQ</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.faq_title') || 'Interactive FAQ'}</Text>
         </TouchableOpacity>
         <FAQBot />
       </View>
@@ -162,7 +162,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>Alerts Center</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.alerts_title') || 'Alerts Center'}</Text>
         </TouchableOpacity>
         <AlertCenterScreen userRole={role} />
       </View>
@@ -174,7 +174,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('nav.more') || 'Back'}</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.queue_title') || 'Patient Queue'}</Text>
         </TouchableOpacity>
         <PatientQueueScreen />
       </View>
@@ -186,7 +186,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('nav.more') || 'Back'}</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.academy_title') || 'CHW Academy'}</Text>
         </TouchableOpacity>
         <AcademyScreen />
       </View>
@@ -198,7 +198,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       <View style={styles.flex}>
         <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
           <Icon source="arrow-left" size={22} color={colors.primary[900]} />
-          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('nav.more') || 'Back'}</Text>
+          <Text style={[styles.backText, { color: colors.primary[900] }]}>{t('more.inventory_title') || 'Drug Inventory'}</Text>
         </TouchableOpacity>
         <InventoryScreen />
       </View>
@@ -209,14 +209,14 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
   const getMenuItems = () => {
     const baseItems = [
       { key: 'profile' as const, icon: 'account-circle', title: t('nav.profile') || 'Health Profile', sub: t('more.profile_sub') || 'Your health information and preferences' },
-      { key: 'maternal' as const, icon: 'baby-carriage', title: 'Maternal Health Tracker', sub: 'Register and track prenatal visits & development' },
-      { key: 'immunization' as const, icon: 'needle', title: 'Child Immunization Tracker', sub: 'UNEPI schedule generator & vaccine history' },
-      { key: 'triage' as const, icon: 'shield-check-outline', title: 'Offline Symptom Triage', sub: 'Urgency checklist & home care guidelines' },
-      { key: 'faq' as const, icon: 'help-circle-outline', title: 'Interactive FAQ Bot', sub: 'Instant answers to local health questions' },
-      { key: 'drugs' as const, icon: 'pill', title: 'Medication Safety Lookup', sub: 'Check usage instructions and safety warnings' },
-      { key: 'stats' as const, icon: 'virus-outline', title: 'Disease Outbreaks', sub: 'Latest national alerts & outbreak statuses' },
-      { key: 'alerts' as const, icon: 'bell-outline', title: 'Alerts Center', sub: 'MoH public safety announcements & bulletins' },
-      { key: 'settings' as const, icon: 'cog-outline', title: t('nav.settings') || 'System Settings', sub: 'Configure interface theme and network settings' },
+      { key: 'maternal' as const, icon: 'baby-carriage', title: t('more.maternal_title') || 'Maternal Health Tracker', sub: t('more.maternal_sub') || 'Register and track prenatal visits & development' },
+      { key: 'immunization' as const, icon: 'needle', title: t('more.immunization_title') || 'Child Immunization Tracker', sub: t('more.immunization_sub') || 'UNEPI schedule generator & vaccine history' },
+      { key: 'triage' as const, icon: 'shield-check-outline', title: t('more.triage_title') || 'Offline Symptom Triage', sub: t('more.triage_sub') || 'Urgency checklist & home care guidelines' },
+      { key: 'faq' as const, icon: 'help-circle-outline', title: t('more.faq_title') || 'Interactive FAQ Bot', sub: t('more.faq_sub') || 'Instant answers to local health questions' },
+      { key: 'drugs' as const, icon: 'pill', title: t('more.drugs_title') || 'Medication Safety Lookup', sub: t('more.drugs_sub') || 'Check usage instructions and safety warnings' },
+      { key: 'stats' as const, icon: 'virus-outline', title: t('more.stats_title') || 'Disease Outbreaks', sub: t('more.stats_sub') || 'Latest national alerts & outbreak statuses' },
+      { key: 'alerts' as const, icon: 'bell-outline', title: t('more.alerts_title') || 'Alerts Center', sub: t('more.alerts_sub') || 'MoH public safety announcements & bulletins' },
+      { key: 'settings' as const, icon: 'cog-outline', title: t('nav.settings') || 'System Settings', sub: t('settings.subtitle') || 'Configure interface theme and network settings' },
       { key: 'emergency' as const, icon: 'phone-alert', title: t('nav.emergency') || 'Emergency Contacts', sub: t('more.emergency_sub') || 'Hotlines and nearest emergency services' },
     ];
 
@@ -227,9 +227,9 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
     // HW or ADMIN items
     return [
       { key: 'profile' as const, icon: 'account-circle', title: t('nav.profile') || 'Health Profile', sub: t('more.profile_sub') || 'Your health information and preferences' },
-      { key: 'queue' as const, icon: 'account-multiple', title: 'Patient Queue', sub: 'Manage local clinical visits & triaged patients' },
-      { key: 'inventory' as const, icon: 'medical-bag', title: 'Drug Inventory', sub: 'Manage clinic supplies and deduct stock' },
-      { key: 'academy' as const, icon: 'school', title: 'CHW Academy', sub: 'Interactive lessons & training simulation quizzes' },
+      { key: 'queue' as const, icon: 'account-multiple', title: t('more.queue_title') || 'Patient Queue', sub: t('more.queue_sub') || 'Manage local clinical visits & triaged patients' },
+      { key: 'inventory' as const, icon: 'medical-bag', title: t('more.inventory_title') || 'Drug Inventory', sub: t('more.inventory_sub') || 'Manage clinic supplies and deduct stock' },
+      { key: 'academy' as const, icon: 'school', title: t('more.academy_title') || 'CHW Academy', sub: t('more.academy_sub') || 'Interactive lessons & training simulation quizzes' },
       ...baseItems.filter(i => i.key !== 'profile'),
     ];
   };

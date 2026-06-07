@@ -8,45 +8,48 @@ import {
   TextInput,
 } from 'react-native';
 import { Text, Icon, Button, Switch, Divider } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { getMaternalRecords, saveMaternalRecord, deleteMaternalRecord, MaternalRecord } from '../db/Database';
 import { colors, spacing, radii, shadows, gradients } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
 
-const BABY_SIZES: { [key: number]: { size: string; icon: string; desc: string } } = {
-  4: { size: 'Poppy Seed', icon: 'sprout', desc: 'The blastocyst is implanting into the uterine wall.' },
-  8: { size: 'Raspberry', icon: 'fruit-grapes', desc: 'Webbed fingers and toes are forming, and the heart is beating.' },
-  12: { size: 'Lime', icon: 'fruit-citrus', desc: 'The baby can open and close its fists and curl its toes.' },
-  16: { size: 'Avocado', icon: 'food-apple', desc: 'Your baby’s skeleton is starting to harden from rubbery cartilage to bone.' },
-  20: { size: 'Banana', icon: 'food-banana', desc: 'The baby can swallow and is starting to produce meconium.' },
-  24: { size: 'Cantaloupe', icon: 'melon', desc: 'Taste buds are developing, and the lungs are forming branches.' },
-  28: { size: 'Eggplant', icon: 'eggplant', desc: 'The eyes are beginning to open and blink. The brain is very active.' },
-  32: { size: 'Squash', icon: 'leaf-maple', desc: 'The baby is gaining weight quickly and accumulating layers of fat.' },
-  36: { size: 'Papaya', icon: 'food-croissant', desc: 'The baby is dropping into the pelvis in preparation for birth.' },
-  40: { size: 'Pumpkin', icon: 'pumpkin', desc: 'Your baby is fully developed and ready to meet the world!' },
+const BABY_SIZES: { [key: number]: { size: string; size_lg: string; icon: string; desc: string; desc_lg: string } } = {
+  4: { size: 'Poppy Seed', size_lg: 'Kasigo ka Poppy', icon: 'sprout', desc: 'The blastocyst is implanting into the uterine wall.', desc_lg: 'Akasoloboozi katandise okwekwata ku kisenge ky’omu kisawo ky’omwana.' },
+  8: { size: 'Raspberry', size_lg: 'Raspberry', icon: 'fruit-grapes', desc: 'Webbed fingers and toes are forming, and the heart is beating.', desc_lg: 'Engalo n’ebigere ebigatte bitandise okukula, era n’omutima gukuba.' },
+  12: { size: 'Lime', size_lg: 'Lime (Nnimu)', icon: 'fruit-citrus', desc: 'The baby can open and close its fists and curl its toes.', desc_lg: 'Omwana asobola okuggula n’okusiba ebikonde bye n’okupeta ebigere bye.' },
+  16: { size: 'Avocado', size_lg: 'Avocado', icon: 'food-apple', desc: 'Your baby’s skeleton is starting to harden from rubbery cartilage to bone.', desc_lg: 'Egumba ly’omwana litandise okukaluba okuva ku binywa ebigonda okugenda ku magumba.' },
+  20: { size: 'Banana', size_lg: 'Banana (Katooke)', icon: 'food-banana', desc: 'The baby can swallow and is starting to produce meconium.', desc_lg: 'Omwana asobola okumira era atandise okukola meconium (caafu ow’olubereera).' },
+  24: { size: 'Cantaloupe', size_lg: 'Cantaloupe (Kamyu)', icon: 'melon', desc: 'Taste buds are developing, and the lungs are forming branches.', desc_lg: 'Obulago bw’okulega bugenda mu maaso n’okukula, era n’amawuggwe gatandika okukula ebitundu.' },
+  28: { size: 'Eggplant', size_lg: 'Eggplant (Biringanya)', icon: 'eggplant', desc: 'The eyes are beginning to open and blink. The brain is very active.', desc_lg: 'Amaaso gatandika okugguka n’okutemya. Obwongo bukola nnyo mu kaseera kano.' },
+  32: { size: 'Squash', size_lg: 'Squash', icon: 'leaf-maple', desc: 'The baby is gaining weight quickly and accumulating layers of fat.', desc_lg: 'Omwana weyongera obuzito mangu ddala n’okukunganya amasavu g’omubiri.' },
+  36: { size: 'Papaya', size_lg: 'Papaya (Ppaapaali)', icon: 'food-croissant', desc: 'The baby is dropping into the pelvis in preparation for birth.', desc_lg: 'Omwana agwa wansi mu basinzi mu kweteekerateekera okuzaalibwa.' },
+  40: { size: 'Pumpkin', size_lg: 'Pumpkin (Nsujju)', icon: 'pumpkin', desc: 'Your baby is fully developed and ready to meet the world!', desc_lg: 'Omwana wo akulidde ddala era yeetegefu okulaba ensi eno!' },
 };
 
-const DANGER_SIGNS = [
-  'Heavy vaginal bleeding',
-  'Severe headache or blurred vision',
-  'Convulsions or fits',
-  'Fever and severe weakness',
-  'Severe abdominal pain',
-  'Reduced or no baby movement',
-  'Water breaks early (rupture of membranes)',
+const DANGER_SIGNS_KEYS = [
+  'danger_bleeding',
+  'danger_headache',
+  'danger_convulsions',
+  'danger_fever',
+  'danger_abdominal',
+  'danger_movement',
+  'danger_water',
 ];
 
-const RISK_FACTORS = [
-  'First pregnancy (Primigravida)',
-  'Age under 18 or over 35 years',
-  'History of high blood pressure or diabetes',
-  'Previous Caesarean section (C-Section)',
-  'Twins or multiple pregnancy',
+const RISK_FACTORS_KEYS = [
+  'risk_first',
+  'risk_age',
+  'risk_bp',
+  'risk_csection',
+  'risk_twins',
 ];
 
 export const MaternalDashboardScreen: React.FC = () => {
   const { colors } = useAppTheme();
+  const { t, i18n } = useTranslation();
+  const isLg = i18n.language === 'lg';
   
   // Database states
   const [record, setRecord] = useState<MaternalRecord | null>(null);
@@ -87,13 +90,13 @@ export const MaternalDashboardScreen: React.FC = () => {
 
   const handleRegister = async () => {
     if (!name.trim() || !age.trim() || !lmpDate.trim()) {
-      Alert.alert('Missing Fields', 'Please enter name, age, and Last Menstrual Period (LMP) date.');
+      Alert.alert(t('maternal_tracker.missing_fields'), t('maternal_tracker.missing_fields_msg'));
       return;
     }
 
     const lmp = new Date(lmpDate);
     if (isNaN(lmp.getTime())) {
-      Alert.alert('Invalid Date', 'Please enter a valid LMP date in YYYY-MM-DD format.');
+      Alert.alert(t('maternal_tracker.invalid_date'), t('maternal_tracker.invalid_date_msg'));
       return;
     }
 
@@ -125,7 +128,7 @@ export const MaternalDashboardScreen: React.FC = () => {
     };
 
     await saveMaternalRecord(newRecord);
-    Alert.alert('Registered Successfully', 'Pregnancy tracker initialized.');
+    Alert.alert(t('maternal_tracker.reg_success'), t('maternal_tracker.reg_success_msg'));
     loadMaternalRecord();
   };
 
@@ -180,12 +183,12 @@ export const MaternalDashboardScreen: React.FC = () => {
   const handleDeleteRecord = () => {
     if (!record) return;
     Alert.alert(
-      'Reset Pregnancy Tracker?',
-      'This will delete all saved maternal records and ANC history from your device. This action is irreversible.',
+      t('maternal_tracker.confirm_reset_title'),
+      t('maternal_tracker.confirm_reset_msg'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('maternal_tracker.cancel'), style: 'cancel' },
         {
-          text: 'Delete Everything',
+          text: t('maternal_tracker.delete_everything'),
           style: 'destructive',
           onPress: async () => {
             await deleteMaternalRecord(record.id);
@@ -201,9 +204,9 @@ export const MaternalDashboardScreen: React.FC = () => {
     );
   };
 
-  const toggleRisk = (risk: string) => {
+  const toggleRisk = (riskKey: string) => {
     setSelectedRisks(prev =>
-      prev.includes(risk) ? prev.filter(r => r !== risk) : [...prev, risk]
+      prev.includes(riskKey) ? prev.filter(r => r !== riskKey) : [...prev, riskKey]
     );
   };
 
@@ -227,7 +230,7 @@ export const MaternalDashboardScreen: React.FC = () => {
   if (loading) {
     return (
       <View style={[styles.loadingCenter, { backgroundColor: colors.background }]}>
-        <Text>Loading Pregnancy Details...</Text>
+        <Text>{t('maternal_tracker.loading')}</Text>
       </View>
     );
   }
@@ -238,62 +241,62 @@ export const MaternalDashboardScreen: React.FC = () => {
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
         <LinearGradient colors={['#FFF5F5', '#FFE3E3']} style={styles.heroIntro}>
           <Icon source="baby-carriage" size={48} color="#E53E3E" />
-          <Text style={styles.introTitle}>Maternal Health Portal</Text>
+          <Text style={styles.introTitle}>{t('more.maternal_title')}</Text>
           <Text style={styles.introSubtitle}>
-            Register your pregnancy to track child development, manage clinic visits, and receive WHO prenatal guidelines.
+            {t('more.maternal_sub')}
           </Text>
         </LinearGradient>
 
         <AnimatedCard delay={100} style={[styles.cardForm, { backgroundColor: colors.surface }]}>
-          <Text style={styles.formSectionTitle}>Registration Details</Text>
+          <Text style={styles.formSectionTitle}>{t('maternal_tracker.reg_details')}</Text>
           
-          <Text style={styles.fieldLabel}>Mother's Full Name</Text>
+          <Text style={styles.fieldLabel}>{t('maternal_tracker.mother_name')}</Text>
           <TextInput
             style={[styles.input, { borderColor: colors.neutral[300], color: colors.neutral[900] }]}
-            placeholder="e.g. Sarah Namubiru"
+            placeholder="Sarah Namubiru"
             placeholderTextColor={colors.neutral[400]}
             value={name}
             onChangeText={setName}
           />
 
-          <Text style={styles.fieldLabel}>Age</Text>
+          <Text style={styles.fieldLabel}>{t('maternal_tracker.age')}</Text>
           <TextInput
             style={[styles.input, { borderColor: colors.neutral[300], color: colors.neutral[900] }]}
-            placeholder="e.g. 26"
+            placeholder="26"
             placeholderTextColor={colors.neutral[400]}
             keyboardType="numeric"
             value={age}
             onChangeText={setAge}
           />
 
-          <Text style={styles.fieldLabel}>Last Menstrual Period (LMP) Date</Text>
+          <Text style={styles.fieldLabel}>{t('maternal_tracker.lmp_date')}</Text>
           <TextInput
             style={[styles.input, { borderColor: colors.neutral[300], color: colors.neutral[900] }]}
-            placeholder="YYYY-MM-DD (e.g. 2026-01-15)"
+            placeholder="YYYY-MM-DD"
             placeholderTextColor={colors.neutral[400]}
             value={lmpDate}
             onChangeText={setLmpDate}
           />
 
-          <Text style={styles.fieldLabel}>High-Risk Conditions (Select all that apply)</Text>
-          {RISK_FACTORS.map(risk => {
-            const isSelected = selectedRisks.includes(risk);
+          <Text style={styles.fieldLabel}>{t('maternal_tracker.risk_factors')}</Text>
+          {RISK_FACTORS_KEYS.map(key => {
+            const isSelected = selectedRisks.includes(key);
             return (
               <TouchableOpacity
-                key={risk}
+                key={key}
                 style={[styles.riskCheck, isSelected && { backgroundColor: '#FFE3E3', borderColor: '#E53E3E' }]}
-                onPress={() => toggleRisk(risk)}
+                onPress={() => toggleRisk(key)}
               >
                 <Icon source={isSelected ? 'checkbox-marked' : 'checkbox-blank-outline'} size={20} color={isSelected ? '#E53E3E' : colors.neutral[400]} />
-                <Text style={[styles.riskCheckText, { color: colors.neutral[800] }]}>{risk}</Text>
+                <Text style={[styles.riskCheckText, { color: colors.neutral[800] }]}>{t('maternal_tracker.' + key)}</Text>
               </TouchableOpacity>
             );
           })}
 
-          <Text style={[styles.fieldLabel, { marginTop: spacing.md }]}>Additional Health Notes</Text>
+          <Text style={[styles.fieldLabel, { marginTop: spacing.md }]}>{t('maternal_tracker.add_notes')}</Text>
           <TextInput
             style={[styles.input, styles.textArea, { borderColor: colors.neutral[300], color: colors.neutral[900] }]}
-            placeholder="Specify allergies, chronic conditions, or clinic name..."
+            placeholder="..."
             placeholderTextColor={colors.neutral[400]}
             multiline
             numberOfLines={3}
@@ -308,7 +311,7 @@ export const MaternalDashboardScreen: React.FC = () => {
             style={styles.submitBtn}
             onPress={handleRegister}
           >
-            Start Pregnancy Tracker
+            {t('maternal_tracker.start_tracker')}
           </Button>
         </AnimatedCard>
       </ScrollView>
@@ -328,16 +331,16 @@ export const MaternalDashboardScreen: React.FC = () => {
           <View style={styles.bannerHeader}>
             <View>
               <Text style={styles.bannerMotherName}>{record.name}</Text>
-              <Text style={styles.bannerAge}>Expected Delivery: {record.expectedDeliveryDate}</Text>
+              <Text style={styles.bannerAge}>{t('maternal_tracker.expected_delivery', { date: record.expectedDeliveryDate })}</Text>
             </View>
             <View style={styles.trimesterBadge}>
-              <Text style={styles.trimesterText}>Trimester {stats.trimester}</Text>
+              <Text style={styles.trimesterText}>{t('maternal_tracker.trimester', { trimester: stats.trimester })}</Text>
             </View>
           </View>
 
           <View style={styles.progressSection}>
-            <Text style={styles.progressWeekNumber}>{stats.weeks} Weeks, {stats.days} Days</Text>
-            <Text style={styles.progressSubtext}>Baby is developing smoothly</Text>
+            <Text style={styles.progressWeekNumber}>{t('maternal_tracker.weeks_days', { weeks: stats.weeks, days: stats.days })}</Text>
+            <Text style={styles.progressSubtext}>{t('maternal_tracker.baby_developing')}</Text>
           </View>
         </LinearGradient>
       </AnimatedCard>
@@ -346,13 +349,13 @@ export const MaternalDashboardScreen: React.FC = () => {
       <AnimatedCard delay={100} style={[styles.infoCard, { backgroundColor: colors.surface }]}>
         <View style={styles.infoTitleRow}>
           <Icon source={babyDetails.icon} size={28} color="#E53E3E" />
-          <Text style={styles.infoTitle}>Baby size: {babyDetails.size}</Text>
+          <Text style={styles.infoTitle}>{t('maternal_tracker.baby_size', { size: isLg ? babyDetails.size_lg : babyDetails.size })}</Text>
         </View>
-        <Text style={[styles.infoDesc, { color: colors.neutral[600] }]}>{babyDetails.desc}</Text>
+        <Text style={[styles.infoDesc, { color: colors.neutral[600] }]}>{isLg ? babyDetails.desc_lg : babyDetails.desc}</Text>
       </AnimatedCard>
 
       {/* ANC Visits Section */}
-      <Text style={styles.sectionHeading}>Antenatal Care Calendar (Uganda MoH)</Text>
+      <Text style={styles.sectionHeading}>{t('maternal_tracker.anc_calendar')}</Text>
       <View style={styles.visitsContainer}>
         {ancSchedule.map((visit: any, index: number) => {
           const isCompleted = visit.status === 'completed';
@@ -362,11 +365,11 @@ export const MaternalDashboardScreen: React.FC = () => {
                 <Icon source={isCompleted ? 'check' : 'calendar'} size={20} color={isCompleted ? '#2F855A' : '#718096'} />
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.visitName}>{visit.name} (Week {visit.weeks})</Text>
-                <Text style={[styles.visitDate, { color: colors.neutral[500] }]}>Due: {visit.date}</Text>
+                <Text style={styles.visitName}>{isLg ? visit.name.replace('Visit', 'Okukeberwa') : visit.name} (Week {visit.weeks})</Text>
+                <Text style={[styles.visitDate, { color: colors.neutral[500] }]}>{t('maternal_tracker.due', { date: visit.date })}</Text>
                 {visit.completionDetails && (
                   <Text style={[styles.visitDetails, { color: colors.primary[700] }]}>
-                    Completed: BP {visit.completionDetails.bp || 'N/A'}, Weight {visit.completionDetails.weight ? `${visit.completionDetails.weight}kg` : 'N/A'}
+                    {t('maternal_tracker.completed')}: BP {visit.completionDetails.bp || 'N/A'}, {t('maternal_tracker.weight_label').split(' ')[0]} {visit.completionDetails.weight ? `${visit.completionDetails.weight}kg` : 'N/A'}
                   </Text>
                 )}
               </View>
@@ -383,18 +386,18 @@ export const MaternalDashboardScreen: React.FC = () => {
       {/* Complete visit details popup inputs */}
       {activeAncIdx !== null && (
         <View style={[styles.detailsBox, { backgroundColor: colors.surface, borderColor: '#E53E3E' }]}>
-          <Text style={styles.detailsHeading}>Log Visit: {ancSchedule[activeAncIdx].name}</Text>
+          <Text style={styles.detailsHeading}>{t('maternal_tracker.log_visit', { name: isLg ? ancSchedule[activeAncIdx].name.replace('Visit', 'Okukeberwa') : ancSchedule[activeAncIdx].name })}</Text>
           <View style={styles.detailsInputs}>
             <TextInput
               style={[styles.smallInput, { color: colors.neutral[900], borderColor: colors.neutral[300] }]}
-              placeholder="BP (e.g. 120/80)"
+              placeholder={t('maternal_tracker.bp_label')}
               placeholderTextColor={colors.neutral[400]}
               value={ancBp}
               onChangeText={setAncBp}
             />
             <TextInput
               style={[styles.smallInput, { color: colors.neutral[900], borderColor: colors.neutral[300] }]}
-              placeholder="Weight (kg)"
+              placeholder={t('maternal_tracker.weight_label')}
               placeholderTextColor={colors.neutral[400]}
               keyboardType="numeric"
               value={ancWeight}
@@ -403,14 +406,14 @@ export const MaternalDashboardScreen: React.FC = () => {
           </View>
           <TextInput
             style={[styles.input, { color: colors.neutral[900], borderColor: colors.neutral[300] }]}
-            placeholder="Doctor's notes / recommendations"
+            placeholder={t('maternal_tracker.doc_notes')}
             placeholderTextColor={colors.neutral[400]}
             value={ancNotes}
             onChangeText={setAncNotes}
           />
           <View style={styles.detailsActions}>
-            <Button textColor="#718096" onPress={() => setActiveAncIdx(null)}>Cancel</Button>
-            <Button mode="contained" buttonColor="#E53E3E" textColor="#FFF" onPress={handleCompleteAncDetails}>Save Visit</Button>
+            <Button textColor="#718096" onPress={() => setActiveAncIdx(null)}>{t('maternal_tracker.cancel')}</Button>
+            <Button mode="contained" buttonColor="#E53E3E" textColor="#FFF" onPress={handleCompleteAncDetails}>{t('maternal_tracker.save_visit')}</Button>
           </View>
         </View>
       )}
@@ -419,23 +422,23 @@ export const MaternalDashboardScreen: React.FC = () => {
       <AnimatedCard delay={200} style={[styles.dangerCard, { backgroundColor: '#FFF5F5', borderColor: '#FEB2B2' }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
           <Icon source="alert-octagon" size={24} color="#C53030" />
-          <Text style={{ fontSize: 16, fontWeight: '800', color: '#C53030' }}>Danger Signs in Pregnancy</Text>
+          <Text style={{ fontSize: 16, fontWeight: '800', color: '#C53030' }}>{t('maternal_tracker.danger_signs')}</Text>
         </View>
-        {DANGER_SIGNS.map((sign, idx) => (
-          <Text key={idx} style={{ color: '#9B2C2C', fontSize: 14, marginBottom: 4 }}>• {sign}</Text>
+        {DANGER_SIGNS_KEYS.map((key, idx) => (
+          <Text key={idx} style={{ color: '#9B2C2C', fontSize: 14, marginBottom: 4 }}>• {t('maternal_tracker.' + key)}</Text>
         ))}
         <TouchableOpacity
           style={styles.hotlineBtn}
-          onPress={() => Alert.alert('Call Hotline', 'Call the emergency maternal hotline: 0800100066?')}
+          onPress={() => Alert.alert(t('maternal_tracker.hotline_label').split(':')[0], t('maternal_tracker.hotline_label') + '?')}
         >
           <Icon source="phone" size={18} color="#FFF" />
-          <Text style={styles.hotlineBtnText}>Maternal Emergency Hotline: 0800-100-066</Text>
+          <Text style={styles.hotlineBtnText}>{t('maternal_tracker.hotline_label')}</Text>
         </TouchableOpacity>
       </AnimatedCard>
 
       {/* Reset options */}
       <TouchableOpacity style={styles.resetBtn} onPress={handleDeleteRecord}>
-        <Text style={styles.resetBtnText}>Reset Pregnancy Tracker</Text>
+        <Text style={styles.resetBtnText}>{t('maternal_tracker.reset_tracker')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

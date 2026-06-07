@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { StyleSheet, View, ScrollView, TouchableOpacity, useWindowDimensions, Image, Platform, Animated, Linking } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { colors, spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 
@@ -9,6 +10,7 @@ interface LandingScreenProps {
 }
 
 const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
+  const { t } = useTranslation();
   const { mode } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 900;
@@ -47,10 +49,10 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
         {isDesktop && (
           <View style={styles.headerCenter}>
             <TouchableOpacity onPress={() => { setSelectedRole('COMMUNITY'); onLoginPress('COMMUNITY'); }} style={{ marginLeft: 12 }}>
-              <Text style={[styles.navLink, { color: colors.primary[900], fontWeight: '700' }]}>Community Portal</Text>
+              <Text style={[styles.navLink, { color: colors.primary[900], fontWeight: '700' }]}>{t('landing.community_portal')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => { setSelectedRole('HW'); onLoginPress('HW'); }} style={{ marginLeft: 12 }}>
-              <Text style={[styles.navLink, { color: colors.primary[900], fontWeight: '700' }]}>Health Worker Login</Text>
+              <Text style={[styles.navLink, { color: colors.primary[900], fontWeight: '700' }]}>{t('landing.hw_login')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -72,22 +74,22 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
         <View style={[styles.mobileMenu, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderBottomColor: mode === 'light' ? '#E5E7EB' : colors.neutral[100] }]}>
           <TouchableOpacity style={styles.mobileNavItem} onPress={() => scrollToSection('mission')}>
             <Icon source="information-outline" size={20} color={colors.primary[900]} />
-            <Text style={[styles.mobileNavLink, { color: colors.neutral[700] }]}>Our Mission</Text>
+            <Text style={[styles.mobileNavLink, { color: colors.neutral[700] }]}>{t('landing.our_mission')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.mobileNavItem} onPress={() => scrollToSection('impact')}>
             <Icon source="chart-bar" size={20} color={colors.primary[900]} />
-            <Text style={[styles.mobileNavLink, { color: colors.neutral[700] }]}>Impact</Text>
+            <Text style={[styles.mobileNavLink, { color: colors.neutral[700] }]}>{t('landing.impact')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.mobileNavItem} onPress={() => scrollToSection('partners')}>
             <Icon source="handshake-outline" size={20} color={colors.primary[900]} />
-            <Text style={[styles.mobileNavLink, { color: colors.neutral[700] }]}>Partners</Text>
+            <Text style={[styles.mobileNavLink, { color: colors.neutral[700] }]}>{t('landing.partners')}</Text>
           </TouchableOpacity>
           <View style={[styles.mobileMenuDivider, { backgroundColor: mode === 'light' ? '#E5E7EB' : colors.neutral[100] }]} />
           <TouchableOpacity style={[styles.mobileMenuLoginBtn, { backgroundColor: colors.primary[900] }]} onPress={() => { setMobileMenuOpen(false); setSelectedRole('COMMUNITY'); onLoginPress('COMMUNITY'); }}>
-            <Text style={styles.mobileMenuLoginText}>Community Portal</Text>
+            <Text style={styles.mobileMenuLoginText}>{t('landing.community_portal')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.mobileMenuLoginBtn, { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.primary[900] }]} onPress={() => { setMobileMenuOpen(false); setSelectedRole('HW'); onLoginPress('HW'); }}>
-            <Text style={[styles.mobileMenuLoginText, { color: colors.primary[900] }]}>Health Worker Login</Text>
+            <Text style={[styles.mobileMenuLoginText, { color: colors.primary[900] }]}>{t('landing.hw_login')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -100,25 +102,25 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
           <View style={styles.heroLeft}>
             <View style={[styles.pill, { backgroundColor: colors.neutral[100] }]}>
               <View style={[styles.pillDot, { backgroundColor: colors.primary[900] }]} />
-              <Text style={[styles.pillText, { color: colors.neutral[700] }]}>EMPOWERING 10K+ HEALTH WORKERS</Text>
+              <Text style={[styles.pillText, { color: colors.neutral[700] }]}>{t('landing.hero_pill')}</Text>
             </View>
             
             <Text style={[styles.heroHeadline, { color: colors.neutral[900] }, isMobile && styles.heroHeadlineMobile]}>
-              Smarter Health for <Text style={{ color: colors.primary[900] }}>Every Community.</Text>
+              {t('landing.hero_headline')} <Text style={{ color: colors.primary[900] }}>{t('landing.hero_headline_em')}</Text>
             </Text>
             
             <Text style={[styles.heroSub, { color: colors.neutral[500] }, isMobile && styles.heroSubMobile]}>
-              We leverage data analytics and offline technology to bring expert medical intelligence directly to rural health workers, ensuring verified facts and sustainable public health.
+              {t('landing.hero_sub')}
             </Text>
             
             <View style={[styles.heroActions, isMobile && styles.heroActionsMobile]}>
               <TouchableOpacity style={[styles.primaryActionBtn, isMobile && styles.primaryActionBtnMobile, { backgroundColor: colors.primary[900] }]} onPress={() => onLoginPress('COMMUNITY')}>
-                <Text style={[styles.primaryActionBtnText, isMobile && { fontSize: 14 }]}>Community Portal</Text>
+                <Text style={[styles.primaryActionBtnText, isMobile && { fontSize: 14 }]}>{t('landing.community_portal')}</Text>
                 <Icon source="arrow-right" size={16} color="#FFF" />
               </TouchableOpacity>
 
               <TouchableOpacity style={[styles.secondaryActionBtn, isMobile && styles.secondaryActionBtnMobile, { borderColor: colors.neutral[200] }]} onPress={() => onLoginPress('HW')}>
-                <Text style={[styles.secondaryActionBtnText, isMobile && { fontSize: 14 }, { color: colors.neutral[700] }]}>Health Worker Login</Text>
+                <Text style={[styles.secondaryActionBtnText, isMobile && { fontSize: 14 }, { color: colors.neutral[700] }]}>{t('landing.hw_login')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -137,8 +139,8 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
                     <Icon source="trending-down" size={16} color={colors.primary[900]} />
                   </View>
                   <View>
-                    <Text style={[styles.badgeLabel, { color: colors.neutral[400] }]}>MISINFORMATION RATE</Text>
-                    <Text style={[styles.badgeValue, { color: colors.neutral[900] }]}>45% Reduction</Text>
+                    <Text style={[styles.badgeLabel, { color: colors.neutral[400] }]}>{t('landing.misinfo_rate_label')}</Text>
+                    <Text style={[styles.badgeValue, { color: colors.neutral[900] }]}>{t('landing.misinfo_rate_value')}</Text>
                   </View>
                 </View>
               </View>
@@ -148,42 +150,39 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
 
         {/* ── MISSION SECTION ── */}
         <View onLayout={handleLayout('mission')} style={styles.missionSection}>
-          <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>Our Mission</Text>
+          <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>{t('landing.mission_title')}</Text>
           <Text style={[styles.missionQuote, { color: colors.neutral[700] }, isMobile && styles.missionQuoteMobile]}>
-            "HealthGuard Uganda exists to bridge the information gap in rural healthcare. By combining accessible fact-checking with complex epidemiological data analytics, we help health workers identify outbreaks early, optimize care, and verify claims instantly."
+            "{t('landing.mission_quote')}"
           </Text>
 
           <View style={[styles.featuresGrid, !isDesktop && styles.featuresGridMobile]}>
-            {/* Feature 1 */}
             <View style={[styles.featureCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <View style={[styles.featureIconBox, { backgroundColor: colors.primary[900] }]}>
                 <Icon source="shield-search" size={24} color="#FFF" />
               </View>
-              <Text style={[styles.featureTitle, { color: colors.neutral[900] }]}>Fact-Checking</Text>
+              <Text style={[styles.featureTitle, { color: colors.neutral[900] }]}>{t('landing.feature_factcheck')}</Text>
               <Text style={[styles.featureDesc, { color: colors.neutral[500] }]}>
-                Instant verification of health rumors against official Ministry of Health guidelines, available fully offline.
+                {t('landing.feature_factcheck_desc')}
               </Text>
             </View>
 
-            {/* Feature 2 */}
             <View style={[styles.featureCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <View style={[styles.featureIconBox, { backgroundColor: colors.primary[900] }]}>
                 <Icon source="chart-bar" size={24} color="#FFF" />
               </View>
-              <Text style={[styles.featureTitle, { color: colors.neutral[900] }]}>Data Insights</Text>
+              <Text style={[styles.featureTitle, { color: colors.neutral[900] }]}>{t('landing.feature_data')}</Text>
               <Text style={[styles.featureDesc, { color: colors.neutral[500] }]}>
-                Real-time tracking of localized health trends and symptom outbreaks across entire rural regions.
+                {t('landing.feature_data_desc')}
               </Text>
             </View>
 
-            {/* Feature 3 */}
             <View style={[styles.featureCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <View style={[styles.featureIconBox, { backgroundColor: colors.primary[900] }]}>
                 <Icon source="doctor" size={24} color="#FFF" />
               </View>
-              <Text style={[styles.featureTitle, { color: colors.neutral[900] }]}>Expert Support</Text>
+              <Text style={[styles.featureTitle, { color: colors.neutral[900] }]}>{t('landing.feature_expert')}</Text>
               <Text style={[styles.featureDesc, { color: colors.neutral[500] }]}>
-                Connecting rural health workers directly with certified medical experts in seconds for complex triage.
+                {t('landing.feature_expert_desc')}
               </Text>
             </View>
           </View>
@@ -191,84 +190,68 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
 
         {/* ── IMPACT SECTION ── */}
         <View onLayout={handleLayout('impact')} style={styles.impactSection}>
-          <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>Our Impact</Text>
+          <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>{t('landing.impact_title')}</Text>
           <Text style={[styles.sectionSubtitle, { color: colors.neutral[500] }]}>
-            Empowering communities and strengthening healthcare delivery through evidence-based technology.
+            {t('landing.impact_sub')}
           </Text>
 
           <View style={[styles.statsGrid, !isDesktop && styles.statsGridMobile]}>
-            {/* Stat 1 */}
             <View style={[styles.statCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Text style={[styles.statNumber, { color: colors.primary[900] }]}>45%</Text>
-              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>Misinformation Reduction</Text>
-              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>
-                Significant decrease in community health rumors and false medical claims in our active districts.
-              </Text>
+              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>{t('landing.stat_misinfo')}</Text>
+              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>{t('landing.stat_misinfo_desc')}</Text>
             </View>
 
-            {/* Stat 2 */}
             <View style={[styles.statCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Text style={[styles.statNumber, { color: colors.primary[900] }]}>10K+</Text>
-              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>Health Workers Trained</Text>
-              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>
-                Equipped with offline-capable diagnostic and fact-checking toolkits for prompt field interventions.
-              </Text>
+              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>{t('landing.stat_hw')}</Text>
+              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>{t('landing.stat_hw_desc')}</Text>
             </View>
 
-            {/* Stat 3 */}
             <View style={[styles.statCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Text style={[styles.statNumber, { color: colors.primary[900] }]}>24 Hrs</Text>
-              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>Response & Verification</Text>
-              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>
-                Fast verification of emergent health queries mapped to official guidelines.
-              </Text>
+              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>{t('landing.stat_response')}</Text>
+              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>{t('landing.stat_response_desc')}</Text>
             </View>
 
-            {/* Stat 4 */}
             <View style={[styles.statCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Text style={[styles.statNumber, { color: colors.primary[900] }]}>150+</Text>
-              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>Clinics Connected</Text>
-              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>
-                Providing reliable digital infrastructure and local database access in remote rural areas.
-              </Text>
+              <Text style={[styles.statLabel, { color: colors.neutral[900] }]}>{t('landing.stat_clinics')}</Text>
+              <Text style={[styles.statDesc, { color: colors.neutral[500] }]}>{t('landing.stat_clinics_desc')}</Text>
             </View>
           </View>
         </View>
 
         {/* ── PARTNERS SECTION ── */}
         <View onLayout={handleLayout('partners')} style={styles.partnersSection}>
-          <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>Trusted Partners</Text>
+          <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>{t('landing.partners_title')}</Text>
           <Text style={[styles.sectionSubtitle, { color: colors.neutral[500] }]}>
-            Working hand-in-hand with leading health institutions to build resilient public health systems.
+            {t('landing.partners_sub')}
           </Text>
 
           <View style={[styles.partnersGrid, !isDesktop && styles.partnersGridMobile]}>
-            {/* Partner 1 */}
             <View style={[styles.partnerCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Icon source="bank" size={32} color={colors.primary[900]} />
               <Text style={[styles.partnerName, { color: colors.neutral[900] }]}>Ministry of Health</Text>
-              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>Republic of Uganda</Text>
+              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>{t('landing.partner_moh_sub')}</Text>
             </View>
 
-            {/* Partner 2 */}
             <View style={[styles.partnerCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Icon source="earth" size={32} color={colors.primary[900]} />
               <Text style={[styles.partnerName, { color: colors.neutral[900] }]}>World Health Org.</Text>
-              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>Global Health Standards</Text>
+              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>{t('landing.partner_who_sub')}</Text>
             </View>
 
-            {/* Partner 3 */}
             <View style={[styles.partnerCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Icon source="school-outline" size={32} color={colors.primary[900]} />
               <Text style={[styles.partnerName, { color: colors.neutral[900] }]}>Bugema University</Text>
-              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>School of Health Sciences</Text>
+              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>{t('landing.partner_bugema_sub')}</Text>
             </View>
 
-            {/* Partner 4 */}
             <View style={[styles.partnerCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderColor: mode === 'light' ? '#E5E7EB' : colors.neutral[200] }]}>
               <Icon source="face-agent" size={32} color={colors.primary[900]} />
               <Text style={[styles.partnerName, { color: colors.neutral[900] }]}>UNICEF Uganda</Text>
-              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>Child Health & Support</Text>
+              <Text style={[styles.partnerSub, { color: colors.neutral[500] }]}>{t('landing.partner_unicef_sub')}</Text>
             </View>
           </View>
         </View>
@@ -284,26 +267,26 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
                 <Text style={[styles.footerLogoText, { color: '#FFF' }]}>HealthGuard</Text>
               </View>
               <Text style={[styles.footerDesc, { color: 'rgba(255,255,255,0.7)' }]}>
-                Protecting livelihoods by verifying health facts. We are committed to sustainable public health and empowering communities through accurate information.
+                {t('landing.footer_desc')}
               </Text>
             </View>
             
             <View style={styles.footerLinksCol}>
-               <Text style={styles.footerHeading}>Platform</Text>
-               <TouchableOpacity onPress={() => onLoginPress('ADMIN')}><Text style={styles.footerLink}>Admin Dashboard</Text></TouchableOpacity>
-               <TouchableOpacity onPress={() => onLoginPress('HW')}><Text style={styles.footerLink}>For Health Workers</Text></TouchableOpacity>
-               <TouchableOpacity onPress={() => onLoginPress('COMMUNITY')}><Text style={styles.footerLink}>Community Portal</Text></TouchableOpacity>
+               <Text style={styles.footerHeading}>{t('landing.footer_platform')}</Text>
+               <TouchableOpacity onPress={() => onLoginPress('ADMIN')}><Text style={styles.footerLink}>{t('landing.footer_admin')}</Text></TouchableOpacity>
+               <TouchableOpacity onPress={() => onLoginPress('HW')}><Text style={styles.footerLink}>{t('landing.footer_hw')}</Text></TouchableOpacity>
+               <TouchableOpacity onPress={() => onLoginPress('COMMUNITY')}><Text style={styles.footerLink}>{t('landing.community_portal')}</Text></TouchableOpacity>
             </View>
             
             <View style={styles.footerLinksCol}>
-               <Text style={styles.footerHeading}>Contact</Text>
+               <Text style={styles.footerHeading}>{t('landing.footer_contact')}</Text>
                <Text style={styles.footerLink}>info@healthguard.ug</Text>
                <Text style={styles.footerLink}>+256 800 100 066</Text>
                <Text style={styles.footerLink}>Kampala, Uganda</Text>
             </View>
           </View>
           <View style={styles.footerBottom}>
-            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>© 2026 HealthGuard Uganda. All rights reserved.</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>{t('landing.footer_copy')}</Text>
           </View>
         </View>
       </ScrollView>

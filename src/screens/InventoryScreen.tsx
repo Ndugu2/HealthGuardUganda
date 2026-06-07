@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, RefreshControl, TouchableOpacity, Alert } from 'react-native';
 import { Text, Icon, Dialog, Portal, Button, TextInput } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { getInventory, deductInventory, addInventoryItem, addInventoryStock } from '../db/sqlite';
 import { InventoryItem } from '../db/types';
 import { colors, spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 
 const InventoryScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { mode } = useAppTheme();
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +55,7 @@ const InventoryScreen: React.FC = () => {
     if (!selectedItem || !updateMode) return;
     const amount = parseInt(amountValue, 10);
     if (isNaN(amount) || amount <= 0) {
-      Alert.alert('Invalid amount', 'Please enter a valid positive number.');
+      Alert.alert(t('inventory.invalid_amount'), t('inventory.invalid_amount_msg'));
       return;
     }
 
@@ -69,13 +71,13 @@ const InventoryScreen: React.FC = () => {
 
   const handleConfirmAddItem = async () => {
     if (!newItemName.trim() || !newItemQty || !newItemUnit.trim() || !newItemThreshold) {
-      Alert.alert('Missing fields', 'Please fill out all fields.');
+      Alert.alert(t('inventory.missing_fields'), t('inventory.missing_fields_msg'));
       return;
     }
     const qty = parseInt(newItemQty, 10);
     const threshold = parseInt(newItemThreshold, 10);
     if (isNaN(qty) || qty < 0 || isNaN(threshold) || threshold < 0) {
-      Alert.alert('Invalid values', 'Quantity and threshold must be positive numbers.');
+      Alert.alert(t('inventory.invalid_values'), t('inventory.invalid_values_msg'));
       return;
     }
 
@@ -94,7 +96,7 @@ const InventoryScreen: React.FC = () => {
       loadData();
     } catch (e) {
       console.error(e);
-      Alert.alert('Error', 'Failed to add item to inventory.');
+      Alert.alert(t('inventory.error'), t('inventory.add_error_msg'));
     }
   };
 
@@ -103,14 +105,14 @@ const InventoryScreen: React.FC = () => {
       <View style={[styles.header, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, borderBottomColor: mode === 'light' ? '#E5E7EB' : colors.neutral[100] }]}>
         <View style={styles.headerLeft}>
           <Icon source="medical-bag" size={24} color={colors.primary[900]} />
-          <Text style={[styles.headerTitle, { color: colors.primary[900] }]}>Drug Inventory</Text>
+          <Text style={[styles.headerTitle, { color: colors.primary[900] }]}>{t('inventory.title')}</Text>
         </View>
         <TouchableOpacity 
           style={[styles.addItemBtn, { backgroundColor: colors.primary[900] }]}
           onPress={() => setAddItemVisible(true)}
         >
           <Icon source="plus" size={16} color="#FFF" />
-          <Text style={styles.addItemBtnText}>Add Item</Text>
+          <Text style={styles.addItemBtnText}>{t('inventory.add_item')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -119,12 +121,13 @@ const InventoryScreen: React.FC = () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <Text style={[styles.pageSubtitle, { color: colors.neutral[500] }]}>
-          Manage essential clinic supplies, add new arrivals, and track stock levels.
+          {t('inventory.page_subtitle')}
         </Text>
 
         <View style={styles.list}>
           {inventory.map(item => {
             const isLow = item.quantity <= item.minimumThreshold;
+            const displayUnit = t('inventory.units.' + item.unit, { defaultValue: item.unit });
             return (
               <View key={item.id} style={[styles.card, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface }]}>
                 <View style={styles.cardHeader}>
@@ -132,16 +135,16 @@ const InventoryScreen: React.FC = () => {
                   {isLow && (
                     <View style={styles.lowStockBadge}>
                       <Icon source="alert" size={14} color="#C53030" />
-                      <Text style={styles.lowStockText}>Low Stock</Text>
+                      <Text style={styles.lowStockText}>{t('inventory.low_stock')}</Text>
                     </View>
                   )}
                 </View>
                 
                 <View style={styles.cardBody}>
                   <View style={styles.stockInfo}>
-                    <Text style={[styles.quantityLabel, { color: colors.neutral[500] }]}>Current Stock:</Text>
+                    <Text style={[styles.quantityLabel, { color: colors.neutral[500] }]}>{t('inventory.current_stock')}</Text>
                     <Text style={[styles.quantityValue, { color: isLow ? '#C53030' : colors.primary[900] }]}>
-                      {item.quantity} <Text style={{ fontSize: 14, fontWeight: '500' }}>{item.unit}</Text>
+                      {item.quantity} <Text style={{ fontSize: 14, fontWeight: '500' }}>{displayUnit}</Text>
                     </Text>
                   </View>
                   
@@ -151,7 +154,7 @@ const InventoryScreen: React.FC = () => {
                       onPress={() => handleUpdatePress(item, 'REFILL')}
                     >
                       <Icon source="plus" size={16} color={mode === 'light' ? '#1E40AF' : '#60A5FA'} />
-                      <Text style={[styles.actionBtnText, { color: mode === 'light' ? '#1E40AF' : '#60A5FA' }]}>Refill</Text>
+                      <Text style={[styles.actionBtnText, { color: mode === 'light' ? '#1E40AF' : '#60A5FA' }]}>{t('inventory.refill')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity 
@@ -159,7 +162,7 @@ const InventoryScreen: React.FC = () => {
                       onPress={() => handleUpdatePress(item, 'DEDUCT')}
                     >
                       <Icon source="minus" size={16} color="#FFF" />
-                      <Text style={[styles.actionBtnText, { color: '#FFF' }]}>Deduct</Text>
+                      <Text style={[styles.actionBtnText, { color: '#FFF' }]}>{t('inventory.deduct')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -172,16 +175,16 @@ const InventoryScreen: React.FC = () => {
       {/* Update Stock Dialog */}
       <Portal>
         <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)} style={{ backgroundColor: mode === 'light' ? '#FFF' : colors.surface }}>
-          <Dialog.Title>{updateMode === 'DEDUCT' ? 'Deduct Stock' : 'Refill Stock'}</Dialog.Title>
+          <Dialog.Title>{updateMode === 'DEDUCT' ? t('inventory.deduct_stock') : t('inventory.refill_stock')}</Dialog.Title>
           <Dialog.Content>
             <Text style={{ marginBottom: 16 }}>
               {updateMode === 'DEDUCT' 
-                ? `How much ${selectedItem?.name} would you like to deduct from inventory?`
-                : `How much ${selectedItem?.name} has arrived at the clinic?`}
+                ? t('inventory.deduct_dialog_msg', { name: selectedItem?.name })
+                : t('inventory.refill_dialog_msg', { name: selectedItem?.name })}
             </Text>
             <TextInput
               mode="outlined"
-              label={`Amount (${selectedItem?.unit})`}
+              label={t('inventory.amount_label', { unit: selectedItem ? t('inventory.units.' + selectedItem.unit, { defaultValue: selectedItem.unit }) : '' })}
               value={amountValue}
               onChangeText={setAmountValue}
               keyboardType="numeric"
@@ -189,8 +192,8 @@ const InventoryScreen: React.FC = () => {
             />
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDialogVisible(false)} textColor={colors.neutral[500]}>Cancel</Button>
-            <Button onPress={handleConfirmUpdate} mode="contained" buttonColor={colors.primary[900]}>Confirm</Button>
+            <Button onPress={() => setDialogVisible(false)} textColor={colors.neutral[500]}>{t('inventory.cancel')}</Button>
+            <Button onPress={handleConfirmUpdate} mode="contained" buttonColor={colors.primary[900]}>{t('inventory.confirm')}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -198,18 +201,18 @@ const InventoryScreen: React.FC = () => {
       {/* Add New Item Dialog */}
       <Portal>
         <Dialog visible={addItemVisible} onDismiss={() => setAddItemVisible(false)} style={{ backgroundColor: mode === 'light' ? '#FFF' : colors.surface }}>
-          <Dialog.Title>Add New Inventory Item</Dialog.Title>
+          <Dialog.Title>{t('inventory.add_new_title')}</Dialog.Title>
           <Dialog.Content style={{ gap: 12 }}>
             <TextInput
               mode="outlined"
-              label="Item Name (e.g. Amoxicillin 250mg)"
+              label={t('inventory.new_item_name_label')}
               value={newItemName}
               onChangeText={setNewItemName}
               activeOutlineColor={colors.primary[900]}
             />
             <TextInput
               mode="outlined"
-              label="Initial Quantity"
+              label={t('inventory.new_item_qty_label')}
               value={newItemQty}
               onChangeText={setNewItemQty}
               keyboardType="numeric"
@@ -217,14 +220,14 @@ const InventoryScreen: React.FC = () => {
             />
             <TextInput
               mode="outlined"
-              label="Unit (e.g. tablets, doses, capsules)"
+              label={t('inventory.new_item_unit_label')}
               value={newItemUnit}
               onChangeText={setNewItemUnit}
               activeOutlineColor={colors.primary[900]}
             />
             <TextInput
               mode="outlined"
-              label="Minimum Threshold (Low Stock Alert)"
+              label={t('inventory.new_item_threshold_label')}
               value={newItemThreshold}
               onChangeText={setNewItemThreshold}
               keyboardType="numeric"
@@ -232,8 +235,8 @@ const InventoryScreen: React.FC = () => {
             />
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setAddItemVisible(false)} textColor={colors.neutral[500]}>Cancel</Button>
-            <Button onPress={handleConfirmAddItem} mode="contained" buttonColor={colors.primary[900]}>Add Item</Button>
+            <Button onPress={() => setAddItemVisible(false)} textColor={colors.neutral[500]}>{t('inventory.cancel')}</Button>
+            <Button onPress={handleConfirmAddItem} mode="contained" buttonColor={colors.primary[900]}>{t('inventory.add_item')}</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>

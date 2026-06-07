@@ -67,10 +67,10 @@ const ROLES = [
     label: 'Administrator',
     icon: '🛡️',
     description: 'Manage the system, approve health workers, monitor analytics, and configure facilities.',
-    badge: 'MoH Passcode Required',
+    badge: 'Requires Super-Admin Approval',
     gradient: ['#7C3AED', '#6D28D9'] as [string, string],
     glow: 'rgba(124,58,237,0.3)',
-    approvalNote: null,
+    approvalNote: 'Your account will be reviewed by the super-administrator before you can sign in.',
   },
 ];
 
@@ -217,7 +217,6 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
   const [adminCode, setAdminCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showAdminCode, setShowAdminCode] = useState(false);
   const [districtQuery, setDistrictQuery] = useState('');
   const [showDistrictSuggestions, setShowDistrictSuggestions] = useState(false);
 
@@ -297,9 +296,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
       if (!village.trim()) newErrors.village = 'Sub-county / village is required';
     }
     if (selectedRole === 'ADMIN') {
-      if (adminCode !== 'MoH-Admin-2026') {
-        newErrors.adminCode = 'Invalid MoH Administrator Passcode';
-      }
+      // No passcode required — account goes pending for super-admin review
     }
 
     const pwdResult = ValidationService.isStrongPassword(password);
@@ -589,27 +586,13 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
         <Field label="Health Facility Name (optional)" value={facility} onChangeText={setFacility} placeholder="e.g. Gulu Regional Referral Hospital" {...fieldStyles} />
       )}
 
-      {/* MoH Passcode for ADMIN */}
+      {/* Pending-approval notice for ADMIN */}
       {selectedRole === 'ADMIN' && (
-        <>
-          <View style={{ backgroundColor: isDark ? '#1C1917' : '#FEF3C7', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: isDark ? '#78350F' : '#FDE68A' }}>
-            <Text style={{ fontSize: 13, color: isDark ? '#FDE68A' : '#92400E', lineHeight: 19 }}>
-              🔐 Administrator access requires a Ministry of Health issued passcode. Contact MoH digital health desk to obtain yours.
-            </Text>
-          </View>
-          <Field
-            label="MoH Administrator Passcode"
-            value={adminCode}
-            onChangeText={setAdminCode}
-            placeholder="Enter your MoH passcode"
-            secure={!showAdminCode}
-            showToggle
-            onToggle={() => setShowAdminCode(p => !p)}
-            error={errors.adminCode}
-            required
-            {...fieldStyles}
-          />
-        </>
+        <View style={{ backgroundColor: isDark ? '#1C0D3A' : '#F5F0FF', borderRadius: 12, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: isDark ? '#7C3AED' : '#C4B5FD' }}>
+          <Text style={{ fontSize: 13, color: isDark ? '#C4B5FD' : '#5B21B6', lineHeight: 19 }}>
+            🛡️ Administrator access requires approval from the super-administrator. Once you submit, a notification email will be sent to the system owner who will review and activate your account.
+          </Text>
+        </View>
       )}
 
       <Field
@@ -743,12 +726,15 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
       <Text style={{ fontSize: 26, fontWeight: '800', color: textPrimary, textAlign: 'center', marginBottom: 12 }}>Account Created!</Text>
 
-      {selectedRole === 'HW' ? (
+      {(selectedRole === 'HW' || selectedRole === 'ADMIN') ? (
         <>
-          <View style={{ backgroundColor: isDark ? '#0C1B33' : '#EFF6FF', borderRadius: 16, padding: 20, marginBottom: 24, width: '100%', borderWidth: 1, borderColor: isDark ? '#1D4ED8' : '#BFDBFE' }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: isDark ? '#93C5FD' : '#1D4ED8', marginBottom: 8 }}>⏳ Pending Administrator Approval</Text>
+          <View style={{ backgroundColor: selectedRole === 'ADMIN' ? (isDark ? '#1C0D3A' : '#F5F0FF') : (isDark ? '#0C1B33' : '#EFF6FF'), borderRadius: 16, padding: 20, marginBottom: 24, width: '100%', borderWidth: 1, borderColor: selectedRole === 'ADMIN' ? (isDark ? '#7C3AED' : '#C4B5FD') : (isDark ? '#1D4ED8' : '#BFDBFE') }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: selectedRole === 'ADMIN' ? (isDark ? '#C4B5FD' : '#5B21B6') : (isDark ? '#93C5FD' : '#1D4ED8'), marginBottom: 8 }}>⏳ Pending Super-Admin Approval</Text>
             <Text style={{ fontSize: 14, color: isDark ? '#CBD5E1' : '#475569', lineHeight: 22 }}>
-              Your Health Worker account has been created and is now awaiting review. An administrator will approve your account and you will be notified via {email ? 'email' : 'phone'}.
+              {selectedRole === 'ADMIN'
+                ? `Your Administrator account has been created and is now awaiting review. The super-administrator has been notified by email and will activate your account shortly.`
+                : `Your Health Worker account has been created and is now awaiting review. An administrator will approve your account and you will be notified via ${email ? 'email' : 'phone'}.`
+              }
             </Text>
           </View>
         </>
@@ -785,7 +771,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
       <TouchableOpacity onPress={onRegisterSuccess} activeOpacity={0.88} style={{ width: '100%' }}>
         <LinearGradient colors={roleConfig.gradient} style={{ borderRadius: 14, paddingVertical: 16, alignItems: 'center' }}>
           <Text style={{ fontSize: 16, fontWeight: '700', color: '#fff' }}>
-            {selectedRole === 'HW' ? 'Go to Sign In' : 'Sign In Now →'}
+            {(selectedRole === 'HW' || selectedRole === 'ADMIN') ? 'Go to Sign In' : 'Sign In Now →'}
           </Text>
         </LinearGradient>
       </TouchableOpacity>

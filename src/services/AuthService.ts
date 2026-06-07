@@ -96,8 +96,8 @@ export class AuthService {
             error: `This account is registered as a ${actualRoleText}. Please use the ${expectedRoleText} portal to sign in.`
           };
         }
-        if (user.role === 'HW' && !user.approved) {
-          return { success: false, error: 'Your account is pending administrator approval.' };
+        if ((user.role === 'HW' || user.role === 'ADMIN') && !user.approved) {
+          return { success: false, error: 'Your account is pending super-administrator approval. You will be notified once it is activated.' };
         }
         await saveSession(`offline_cached_${Date.now()}`, JSON.stringify(user));
         return { success: true };
@@ -150,7 +150,7 @@ export class AuthService {
     let finalOtp = AuthService.generateOTP();
     let isOffline = true;
 
-    const isApproved = userData.role !== 'HW';
+    const isApproved = userData.role !== 'HW' && userData.role !== 'ADMIN';
     const user: User = {
       id: userData.phone,
       phone: userData.phone,

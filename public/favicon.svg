@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Outer circle matching the landing page logo shape -->
+  <circle cx="50" cy="50" r="45" fill="#E2F0D9" stroke="#1B5E20" stroke-width="7"/>
+  
+  <!-- White shield in the center -->
+  <path d="M50 23 C48 23 28 31 28 31 V56 C28 74 47 82 50 83 C53 82 72 74 72 56 V31 S52 23 50 23 Z" fill="#FFFFFF" stroke="#1B5E20" stroke-width="5" stroke-linejoin="round"/>
+  
+  <!-- Green plus inside the shield -->
+  <path d="M38 50 H62 M50 38 V62" stroke="#1B5E20" stroke-width="8" stroke-linecap="round"/>
+</svg>

@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Text, Icon, ActivityIndicator } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -109,6 +110,7 @@ function timeAgo(iso: string): string {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const DiseaseStatsScreen: React.FC = () => {
+  const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;
@@ -153,7 +155,7 @@ const DiseaseStatsScreen: React.FC = () => {
     return (
       <View style={[styles.loadingCenter, { backgroundColor: colors.background }]}>
         <ActivityIndicator size="large" color={colors.primary[600]} />
-        <Text style={[styles.loadingText, { color: colors.neutral[500] }]}>Loading outbreak data...</Text>
+        <Text style={[styles.loadingText, { color: colors.neutral[500] }]}>{t('stats.loading')}</Text>
       </View>
     );
   }
@@ -173,10 +175,10 @@ const DiseaseStatsScreen: React.FC = () => {
               <View>
                 <View style={styles.headerBadge}>
                   <Icon source="alert-octagram" size={12} color="#FCA5A5" />
-                  <Text style={styles.headerBadgeText}>LIVE SURVEILLANCE</Text>
+                  <Text style={styles.headerBadgeText}>{t('stats.live_surveillance')}</Text>
                 </View>
-                <Text style={styles.headerTitle}>Disease Outbreak Monitor</Text>
-                <Text style={styles.headerSub}>Uganda MoH · Epidemiological Intelligence</Text>
+                <Text style={styles.headerTitle}>{t('stats.title')}</Text>
+                <Text style={styles.headerSub}>{t('stats.subtitle')}</Text>
               </View>
               <View style={styles.headerIcon}>
                 <Icon source="virus-outline" size={40} color="rgba(255,255,255,0.3)" />
@@ -214,7 +216,7 @@ const DiseaseStatsScreen: React.FC = () => {
               >
                 {cfg && <Icon source={cfg.icon} size={13} color={isActive ? '#FFF' : cfg.color} />}
                 <Text style={[styles.filterChipText, { color: isActive ? '#FFF' : colors.neutral[700] }]}>
-                  {f === 'ALL' ? `All (${stats.length})` : `${f} (${counts[f as keyof typeof counts]})`}
+                  {f === 'ALL' ? `${t('stats.all')} (${stats.length})` : `${f} (${counts[f as keyof typeof counts]})`}
                 </Text>
               </TouchableOpacity>
             );
@@ -225,13 +227,17 @@ const DiseaseStatsScreen: React.FC = () => {
         {filtered.length === 0 ? (
           <View style={styles.emptyState}>
             <Icon source="check-circle-outline" size={60} color={colors.primary[400]} />
-            <Text style={[styles.emptyText, { color: colors.neutral[500] }]}>No {filter} alerts at this time</Text>
+            <Text style={[styles.emptyText, { color: colors.neutral[500] }]}>{t('stats.no_alerts', { filter: filter === 'ALL' ? t('stats.all') : filter })}</Text>
           </View>
         ) : (
           filtered.map((item, idx) => {
             const sev = item.severity || 'MEDIUM';
             const cfg = SEVERITY_CONFIG[sev] || SEVERITY_CONFIG.MEDIUM;
             const isExpanded = expanded === item.id;
+            const displayTitle = t('outbreaks.' + item.id + '.title') || item.title;
+            const displayDesc = t('outbreaks.' + item.id + '.description') || item.description;
+            const formattedDate = new Date(item.reportedAt).toLocaleDateString('en-UG', { day: 'numeric', month: 'long', year: 'numeric' });
+
             return (
               <AnimatedCard key={item.id} delay={idx * 60} style={[styles.card, { backgroundColor: colors.surface }]}>
                 <TouchableOpacity activeOpacity={0.85} onPress={() => setExpanded(isExpanded ? null : item.id)}>
@@ -247,14 +253,14 @@ const DiseaseStatsScreen: React.FC = () => {
                     </View>
 
                     {/* Title */}
-                    <Text style={[styles.cardTitle, { color: colors.neutral[900] }]}>{item.title}</Text>
+                    <Text style={[styles.cardTitle, { color: colors.neutral[900] }]}>{displayTitle}</Text>
 
                     {/* Description — truncated or expanded */}
                     <Text
                       style={[styles.cardDesc, { color: colors.neutral[600] }]}
                       numberOfLines={isExpanded ? undefined : 3}
                     >
-                      {item.description}
+                      {displayDesc}
                     </Text>
 
                     {/* Expand / Collapse */}
@@ -263,7 +269,7 @@ const DiseaseStatsScreen: React.FC = () => {
                       onPress={() => setExpanded(isExpanded ? null : item.id)}
                     >
                       <Text style={[styles.expandBtnText, { color: cfg.color }]}>
-                        {isExpanded ? 'Show less ▲' : 'Read full alert ▼'}
+                        {isExpanded ? t('stats.show_less') : t('stats.read_full')}
                       </Text>
                     </TouchableOpacity>
 
@@ -271,7 +277,7 @@ const DiseaseStatsScreen: React.FC = () => {
                     <View style={styles.cardFooter}>
                       <Icon source="calendar-outline" size={12} color={colors.neutral[400]} />
                       <Text style={[styles.cardDate, { color: colors.neutral[400] }]}>
-                        Reported: {new Date(item.reportedAt).toLocaleDateString('en-UG', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        {t('stats.reported', { date: formattedDate })}
                       </Text>
                     </View>
                   </View>
@@ -285,7 +291,7 @@ const DiseaseStatsScreen: React.FC = () => {
         <View style={styles.disclaimer}>
           <Icon source="information-outline" size={14} color={colors.neutral[400]} />
           <Text style={[styles.disclaimerText, { color: colors.neutral[400] }]}>
-            Data sourced from Uganda MoH Epidemiological Bulletins & UVRI Surveillance Reports. Refresh for latest data.
+            {t('stats.disclaimer')}
           </Text>
         </View>
 

@@ -14,8 +14,8 @@ router.post('/register', async (req, res) => {
   const { phone, name, password, role, village, district, email } = req.body;
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    // HW needs administrator approval, others default to approved (true)
-    const approved = role !== 'HW';
+    // HW and ADMIN need super-administrator approval before they can sign in
+    const approved = role !== 'HW' && role !== 'ADMIN';
 
     // Generate the OTP code
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -42,6 +42,13 @@ router.post('/register', async (req, res) => {
     }
     if (phone) {
       await SMSService.sendSMS(phone, `Your HealthGuard Uganda verification code is: ${otp}`);
+    }
+
+    // If registering as ADMIN, alert the super-admin owner by email
+    if (role === 'ADMIN') {
+      EmailService.sendAdminRegistrationAlert({ name, phone, email, district }).catch((err) =>
+        console.error('[auth] Failed to send admin registration alert:', err)
+      );
     }
 
     // Do NOT return the otp code back to the client!
@@ -115,9 +122,9 @@ router.post('/login', async (req, res) => {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Invalid password' });
 
-    // Block HW if not approved
-    if (user.role === 'HW' && !user.approved) {
-      return res.status(403).json({ error: 'Your account is pending administrator approval.' });
+    // Block HW and ADMIN if not yet approved by the super-administrator
+    if ((user.role === 'HW' || user.role === 'ADMIN') && !user.approved) {
+      return res.status(403).json({ error: 'Your account is pending super-administrator approval. You will be notified once it is activated.' });
     }
 
     const token = jwt.sign(

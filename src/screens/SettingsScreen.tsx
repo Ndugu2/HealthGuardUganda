@@ -18,6 +18,7 @@ import {
   Avatar
 } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
+import i18n from '../i18n/i18n';
 import { useAppTheme } from '../ThemeContext';
 import { colors as themeColors, spacing, radii, shadows } from '../theme';
 import { saveSetting, getSetting } from '../db/Database';
@@ -33,6 +34,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
   const { colors, mode, toggleTheme } = useAppTheme();
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;
+  const [currentLang, setCurrentLang] = useState(i18n.language || 'en');
   
   const [orsKey, setOrsKey] = useState('');
   const [openRouterKey, setOpenRouterKey] = useState('');
@@ -40,12 +42,12 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
   const [isOfflineMode, setIsOfflineMode] = useState(true);
   const [userRole, setUserRole] = useState<string>('');
   const [userName, setUserName] = useState('');
-  const [pendingHWs, setPendingHWs] = useState<any[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
 
   useEffect(() => {
     loadSettings();
     loadUser();
-    loadPendingHWs();
+    loadPendingUsers();
   }, []);
 
   const loadUser = async () => {
@@ -56,10 +58,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
     }
   };
 
-  const loadPendingHWs = async () => {
+  const loadPendingUsers = async () => {
     const allUsers = await AuthService.getAllRegisteredUsers();
-    const pending = allUsers.filter(u => u.role === 'HW' && !u.approved);
-    setPendingHWs(pending);
+    const pending = allUsers.filter(u => (u.role === 'HW' || u.role === 'ADMIN') && !u.approved);
+    setPendingUsers(pending);
   };
 
   const loadSettings = async () => {
@@ -67,18 +69,21 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
     const router = await getSetting('openrouter_api_key');
     const offline = await getSetting('offline_priority');
     const apiCustom = await getSetting(API_BASE_SETTING_KEY);
+    const lang = await getSetting('app_language');
     
     if (ors) setOrsKey(ors);
     if (router) setOpenRouterKey(router);
     if (apiCustom) setApiBaseUrl(apiCustom);
     if (offline !== null) setIsOfflineMode(offline === 'true');
+    if (lang && (lang === 'en' || lang === 'lg')) setCurrentLang(lang);
   };
 
-  const handleApprove = async (phone: string) => {
+  const handleApprove = async (phone: string, role: string) => {
     const success = await AuthService.approveUser(phone);
     if (success) {
-      Alert.alert('Approved', 'Health Worker account approved successfully.');
-      loadPendingHWs();
+      const roleLabel = role === 'ADMIN' ? 'Administrator' : 'Health Worker';
+      Alert.alert('Account Activated', `${roleLabel} account approved successfully. They can now sign in.`);
+      loadPendingUsers();
     } else {
       Alert.alert('Error', 'Could not approve account.');
     }
@@ -91,6 +96,12 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
     await saveSetting(API_BASE_SETTING_KEY, apiBaseUrl.trim());
     
     Alert.alert(t('settings.save_success'), t('settings.save_success_msg'));
+  };
+
+  const handleLanguageChange = async (lang: 'en' | 'lg') => {
+    setCurrentLang(lang);
+    i18n.changeLanguage(lang);
+    await saveSetting('app_language', lang);
   };
 
   return (
@@ -127,32 +138,83 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
 
         <Divider style={styles.divider} />
 
+        {/* ── LANGUAGE SECTION ── */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>
+            {t('settings.language') || 'Language / Olulimi'}
+          </Text>
+          <View style={[styles.langSegment, { backgroundColor: colors.neutral[100] }]}>
+            <TouchableOpacity
+              style={[
+                styles.langSegBtn,
+                currentLang === 'en' && { backgroundColor: colors.surface, ...shadows.sm },
+              ]}
+              onPress={() => handleLanguageChange('en')}
+            >
+              <Text style={[
+                styles.langSegBtnText,
+                { color: currentLang === 'en' ? colors.primary[900] : colors.neutral[500] },
+                currentLang === 'en' && { fontWeight: '800' },
+              ]}>
+                🇬🇧  English
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.langSegBtn,
+                currentLang === 'lg' && { backgroundColor: colors.surface, ...shadows.sm },
+              ]}
+              onPress={() => handleLanguageChange('lg')}
+            >
+              <Text style={[
+                styles.langSegBtnText,
+                { color: currentLang === 'lg' ? colors.primary[900] : colors.neutral[500] },
+                currentLang === 'lg' && { fontWeight: '800' },
+              ]}>
+                🇺🇬  Luganda
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={[styles.helpText, { marginTop: 8, marginLeft: 4 }]}>
+            {currentLang === 'lg'
+              ? 'Okozesa Luganda mu nkola yonna'
+              : 'Sets the app language for all screens'}
+          </Text>
+        </View>
+
+        <Divider style={styles.divider} />
+
         {userRole === 'ADMIN' && (
           <>
             <View style={styles.section}>
-              <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>Pending Health Worker Approvals</Text>
-              {pendingHWs.length === 0 ? (
+              <Text style={[styles.sectionTitle, { color: colors.primary[900] }]}>Pending Account Approvals</Text>
+              {pendingUsers.length === 0 ? (
                 <View style={[styles.emptyApprovalsCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
                   <Icon source="checkbox-marked-circle-outline" size={24} color={colors.primary[600]} />
-                  <Text style={[styles.emptyApprovalsText, { color: colors.neutral[500] }]}>No pending health worker approvals at this time.</Text>
+                  <Text style={[styles.emptyApprovalsText, { color: colors.neutral[500] }]}>No pending account approvals at this time.</Text>
                 </View>
               ) : (
-                pendingHWs.map((hw) => (
-                  <View key={hw.phone} style={[styles.approvalCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
+                pendingUsers.map((user) => (
+                  <View key={user.phone} style={[styles.approvalCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}>
                     <View style={styles.approvalHeader}>
-                      <Avatar.Text size={32} label={hw.name.substring(0, 2).toUpperCase()} style={{ backgroundColor: colors.primary[50] }} labelStyle={{ color: colors.primary[900] }} />
+                      <Avatar.Text size={32} label={user.name.substring(0, 2).toUpperCase()} style={{ backgroundColor: user.role === 'ADMIN' ? '#7C3AED22' : colors.primary[50] }} labelStyle={{ color: user.role === 'ADMIN' ? '#7C3AED' : colors.primary[900] }} />
                       <View style={styles.approvalInfo}>
-                        <Text style={[styles.approvalName, { color: colors.neutral[900] }]}>{hw.name}</Text>
-                        <Text style={[styles.approvalDetail, { color: colors.neutral[500] }]}>{hw.phone} • {hw.email}</Text>
-                        <Text style={[styles.approvalLocation, { color: colors.neutral[500] }]}>District: {hw.district} | Village: {hw.village}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                          <Text style={[styles.approvalName, { color: colors.neutral[900] }]}>{user.name}</Text>
+                          <View style={{ backgroundColor: user.role === 'ADMIN' ? '#7C3AED' : '#0284C7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 }}>
+                            <Text style={{ fontSize: 10, fontWeight: '700', color: '#fff' }}>{user.role === 'ADMIN' ? '🛡️ Admin' : '🏥 HW'}</Text>
+                          </View>
+                        </View>
+                        <Text style={[styles.approvalDetail, { color: colors.neutral[500] }]}>{user.phone} • {user.email}</Text>
+                        <Text style={[styles.approvalLocation, { color: colors.neutral[500] }]}>District: {user.district || '—'} | Village: {user.village || '—'}</Text>
                       </View>
                     </View>
                     <TouchableOpacity 
-                      style={[styles.approveBtnMini, { backgroundColor: colors.primary[900] }]}
-                      onPress={() => handleApprove(hw.phone)}
+                      style={[styles.approveBtnMini, { backgroundColor: user.role === 'ADMIN' ? '#7C3AED' : colors.primary[900] }]}
+                      onPress={() => handleApprove(user.phone, user.role)}
                     >
                       <Icon source="check" size={16} color="#FFF" />
-                      <Text style={styles.approveBtnMiniText}>Approve Account</Text>
+                      <Text style={styles.approveBtnMiniText}>Activate Account</Text>
                     </TouchableOpacity>
                   </View>
                 ))
@@ -377,6 +439,24 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 13,
     fontWeight: '800',
+  },
+  langSegment: {
+    flexDirection: 'row',
+    borderRadius: radii.full,
+    padding: 4,
+    marginTop: 8,
+  },
+  langSegBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: radii.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  langSegBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

@@ -1,0 +1,49 @@
+// Address: 1525 N Hayworth Ave #302, Los Angeles, CA 90046
+// API call: https://api.mashvisor.com/v1.1/client/rento-calculator/lookup?state=CA&zip_code=90046&resource=airbnb&beds=3&city=Los%20Angeles&lat=34.0987&lng=-118.363&address=1525%20N%20Hayworth%20Ave%20%23302
+{
+    "schema_version": "1.0",
+    "last_updated": "2026-02-26T00:00:00Z",
+    "status": "success",
+    "content": {
+        "median_home_value": 2297000,
+        "sample_size": 1,
+        "median_occupancy_rate": 55,
+        "median_rental_income": 5651,
+        "median_night_rate": 336,
+        "median_guests_capacity": 6,
+        "median_annual_revenue": 67812,
+        "median_annual_expenses": 59919,
+        "annual_cash_flow": 5509.440000000002,
+        "adjusted_rental_income": 5452.37,
+        "price_to_rent_ratio": 35.10705742029001,
+        "cash_flow": 459.1200000000002,
+        "cash_on_cash": 0.23933275412684635,
+        "cap_rate": 0.23985372224640844,
+        "expenses": 4993.25,
+        "tax_rate": 0.76,
+        "market": {
+            "id": 48424,
+            "name": "West Hollywood",
+            "city": "West Hollywood",
+            "state": "CA",
+            "country": "US",
+            "dist": 0.6048253040040549,
+            "airbnb_regulations": null,
+            "currency": "USD"
+        },
+        "principle_with_interest": 0,
+        "expenses_map": {
+            "propertyTax": 1455,
+            "maintenace": 1914,
+            "management": 1363,
+            "rentalIncomeTax": 0,
+            "insurance": 91,
+            "utilities": 170,
+            "hoa_dues": 0,
+            "cleaningFees": 0
+        },
+        "revpar": 184.8,
+        "revpan": 184.8,
+        "city_insights_fallback": false
+    }
+}

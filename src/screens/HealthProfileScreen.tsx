@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -35,6 +35,27 @@ const HealthProfileScreen = () => {
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;
   const [activeTab, setActiveTab] = useState<'overview' | 'vaccines' | 'visits'>('overview');
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const { AuthService } = require('../services/AuthService');
+      const session = await AuthService.getSession();
+      if (session && session.user) {
+        setUser(session.user);
+      }
+    };
+    loadUser();
+  }, []);
+
+  const getInitials = (nameString?: string) => {
+    if (!nameString) return 'JN';
+    const parts = nameString.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return nameString.substring(0, 2).toUpperCase();
+  };
 
   const completedVaccines = VACCINATIONS.filter(v => v.status === 'completed').length;
   const totalVaccines = VACCINATIONS.length;
@@ -53,14 +74,14 @@ const HealthProfileScreen = () => {
       >
         <View style={styles.profileSection}>
           <View style={styles.avatarCircle}>
-            <Text style={styles.avatarText}>JN</Text>
+            <Text style={styles.avatarText}>{getInitials(user?.name)}</Text>
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>
-              {t('profile.default_name') || 'Community Member'}
+              {user?.name || t('profile.default_name')}
             </Text>
             <Text style={styles.profileDetail}>
-              {t('profile.district') || 'Kampala District, Central Region'}
+              {user?.district ? `${user.district} District` : t('profile.district')}
             </Text>
             <View style={styles.idBadge}>
               <Icon source="card-account-details-outline" size={12} color="rgba(255,255,255,0.8)" />
@@ -125,11 +146,11 @@ const HealthProfileScreen = () => {
                 {t('profile.personal_info') || 'Personal Information'}
               </Text>
               {[
-                { icon: 'calendar', label: t('profile.dob') || 'Date of Birth', value: '15 March 1990' },
-                { icon: 'human-male-female', label: t('profile.gender') || 'Gender', value: 'Female' },
-                { icon: 'phone', label: t('profile.phone') || 'Phone', value: '+256 7XX XXX XXX' },
-                { icon: 'map-marker', label: t('profile.address') || 'Village', value: 'Nakawa Division, Kampala' },
-                { icon: 'account-group', label: t('profile.household') || 'Household Size', value: '5 members' },
+                { icon: 'calendar', label: t('profile.dob'), value: '15 March 1990' },
+                { icon: 'human-male-female', label: t('profile.gender'), value: 'Female' },
+                { icon: 'phone', label: t('profile.phone'), value: user?.phone || '+256 7XX XXX XXX' },
+                { icon: 'map-marker', label: t('profile.address'), value: (user?.village ? `${user.village}, ` : '') + (user?.district ? `${user.district}` : 'Nakawa Division, Kampala') },
+                { icon: 'account-group', label: t('profile.household'), value: '5 members' },
               ].map((item, i) => (
                 <View key={i} style={[styles.infoRow, i > 0 ? { borderTopColor: colors.neutral[100], borderTopWidth: 1 } : {}]}>
                   <View style={[styles.infoIconCircle, { backgroundColor: mode === 'dark' ? colors.neutral[100] : '#F0F9F4' }]}>

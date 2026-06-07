@@ -135,6 +135,12 @@ function MainApp() {
       try {
         await initDatabase();
         
+        // ─── RESTORE LANGUAGE PREFERENCE ─────────────────────────────
+        const savedLang = await getSetting('app_language');
+        if (savedLang && (savedLang === 'en' || savedLang === 'lg')) {
+          i18n.changeLanguage(savedLang);
+        }
+
         // Auto-seed knowledge on first run
         const hasSeeded = await getSetting('knowledge_seeded_v76');
         if (!hasSeeded) {
@@ -250,6 +256,46 @@ function MainApp() {
     setUser(null);
     setSessionToken(null);
   };
+
+  // ─── KEYBOARD SHORTCUTS FOR WEB ─────────────────────────────────────────
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore shortcuts if user is typing in form controls
+      const activeEl = document.activeElement;
+      if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+          activeEl.tagName === 'TEXTAREA' ||
+          activeEl.getAttribute('contenteditable') === 'true')
+      ) {
+        return;
+      }
+
+      if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+        const num = parseInt(e.key, 10);
+        if (!isNaN(num) && num >= 1 && num <= routes.length) {
+          e.preventDefault();
+          setIndex(num - 1);
+        } else if (e.key.toLowerCase() === 't') {
+          e.preventDefault();
+          toggleTheme();
+        } else if (e.key.toLowerCase() === 's') {
+          e.preventDefault();
+          handleSync();
+        } else if (e.key.toLowerCase() === 'l') {
+          e.preventDefault();
+          handleLogout();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [routes, toggleTheme, handleSync, handleLogout]);
 
   const navigateToTab = useCallback((key: string) => {
     const idx = routes.findIndex((r) => r.key === key);
@@ -438,9 +484,13 @@ function MainApp() {
                      <TouchableOpacity onPress={toggleTheme}>
                         <Icon source={mode === 'light' ? 'moon-waning-crescent' : 'white-balance-sunny'} size={20} color={colors.neutral[500]} />
                      </TouchableOpacity>
-                     <TouchableOpacity onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'lg' : 'en')}>
+                     <TouchableOpacity onPress={async () => {
+                        const next = i18n.language === 'en' ? 'lg' : 'en';
+                        i18n.changeLanguage(next);
+                        await saveSetting('app_language', next);
+                     }}>
                         <Icon source="translate" size={20} color={colors.neutral[500]} />
-                     </TouchableOpacity>
+                      </TouchableOpacity>
                      <Icon source="bell-outline" size={20} color={colors.neutral[500]} />
                      <TouchableOpacity onPress={handleLogout}>
                         <Icon source="logout" size={20} color={colors.neutral[500]} />

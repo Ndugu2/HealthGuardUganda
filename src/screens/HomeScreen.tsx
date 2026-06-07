@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { Text, Icon, Avatar, Divider } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
-import { getStats, markBroadcastAsRead } from '../db/Database';
+import { getStats, markBroadcastAsRead, saveSetting } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import StatusBadge from '../components/StatusBadge';
 import { colors, spacing, radii, shadows, topicColors, gradients } from '../theme';
@@ -81,8 +81,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
     setTimeout(() => setRefreshing(false), 500);
   }, [loadStats]);
 
-  const changeLanguage = (lang: string) => {
+  const changeLanguage = async (lang: string) => {
     i18n.changeLanguage(lang);
+    await saveSetting('app_language', lang);
   };
 
   return (
@@ -150,9 +151,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
 
         <View style={isDesktop ? styles.desktopMain : null}>
           <View style={styles.welcomeSection}>
-            <Text style={[styles.dashboardLabel, { color: colors.neutral[400] }]}>{isCommunity ? 'HEALTHGUARD UGANDA' : t('home.dashboard_overview')}</Text>
-            <Text style={[styles.welcomeText, { color: colors.neutral[900] }]}>{isCommunity ? 'Welcome to HealthGuard' : t('home.welcome')}</Text>
-            <Text style={[styles.locationText, { color: colors.neutral[500] }]}>{isCommunity ? 'Protecting Your Community' : t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
+            <Text style={[styles.dashboardLabel, { color: colors.neutral[400] }]}>{isCommunity ? t('home.community_label') : t('home.dashboard_overview')}</Text>
+            <Text style={[styles.welcomeText, { color: colors.neutral[900] }]}>{isCommunity ? t('home.community_welcome') : t('home.welcome')}</Text>
+            <Text style={[styles.locationText, { color: colors.neutral[500] }]}>{isCommunity ? t('home.community_subtitle') : t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
           </View>
 
           <View style={isDesktop ? styles.desktopLayout : null}>
@@ -164,12 +165,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
               {isCommunity ? (
                 <AnimatedCard delay={100} style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }]}>
                   <View style={styles.statItem}>
-                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>Rumors Checked</Text>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.rumors_checked')}</Text>
                     <Text style={[styles.statValue, { color: colors.primary[900] }]}>{stats.total.toLocaleString()}</Text>
                   </View>
                   <View style={[styles.statDivider, { backgroundColor: colors.neutral[100] }]} />
                   <View style={styles.statItem}>
-                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>Verified Facts</Text>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.verified_facts')}</Text>
                     <Text style={[styles.statValue, { color: colors.primary[600] }]}>{stats.accurate}</Text>
                   </View>
                 </AnimatedCard>
@@ -199,7 +200,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
                   imageStyle={{ borderRadius: radii.lg }}
                 >
                   <View style={styles.heroOverlay}>
-                    <Text style={styles.heroText}>{isCommunity ? 'Got a health question? We are here to help.' : t('home.hero_text')}</Text>
+                    <Text style={styles.heroText}>{isCommunity ? t('home.community_hero_text') : t('home.hero_text')}</Text>
                   </View>
                 </ImageBackground>
               </AnimatedCard>
@@ -235,9 +236,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
                     >
                       <View style={styles.promoHeader}>
                         <Icon source="baby-carriage" size={24} color="#E53E3E" />
-                        <Text style={[styles.portalPromoTitle, { color: '#9B2C2C' }]}>Maternal Tracker</Text>
+                        <Text style={[styles.portalPromoTitle, { color: '#9B2C2C' }]}>{t('home.maternal_tracker')}</Text>
                       </View>
-                      <Text style={styles.portalPromoSub}>Track pregnancy & ANC visits</Text>
+                      <Text style={styles.portalPromoSub}>{t('home.maternal_tracker_sub')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -246,9 +247,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
                     >
                       <View style={styles.promoHeader}>
                         <Icon source="needle" size={24} color="#3182CE" />
-                        <Text style={[styles.portalPromoTitle, { color: '#2B6CB0' }]}>Immunization</Text>
+                        <Text style={[styles.portalPromoTitle, { color: '#2B6CB0' }]}>{t('home.immunization')}</Text>
                       </View>
-                      <Text style={styles.portalPromoSub}>UNEPI child vaccine schedule</Text>
+                      <Text style={styles.portalPromoSub}>{t('home.immunization_sub')}</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -344,8 +345,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
                     <Icon source={isCommunity ? "help-circle-outline" : "magnify"} size={28} color="#FFF" />
                   </View>
                   <View style={styles.actionTextContent}>
-                    <Text style={styles.actionTitle}>{isCommunity ? 'Ask a Health Question' : t('home.analyze_card_title')}</Text>
-                    <Text style={styles.actionSub}>{isCommunity ? 'Check if a rumor is true' : t('home.analyze_card_sub')}</Text>
+                    <Text style={styles.actionTitle}>{isCommunity ? t('home.ask_health_question') : t('home.analyze_card_title')}</Text>
+                    <Text style={styles.actionSub}>{isCommunity ? t('home.ask_health_sub') : t('home.analyze_card_sub')}</Text>
                   </View>
                   <Icon source="arrow-right" size={28} color="#FFF" />
                 </LinearGradient>

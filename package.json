@@ -10,7 +10,9 @@
     "build": "npm run vercel-build",
     "vercel-build": "expo export -p web",
     "prebuild": "expo prebuild",
-    "tsc": "tsc --noEmit"
+    "tsc": "tsc --noEmit",
+    "fetch-translations": "node scripts/fetch_luganda_corpus.js",
+    "kaggle-download": "node scripts/kaggle_fetch.js"
   },
   "contributors": [
     "Ndugu2"
@@ -19,6 +21,7 @@
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.0.3",
     "axios": "^1.16.1",
+    "csv-parse": "^5.6.0",
     "expo": "~54.0.33",
     "expo-file-system": "~19.0.22",
     "expo-haptics": "~15.0.8",
@@ -43,6 +46,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "kaggle": "^0.0.1",
     "typescript": "~5.9.2"
   },
   "private": true

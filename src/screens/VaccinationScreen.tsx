@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
+import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,12 +20,18 @@ interface VaccineInfo {
   id: string;
   name: string;
   fullName: string;
+  fullName_lg: string;
   age: string;
+  age_lg: string;
   diseases: string[];
+  diseases_lg: string[];
   route: string;
+  route_lg: string;
   site: string;
+  site_lg: string;
   doses: number;
   notes: string;
+  notes_lg: string;
   category: 'birth' | 'infant' | 'child' | 'adolescent' | 'adult' | 'maternal';
   color: string;
   icon: string;
@@ -35,12 +42,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'bcg',
     name: 'BCG',
     fullName: 'Bacillus Calmette-Guérin',
+    fullName_lg: 'Bacillus Calmette-Guérin',
     age: 'At Birth',
+    age_lg: 'Bw\'okuzaalibwa',
     diseases: ['Tuberculosis (TB) – lungs, brain, spine'],
+    diseases_lg: ['Kafuba (TB) – mu mawuggwe, obwongo, omugongo'],
     route: 'Intradermal',
+    route_lg: 'Mu Lukoba lw\'Omubiri',
     site: 'Right upper arm',
+    site_lg: 'Mukono gwa ddyo waggulu',
     doses: 1,
     notes: 'A small blister forms and heals into a scar — this is normal and expected.',
+    notes_lg: 'Ekitono kitera okwetomera era kiwonya n\'ekisaasa — kino kituufu era kitegeererwa.',
     category: 'birth',
     color: '#7C3AED',
     icon: 'needle',
@@ -49,12 +62,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'opv0',
     name: 'OPV 0',
     fullName: 'Oral Polio Vaccine (Birth dose)',
+    fullName_lg: 'Enkingo ya Polio ey\'Okunywa (Dosi y\'Okuzaalibwa)',
     age: 'At Birth',
+    age_lg: 'Bw\'okuzaalibwa',
     diseases: ['Polio (Poliomyelitis) – paralysis'],
+    diseases_lg: ['Polio – okusanyalala kw\'ebinyeebwa'],
     route: 'Oral (2 drops)',
+    route_lg: 'Okunywa (bitono 2)',
     site: 'Mouth',
+    site_lg: 'Akanwa',
     doses: 1,
     notes: 'Given at birth to protect against polio before any potential wild virus exposure.',
+    notes_lg: 'Erigebwa omwana azaaliddwa okukuuma ku Polio nga tonnakkwatibwa.',
     category: 'birth',
     color: '#0284C7',
     icon: 'water-outline',
@@ -63,12 +82,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'penta1',
     name: 'Pentavalent 1',
     fullName: 'DTP-HepB-Hib (Pentavalent)',
+    fullName_lg: 'DTP-HepB-Hib (Pentavalent)',
     age: '6 Weeks',
+    age_lg: 'Wiiki 6',
     diseases: ['Diphtheria', 'Whooping Cough (Pertussis)', 'Tetanus', 'Hepatitis B', 'Meningitis (Hib)'],
+    diseases_lg: ['Diphtheria', 'Akakololo (Pertussis)', 'Tetanus', 'Hepatitis B', 'Olubiri lw\'Obwongo (Hib)'],
     route: 'Intramuscular',
+    route_lg: 'Mu Kiziba ky\'Omubiri',
     site: 'Left outer thigh',
+    site_lg: 'Okugulu kwa kkono ebbali lya nja',
     doses: 3,
     notes: 'One of the most important childhood vaccines — protects against 5 diseases with a single injection.',
+    notes_lg: 'Enkingo ey\'okusingawo ensonga eri abaana — ziyiza endwadde 5 n\'enkubo emu.',
     category: 'infant',
     color: '#DC2626',
     icon: 'shield-star',
@@ -77,12 +102,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'pcv1',
     name: 'PCV 1',
     fullName: 'Pneumococcal Conjugate Vaccine',
+    fullName_lg: 'Enkingo ya Pneumococcal',
     age: '6 Weeks',
+    age_lg: 'Wiiki 6',
     diseases: ['Pneumonia (severe)', 'Meningitis', 'Bacteraemia'],
+    diseases_lg: ['Ekifuba (ekibi ennyo)', 'Olubiri lw\'Obwongo', 'Bacteraemia'],
     route: 'Intramuscular',
+    route_lg: 'Mu Kiziba ky\'Omubiri',
     site: 'Right outer thigh',
+    site_lg: 'Okugulu kwa ddyo ebbali lya nja',
     doses: 3,
     notes: 'Uganda has seen a dramatic reduction in child pneumonia deaths since PCV introduction.',
+    notes_lg: 'Uganda eyalaba okukendeera okusingawo oku emifu gy\'abaana olw\'ekifuba okuva PCV etandiikiddwa.',
     category: 'infant',
     color: '#D97706',
     icon: 'lungs',
@@ -91,12 +122,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'rv1',
     name: 'Rotavirus 1',
     fullName: 'Rotavirus Vaccine (RV1)',
+    fullName_lg: 'Enkingo ya Rotavirus (RV1)',
     age: '6 Weeks',
+    age_lg: 'Wiiki 6',
     diseases: ['Severe Diarrhoea & Dehydration (Rotavirus)'],
+    diseases_lg: ['Okuddukana okw\'amaanyi n\'okubula amazzi (Rotavirus)'],
     route: 'Oral',
+    route_lg: 'Okunywa',
     site: 'Mouth',
+    site_lg: 'Akanwa',
     doses: 2,
     notes: 'Rotavirus is the leading cause of fatal childhood diarrhoea in Uganda. This vaccine is life-saving.',
+    notes_lg: 'Rotavirus ye nsonga enkulaakulana gy\'okufa kw\'okuddukana eri abaana mu Uganda. Enkingo eno etereka obulamu.',
     category: 'infant',
     color: '#059669',
     icon: 'stomach',
@@ -105,12 +142,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'opv1',
     name: 'OPV 1',
     fullName: 'Oral Polio Vaccine (1st dose)',
+    fullName_lg: 'Enkingo ya Polio ey\'Okunywa (Dosi 1)',
     age: '6 Weeks',
+    age_lg: 'Wiiki 6',
     diseases: ['Polio – paralysis'],
+    diseases_lg: ['Polio – okusanyalala kw\'ebinyeebwa'],
     route: 'Oral (2 drops)',
+    route_lg: 'Okunywa (bitono 2)',
     site: 'Mouth',
+    site_lg: 'Akanwa',
     doses: 3,
     notes: 'Part of the 3-dose series to ensure full polio protection.',
+    notes_lg: 'Ekitundu ky\'ensabiibwa ey\'enkingo 3 okukakasa okukuumibwa mu Polio.',
     category: 'infant',
     color: '#0284C7',
     icon: 'water-outline',
@@ -119,12 +162,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'penta2-pcv2-opv2',
     name: 'Pentavalent 2 + PCV 2 + OPV 2',
     fullName: 'Second dose of Pentavalent, PCV & OPV',
+    fullName_lg: 'Dosi ey\'Okubiri ya Pentavalent, PCV n\'OPV',
     age: '10 Weeks',
+    age_lg: 'Wiiki 10',
     diseases: ['All diseases from 6-week vaccines (booster doses)'],
+    diseases_lg: ['Endwadde zonna ez\'enkingo za wiiki 6 (booster)'],
     route: 'IM + IM + Oral',
+    route_lg: 'IM + IM + Okunywa',
     site: 'Both thighs + Mouth',
+    site_lg: 'Amagulu gonna + Akanwa',
     doses: 1,
     notes: 'Critical booster doses — immunity is not complete until the full series is given.',
+    notes_lg: 'Booster za mpera — okukuumibwa tekumalira okutuuka enkingo zonna ziriwe.',
     category: 'infant',
     color: '#7C3AED',
     icon: 'numeric-2-circle',
@@ -133,12 +182,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'penta3-pcv3-opv3-ipv',
     name: 'Penta 3 + PCV 3 + OPV 3 + IPV',
     fullName: 'Third doses + Inactivated Polio Vaccine',
+    fullName_lg: 'Dosi ey\'Okusatu + Enkingo ya Polio ey\'Okubabirirwa',
     age: '14 Weeks',
+    age_lg: 'Wiiki 14',
     diseases: ['All diseases from prior doses', 'Extra polio protection (IPV injection for stronger immunity)'],
+    diseases_lg: ['Endwadde zonna ez\'enkingo eziyise', 'Okukuumibwa okweyongerako eri Polio (IPV okusobola obukuumi obukakafu)'],
     route: 'IM (×3) + Oral + IM (IPV)',
+    route_lg: 'IM (×3) + Okunywa + IM (IPV)',
     site: 'Multiple sites',
+    site_lg: 'Ebifo bitono',
     doses: 1,
     notes: 'IPV is added at 14 weeks to boost polio immunity alongside oral drops. This completes the primary series.',
+    notes_lg: 'IPV yagattibwa ku wiiki 14 okwongereza okukuumibwa kwa Polio wamu n\'okunywa. Kino kukamala ensabiibwa y\'okusooka.',
     category: 'infant',
     color: '#B45309',
     icon: 'numeric-3-circle',
@@ -147,12 +202,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'mr1-yf',
     name: 'MR 1 + Yellow Fever',
     fullName: 'Measles-Rubella (1st) + Yellow Fever',
+    fullName_lg: 'Mumpumpu-Rubella (1) + Omusujja gwa Kyenvu',
     age: '9 Months (~39 weeks)',
+    age_lg: 'Emyezi 9 (~wiiki 39)',
     diseases: ['Measles', 'Rubella (German Measles)', 'Yellow Fever'],
+    diseases_lg: ['Mumpumpu', 'Rubella', 'Omusujja gwa Kyenvu'],
     route: 'Subcutaneous',
+    route_lg: 'Wansi w\'Olukoba',
     site: 'Right upper arm',
+    site_lg: 'Mukono gwa ddyo waggulu',
     doses: 1,
     notes: 'Yellow fever vaccine provides lifetime protection with just one dose. MR requires a booster at 18 months.',
+    notes_lg: 'Enkingo ya Omusujja gwa Kyenvu etera okukuuma obulamu bwonna n\'enkingo emu. MR wetaagisa booster ku emyezi 18.',
     category: 'child',
     color: '#F59E0B',
     icon: 'shield-sun',
@@ -161,12 +222,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'mr2',
     name: 'MR 2',
     fullName: 'Measles-Rubella (2nd dose)',
+    fullName_lg: 'Mumpumpu-Rubella (Dosi 2)',
     age: '18 Months (~78 weeks)',
+    age_lg: 'Emyezi 18 (~wiiki 78)',
     diseases: ['Measles', 'Rubella'],
+    diseases_lg: ['Mumpumpu', 'Rubella'],
     route: 'Subcutaneous',
+    route_lg: 'Wansi w\'Olukoba',
     site: 'Right upper arm',
+    site_lg: 'Mukono gwa ddyo waggulu',
     doses: 1,
     notes: 'The 2nd MR dose ensures full immunity for children who did not respond to the first dose (5–10% of children).',
+    notes_lg: 'Dosi ey\'okubiri ya MR ekakasa okukuumibwa okujjudde eri abaana abaataaddangirira ku dosi ey\'osooka.',
     category: 'child',
     color: '#DC2626',
     icon: 'shield-check',
@@ -175,12 +242,18 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'hpv',
     name: 'HPV Vaccine',
     fullName: 'Human Papillomavirus Vaccine (2-dose)',
+    fullName_lg: 'Enkingo ya HPV (Dosi 2)',
     age: 'Girls 10 years (2-dose, 6 months apart)',
+    age_lg: 'Abakazi b\'emyaka 10 (dosi 2, emyezi 6 wakati)',
     diseases: ['Cervical Cancer', 'Genital Warts', 'Anal Cancer'],
+    diseases_lg: ['Endwadde y\'Olukoba lw\'Omunda', 'Ebitabagiro by\'Ebyama', 'Endwadde y\'Amafuta'],
     route: 'Intramuscular',
+    route_lg: 'Mu Kiziba ky\'Omubiri',
     site: 'Upper arm',
+    site_lg: 'Mukono waggulu',
     doses: 2,
     notes: 'Uganda has one of the highest rates of cervical cancer in the world. HPV vaccination can prevent over 90% of cases. Free for all girls aged 10 via the school vaccination programme.',
+    notes_lg: 'Uganda erimu ku maggwanga ag\'okusingawo abalwadde b\'endwadde y\'olukoba lw\'omunda. Enkingo ya HPV esobola okuziyiza okusinga 90% by\'endwadde. Bwereere eri abakazi bonna ab\'emyaka 10.',
     category: 'adolescent',
     color: '#EC4899',
     icon: 'gender-female',
@@ -189,49 +262,55 @@ const UNEPI_SCHEDULE: VaccineInfo[] = [
     id: 'tt-maternal',
     name: 'Tetanus Toxoid (TT)',
     fullName: 'Tetanus Toxoid for Pregnant Women',
+    fullName_lg: 'Enkingo ya Tetanus eri Abazaana Abalina Olubuto',
     age: 'Pregnant women – at 1st ANC visit',
+    age_lg: 'Abazaana abalina olubuto – ku okukyalira kwa ANC okw\'osooka',
     diseases: ['Maternal Tetanus', 'Neonatal Tetanus'],
+    diseases_lg: ['Tetanus ery\'Omuzaana', 'Tetanus ery\'Omwana Omuzaalibwa'],
     route: 'Intramuscular',
+    route_lg: 'Mu Kiziba ky\'Omubiri',
     site: 'Upper arm',
+    site_lg: 'Mukono waggulu',
     doses: 5,
     notes: 'TT2+ vaccination is essential to protect both mother and newborn. 5-dose series provides lifetime protection. Every pregnant woman must receive TT during ANC.',
+    notes_lg: 'Okugembwa TT2+ kubeera mpera okukuuma omuzaana n\'omwana omuzaalibwa. Enkingo 5 etera okukuuma obulamu bwonna. Omuzaana buli omu alina olubuto agembwe TT mu ANC.',
     category: 'maternal',
     color: '#10B981',
     icon: 'baby-carriage',
   },
 ];
 
-const CATEGORY_CONFIG = {
-  birth:      { label: 'At Birth', color: '#7C3AED', bg: '#F3E8FF', icon: 'baby-face-outline' },
-  infant:     { label: 'Infants (6–14 weeks)', color: '#0284C7', bg: '#E0F2FE', icon: 'baby' },
-  child:      { label: 'Children (9–18 months)', color: '#D97706', bg: '#FEF3C7', icon: 'human-child' },
-  adolescent: { label: 'Adolescents (Girls 10yr)', color: '#EC4899', bg: '#FCE7F3', icon: 'human-female' },
-  adult:      { label: 'Adults', color: '#059669', bg: '#D1FAE5', icon: 'human' },
-  maternal:   { label: 'Pregnant Women', color: '#10B981', bg: '#D1FAE5', icon: 'human-pregnant' },
-};
-
 const CAMPAIGN_ALERTS = [
   {
     id: '1',
     title: 'National HPV Vaccination Drive',
+    title_lg: 'Enkola y\'Enkingo ya HPV ey\'Eggwanga',
     detail: 'School-based HPV vaccination for girls in Primary 5 (age ~10). Contact your nearest HC III for out-of-school girls.',
+    detail_lg: 'Enkingo ya HPV mu masomero eri abakazi ba P.5 (emyaka ~10). Tuukirira HC III eyookumpi eri abakazi abatali mu masomero.',
     date: 'Ongoing — June 2026',
+    date_lg: 'Eyakaeyaka — Juuni 2026',
     color: '#EC4899',
     icon: 'alert-circle-outline',
   },
   {
     id: '2',
     title: 'Measles Catch-up Campaign — Karamoja',
+    title_lg: 'Enkola y\'Okuddamu Okugema Mumpumpu — Karamoja',
     detail: 'Reactive vaccination campaign for children 6 months–10 years in Moroto, Nakapiripirit & Amudat districts.',
+    detail_lg: 'Enkola ey\'enkingo ey\'okukuuma eri abaana ab\'emyezi 6 okutuuka emyaka 10 mu disitulikiti z\'e Moroto, Nakapiripirit ne Amudat.',
     date: 'May–July 2026',
+    date_lg: 'Gwengule–Mukwano 2026',
     color: '#DC2626',
     icon: 'broadcast',
   },
   {
     id: '3',
     title: 'Annual Polio NIDs (National Immunization Days)',
+    title_lg: 'Ennaku z\'Enkingo ey\'Eggwanga (NIDs) za Polio',
     detail: 'Nationwide supplemental OPV campaigns targeting all children under 5 years, regardless of vaccination status.',
+    detail_lg: 'Enkola z\'enkingo eza OPV z\'eggwanga zikwata abaana bonna abali wansi w\'emyaka 5, nga bakwatiddwa enkingo oba neddda.',
     date: 'August 2026 (planned)',
+    date_lg: 'Agusito 2026 (entegeka)',
     color: '#0284C7',
     icon: 'calendar-star',
   },
@@ -243,8 +322,10 @@ type FilterKey = 'all' | 'birth' | 'infant' | 'child' | 'adolescent' | 'maternal
 
 export default function VaccinationScreen() {
   const { colors, mode } = useAppTheme();
+  const { t, i18n } = useTranslation();
   const { width } = useWindowDimensions();
   const isDesktop = width > 800;
+  const isLg = i18n.language === 'lg';
 
   const [filter, setFilter] = useState<FilterKey>('all');
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -252,13 +333,22 @@ export default function VaccinationScreen() {
 
   const filtered = filter === 'all' ? UNEPI_SCHEDULE : UNEPI_SCHEDULE.filter(v => v.category === filter);
 
+  const CATEGORY_CONFIG = {
+    birth:      { label: isLg ? 'Bw\'okuzaalibwa' : 'At Birth', color: '#7C3AED', bg: '#F3E8FF', icon: 'baby-face-outline' },
+    infant:     { label: isLg ? 'Baana (wiiki 6–14)' : 'Infants (6–14 weeks)', color: '#0284C7', bg: '#E0F2FE', icon: 'baby' },
+    child:      { label: isLg ? 'Abaana (emyezi 9–18)' : 'Children (9–18 months)', color: '#D97706', bg: '#FEF3C7', icon: 'human-child' },
+    adolescent: { label: isLg ? 'Abavubuka (Abakazi emyaka 10)' : 'Adolescents (Girls 10yr)', color: '#EC4899', bg: '#FCE7F3', icon: 'human-female' },
+    adult:      { label: isLg ? 'Abakuligwa' : 'Adults', color: '#059669', bg: '#D1FAE5', icon: 'human' },
+    maternal:   { label: isLg ? 'Abazaana Abalina Olubuto' : 'Pregnant Women', color: '#10B981', bg: '#D1FAE5', icon: 'human-pregnant' },
+  };
+
   const FILTERS: { key: FilterKey; label: string; icon: string }[] = [
-    { key: 'all', label: 'Full Schedule', icon: 'calendar-check' },
-    { key: 'birth', label: 'Birth', icon: 'baby-face-outline' },
-    { key: 'infant', label: 'Infant', icon: 'baby' },
-    { key: 'child', label: 'Child', icon: 'human-child' },
-    { key: 'adolescent', label: 'Adolescent', icon: 'human-female' },
-    { key: 'maternal', label: 'Maternal', icon: 'human-pregnant' },
+    { key: 'all',        label: isLg ? 'Pulogalamu Yonna' : 'Full Schedule',  icon: 'calendar-check' },
+    { key: 'birth',      label: CATEGORY_CONFIG.birth.label,      icon: 'baby-face-outline' },
+    { key: 'infant',     label: CATEGORY_CONFIG.infant.label,     icon: 'baby' },
+    { key: 'child',      label: CATEGORY_CONFIG.child.label,      icon: 'human-child' },
+    { key: 'adolescent', label: CATEGORY_CONFIG.adolescent.label, icon: 'human-female' },
+    { key: 'maternal',   label: CATEGORY_CONFIG.maternal.label,   icon: 'human-pregnant' },
   ];
 
   return (
@@ -278,8 +368,8 @@ export default function VaccinationScreen() {
                   <Icon source="needle" size={12} color="#6EE7B7" />
                   <Text style={styles.heroBadgeText}>UNEPI — UGANDA IMMUNIZATION PROGRAMME</Text>
                 </View>
-                <Text style={styles.heroTitle}>Vaccination Schedule</Text>
-                <Text style={styles.heroSub}>Complete guide to childhood, maternal & adolescent vaccines in Uganda</Text>
+                <Text style={styles.heroTitle}>{t('vaccination_schedule.title')}</Text>
+                <Text style={styles.heroSub}>{t('vaccination_schedule.subtitle')}</Text>
               </View>
               <Icon source="shield-plus" size={56} color="rgba(255,255,255,0.15)" />
             </View>
@@ -287,9 +377,9 @@ export default function VaccinationScreen() {
             {/* Stats Row */}
             <View style={styles.heroStats}>
               {[
-                { val: UNEPI_SCHEDULE.length.toString(), label: 'Vaccine Events' },
-                { val: '17', label: 'Antigens' },
-                { val: 'FREE', label: 'MoH Clinics' },
+                { val: UNEPI_SCHEDULE.length.toString(), label: t('vaccination_schedule.events') },
+                { val: '17', label: t('vaccination_schedule.antigens') },
+                { val: isLg ? 'BWEREERE' : 'FREE', label: t('vaccination_schedule.free_clinics') },
               ].map(s => (
                 <View key={s.label} style={styles.heroStatCell}>
                   <Text style={styles.heroStatVal}>{s.val}</Text>
@@ -305,7 +395,7 @@ export default function VaccinationScreen() {
           <TouchableOpacity style={styles.campaignHeader} onPress={() => setShowCampaigns(v => !v)}>
             <View style={styles.campaignHeaderLeft}>
               <Icon source="broadcast" size={18} color="#DC2626" />
-              <Text style={[styles.campaignTitle, { color: colors.neutral[900] }]}>Upcoming Campaigns</Text>
+              <Text style={[styles.campaignTitle, { color: colors.neutral[900] }]}>{t('vaccination_schedule.upcoming_campaigns')}</Text>
               <View style={styles.liveDot} />
             </View>
             <Icon source={showCampaigns ? 'chevron-up' : 'chevron-down'} size={20} color={colors.neutral[400]} />
@@ -316,10 +406,16 @@ export default function VaccinationScreen() {
                 <View key={c.id} style={[styles.campaignItem, { borderLeftColor: c.color }]}>
                   <View style={styles.campaignItemHeader}>
                     <Icon source={c.icon} size={14} color={c.color} />
-                    <Text style={[styles.campaignItemTitle, { color: colors.neutral[900] }]}>{c.title}</Text>
+                    <Text style={[styles.campaignItemTitle, { color: colors.neutral[900] }]}>
+                      {isLg ? c.title_lg : c.title}
+                    </Text>
                   </View>
-                  <Text style={[styles.campaignItemDetail, { color: colors.neutral[600] }]}>{c.detail}</Text>
-                  <Text style={[styles.campaignItemDate, { color: c.color }]}>{c.date}</Text>
+                  <Text style={[styles.campaignItemDetail, { color: colors.neutral[600] }]}>
+                    {isLg ? c.detail_lg : c.detail}
+                  </Text>
+                  <Text style={[styles.campaignItemDate, { color: c.color }]}>
+                    {isLg ? c.date_lg : c.date}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -364,16 +460,20 @@ export default function VaccinationScreen() {
                     </View>
                     <View style={styles.vaccHeaderText}>
                       <Text style={[styles.vaccName, { color: colors.neutral[900] }]}>{vaccine.name}</Text>
-                      <Text style={[styles.vaccFullName, { color: colors.neutral[500] }]} numberOfLines={1}>{vaccine.fullName}</Text>
+                      <Text style={[styles.vaccFullName, { color: colors.neutral[500] }]} numberOfLines={1}>
+                        {isLg ? vaccine.fullName_lg : vaccine.fullName}
+                      </Text>
                     </View>
                     <View style={[styles.ageBadge, { backgroundColor: catCfg.bg }]}>
-                      <Text style={[styles.ageBadgeText, { color: catCfg.color }]}>{vaccine.age}</Text>
+                      <Text style={[styles.ageBadgeText, { color: catCfg.color }]}>
+                        {isLg ? vaccine.age_lg : vaccine.age}
+                      </Text>
                     </View>
                   </View>
 
                   {/* Diseases row */}
                   <View style={styles.diseaseRow}>
-                    {vaccine.diseases.slice(0, isExpanded ? undefined : 2).map((d, i) => (
+                    {(isLg ? vaccine.diseases_lg : vaccine.diseases).slice(0, isExpanded ? undefined : 2).map((d, i) => (
                       <View key={i} style={styles.diseaseChip}>
                         <Icon source="shield-check-outline" size={11} color={vaccine.color} />
                         <Text style={[styles.diseaseText, { color: colors.neutral[700] }]}>{d}</Text>
@@ -381,7 +481,7 @@ export default function VaccinationScreen() {
                     ))}
                     {!isExpanded && vaccine.diseases.length > 2 && (
                       <Text style={[styles.moreDiseasesText, { color: vaccine.color }]}>
-                        +{vaccine.diseases.length - 2} more
+                        {t('vaccination_schedule.more_diseases', { count: vaccine.diseases.length - 2 })}
                       </Text>
                     )}
                   </View>
@@ -389,19 +489,35 @@ export default function VaccinationScreen() {
                   {/* Expanded detail */}
                   {isExpanded && (
                     <View style={[styles.expandedBox, { backgroundColor: mode === 'light' ? '#F9FAFB' : colors.neutral[100] }]}>
-                      <VaccDetailRow icon="needle" label="Route" value={vaccine.route} />
-                      <VaccDetailRow icon="map-marker-outline" label="Injection Site" value={vaccine.site} />
-                      <VaccDetailRow icon="counter" label="Total Doses" value={`${vaccine.doses} dose${vaccine.doses > 1 ? 's' : ''}`} />
+                      <VaccDetailRow
+                        icon="needle"
+                        label={t('vaccination_schedule.route')}
+                        value={isLg ? vaccine.route_lg : vaccine.route}
+                      />
+                      <VaccDetailRow
+                        icon="map-marker-outline"
+                        label={t('vaccination_schedule.site')}
+                        value={isLg ? vaccine.site_lg : vaccine.site}
+                      />
+                      <VaccDetailRow
+                        icon="counter"
+                        label={t('vaccination_schedule.doses')}
+                        value={t(vaccine.doses === 1 ? 'vaccination_schedule.dose_count_one' : 'vaccination_schedule.dose_count_other', { count: vaccine.doses })}
+                      />
                       <View style={[styles.vaccNote, { backgroundColor: vaccine.color + '15' }]}>
                         <Icon source="lightbulb-outline" size={14} color={vaccine.color} />
-                        <Text style={[styles.vaccNoteText, { color: colors.neutral[700] }]}>{vaccine.notes}</Text>
+                        <Text style={[styles.vaccNoteText, { color: colors.neutral[700] }]}>
+                          {isLg ? vaccine.notes_lg : vaccine.notes}
+                        </Text>
                       </View>
                     </View>
                   )}
 
                   <TouchableOpacity style={styles.toggleBtn} onPress={() => setExpanded(isExpanded ? null : vaccine.id)}>
                     <Text style={[styles.toggleBtnText, { color: vaccine.color }]}>
-                      {isExpanded ? 'Show less ▲' : 'View details ▼'}
+                      {isExpanded
+                        ? (isLg ? 'Laga akatono ▲' : 'Show less ▲')
+                        : (isLg ? 'Laba ebikwata ▼' : 'View details ▼')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -414,11 +530,7 @@ export default function VaccinationScreen() {
         <AnimatedCard delay={200} style={[styles.footerTip, { backgroundColor: colors.surface }]}>
           <LinearGradient colors={['#065F46', '#047857']} style={styles.footerTipGradient}>
             <Icon source="hospital-building" size={24} color="rgba(255,255,255,0.6)" />
-            <Text style={styles.footerTipText}>
-              All vaccines on this schedule are{' '}
-              <Text style={{ fontWeight: '900' }}>FREE OF CHARGE</Text>
-              {' '}at all Government of Uganda Health Centres. Bring your child's health card to every visit.
-            </Text>
+            <Text style={styles.footerTipText}>{t('vaccination_schedule.free_charge_note')}</Text>
           </LinearGradient>
         </AnimatedCard>
 
