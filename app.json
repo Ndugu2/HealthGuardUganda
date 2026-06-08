@@ -24,6 +24,16 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1B5E20"
       }
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e98f4107-053b-404d-a617-7ef444b113c4"
+      }
+    },
+    "owner": "ndugu2",
+    "plugins": [
+      "expo-router",
+      "expo-font"
+    ]
   }
 }
