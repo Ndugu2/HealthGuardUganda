@@ -14,6 +14,7 @@ import {
   Modal,
 } from 'react-native';
 import { Text, Icon, Avatar, Divider } from 'react-native-paper';
+import { AuthService } from '../services/AuthService';
 import { useTranslation } from 'react-i18next';
 import { getStats, markBroadcastAsRead, saveSetting } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
@@ -37,6 +38,7 @@ import { VillageMedicineShelf } from '../components/home/VillageMedicineShelf';
 interface HomeScreenProps {
   navigateToTab: (key: string) => void;
   userRole?: string;
+  onLogout?: () => void;
 }
 
 const RECENT_ALERTS = [
@@ -47,7 +49,7 @@ const RECENT_ALERTS = [
 ];
 
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogout }) => {
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
   const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp } = useResponsive();
@@ -101,9 +103,34 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
               <Text style={[styles.headerSubtitle, { color: colors.primary[900] }]}>Uganda</Text>
             </View>
           </View>
-          <View style={[styles.offlinePill, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.neutral[100] }]}>
-            <Icon source="cloud-check-outline" size={14} color={colors.primary[800]} />
-            <Text style={[styles.offlineText, { color: colors.primary[900] }]}>{t('home.offline_ready')}</Text>
+          <View style={styles.headerRight}>
+            <View style={[styles.offlinePill, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.neutral[100] }]}>
+              <Icon source="cloud-check-outline" size={14} color={colors.primary[800]} />
+              <Text style={[styles.offlineText, { color: colors.primary[900] }]}>{t('home.offline_ready')}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.logoutIconBtn}
+              onPress={() => {
+                Alert.alert(
+                  t('settings.logout_confirm_title') || 'Log Out',
+                  t('settings.logout_confirm_msg') || 'Are you sure you want to log out?',
+                  [
+                    { text: t('common.cancel') || 'Cancel', style: 'cancel' },
+                    {
+                      text: t('settings.logout') || 'Log Out',
+                      style: 'destructive',
+                      onPress: async () => {
+                        await AuthService.logout();
+                        if (onLogout) onLogout();
+                      }
+                    }
+                  ]
+                );
+              }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Icon source="logout" size={22} color={colors.primary[900]} />
+            </TouchableOpacity>
           </View>
         </View>
       )}
@@ -593,6 +620,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: colors.primary[900],
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  logoutIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(12, 74, 52, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollContent: {
     paddingHorizontal: 12,

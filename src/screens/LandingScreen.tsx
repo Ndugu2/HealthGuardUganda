@@ -90,12 +90,20 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
 
         <View style={styles.headerRight}>
           {!isDesktop && (
-            <TouchableOpacity
-              style={[styles.hamburgerBtn, { marginLeft: 12 }]}
-              onPress={() => setMobileMenuOpen(prev => !prev)}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Icon source={mobileMenuOpen ? 'close' : 'menu'} size={26} color={colors.primary[900]} />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <TouchableOpacity 
+                style={[styles.mobileAdminBtn, { backgroundColor: colors.primary[900] }]}
+                onPress={() => onLoginPress('ADMIN')}
+              >
+                <Text style={{ color: '#FFF', fontSize: 13, fontWeight: '700' }}>Admin Login</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.hamburgerBtn]}
+                onPress={() => setMobileMenuOpen(prev => !prev)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Icon source={mobileMenuOpen ? 'close' : 'menu'} size={26} color={colors.primary[900]} />
+              </TouchableOpacity>
+            </View>
           )}
         </View>
       </View>
@@ -169,27 +177,25 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
             </View>
           </View>
 
-          {!isMobile && (
-            <Animated.View style={[styles.heroRight, isMobile && styles.heroRightMobile, { transform: [{ translateY }] }]}>
-              <View style={[styles.heroImageCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.xl }]}>
-                <Image 
-                  source={require('../../assets/landing_hero.png')} 
-                  style={styles.heroImage as any} 
-                  resizeMode="contain"
-                />
-                
-                <View style={[styles.floatingBadge, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.md }]}>
-                  <LinearGradient colors={['#E2F0D9', '#D1E8C5']} style={[styles.badgeIconWrap]}>
-                    <Icon source="trending-down" size={18} color={colors.primary[900]} />
-                  </LinearGradient>
-                  <View>
-                    <Text style={[styles.badgeLabel, { color: colors.neutral[500] }]}>{t('landing.misinfo_rate_label')}</Text>
-                    <Text style={[styles.badgeValue, { color: colors.neutral[900] }]}>{t('landing.misinfo_rate_value')}</Text>
-                  </View>
+          <Animated.View style={[styles.heroRight, isMobile && styles.heroRightMobile, { transform: [{ translateY }] }]}>
+            <View style={[styles.heroImageCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.xl }]}>
+              <Image 
+                source={require('../../assets/landing_hero.png')} 
+                style={styles.heroImage as any} 
+                resizeMode="contain"
+              />
+              
+              <View style={[styles.floatingBadge, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.md }]}>
+                <LinearGradient colors={['#E2F0D9', '#D1E8C5']} style={[styles.badgeIconWrap]}>
+                  <Icon source="trending-down" size={18} color={colors.primary[900]} />
+                </LinearGradient>
+                <View>
+                  <Text style={[styles.badgeLabel, { color: colors.neutral[500] }]}>{t('landing.misinfo_rate_label')}</Text>
+                  <Text style={[styles.badgeValue, { color: colors.neutral[900] }]}>{t('landing.misinfo_rate_value')}</Text>
                 </View>
               </View>
-            </Animated.View>
-          )}
+            </View>
+          </Animated.View>
         </LinearGradient>
 
         {/* ── MISSION SECTION ── */}
@@ -382,6 +388,11 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  mobileAdminBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: radii.full,
   },
   scrollContent: {
     paddingBottom: 0,

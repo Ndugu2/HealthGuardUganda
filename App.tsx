@@ -304,7 +304,7 @@ function MainApp() {
 
   const renderScene = ({ route }: { route: { key: string } }) => {
     switch (route.key) {
-      case 'home': return <HomeScreen navigateToTab={navigateToTab} userRole={user?.role} />;
+      case 'home': return <HomeScreen navigateToTab={navigateToTab} userRole={user?.role} onLogout={handleLogout} />;
       case 'analyze': return <AnalyzeScreen navigateToTab={navigateToTab} userRole={user?.role} onLogout={handleLogout} />;
       case 'knowledge': return <KnowledgeScreen userRole={user?.role} onLogout={handleLogout} />;
       case 'reports': return <ReportsScreen />;
