@@ -20,6 +20,8 @@ export interface User {
   village?: string;
   district?: string;
   approved?: boolean;
+  dob?: string;
+  gender?: string;
 }
 
 export class AuthService {
@@ -145,6 +147,8 @@ export class AuthService {
     role?: string;
     district?: string;
     village?: string;
+    dob?: string;
+    gender?: string;
   }): Promise<{ success: boolean; error?: string; otp?: string; isOffline?: boolean }> {
     // Generate a default offline OTP
     let finalOtp = AuthService.generateOTP();
@@ -160,6 +164,8 @@ export class AuthService {
       district: userData.district,
       village: userData.village,
       approved: isApproved,
+      dob: userData.dob,
+      gender: userData.gender,
     };
 
     // Persist locally first (works offline)

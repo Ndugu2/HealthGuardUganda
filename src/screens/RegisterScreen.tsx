@@ -88,6 +88,8 @@ interface FormErrors {
   village?: string;
   facility?: string;
   adminCode?: string;
+  dob?: string;
+  gender?: string;
 }
 
 interface RegisterScreenProps {
@@ -215,6 +217,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
   const [village, setVillage] = useState('');
   const [facility, setFacility] = useState('');
   const [adminCode, setAdminCode] = useState('');
+  const [dob, setDob] = useState('');
+  const [gender, setGender] = useState<'Male' | 'Female' | ''>('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [districtQuery, setDistrictQuery] = useState('');
@@ -280,6 +284,26 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
       newErrors.email = 'Enter a valid email address';
     }
 
+    // DOB validation — must be DD/MM/YYYY and a real past date
+    if (!dob.trim()) {
+      newErrors.dob = 'Date of birth is required';
+    } else {
+      const dobMatch = dob.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!dobMatch) {
+        newErrors.dob = 'Enter date in DD/MM/YYYY format (e.g. 15/03/1990)';
+      } else {
+        const parsed = new Date(`${dobMatch[3]}-${dobMatch[2]}-${dobMatch[1]}`);
+        if (isNaN(parsed.getTime()) || parsed >= new Date()) {
+          newErrors.dob = 'Enter a valid past date of birth';
+        }
+      }
+    }
+
+    // Gender validation
+    if (!gender) {
+      newErrors.gender = 'Please select your gender';
+    }
+
     if (selectedRole === 'HW' || selectedRole === 'ADMIN') {
       if (!district.trim()) {
         newErrors.district = 'District is required';
@@ -322,6 +346,8 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
         role: selectedRole,
         district: district.trim() || undefined,
         village: (village.trim() || facility.trim()) || undefined,
+        dob: dob.trim() || undefined,
+        gender: gender || undefined,
       });
 
       if (result.success && result.otp) {
@@ -541,6 +567,65 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
         {...fieldStyles}
       />
 
+      {/* Date of Birth */}
+      <Field
+        label="Date of Birth"
+        value={dob}
+        onChangeText={(v) => {
+          // Auto-insert slashes for DD/MM/YYYY format
+          let cleaned = v.replace(/[^0-9]/g, '');
+          if (cleaned.length >= 3 && cleaned.length <= 4) cleaned = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
+          else if (cleaned.length >= 5) cleaned = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4) + '/' + cleaned.slice(4, 8);
+          setDob(cleaned);
+        }}
+        placeholder="DD/MM/YYYY"
+        keyboardType="number-pad"
+        error={errors.dob}
+        required
+        hint="Your date of birth in day/month/year format"
+        {...fieldStyles}
+      />
+
+      {/* Gender Selector */}
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: '600', color: textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          Gender <Text style={{ color: errorColor }}>*</Text>
+        </Text>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          {(['Male', 'Female'] as const).map((g) => (
+            <TouchableOpacity
+              key={g}
+              onPress={() => setGender(g)}
+              style={{
+                flex: 1,
+                paddingVertical: 13,
+                borderRadius: 12,
+                borderWidth: 1.5,
+                alignItems: 'center',
+                borderColor: gender === g ? roleConfig.gradient[0] : inputBorder,
+                backgroundColor: gender === g
+                  ? (isDark ? 'rgba(255,255,255,0.08)' : `${roleConfig.gradient[0]}14`)
+                  : inputBg,
+                shadowColor: gender === g ? roleConfig.gradient[0] : 'transparent',
+                shadowOffset: { width: 0, height: 0 },
+                shadowOpacity: 0.3,
+                shadowRadius: 6,
+              }}
+            >
+              <Text style={{ fontSize: 18, marginBottom: 2 }}>
+                {g === 'Male' ? '♂' : '♀'}
+              </Text>
+              <Text style={{
+                fontSize: 13,
+                fontWeight: gender === g ? '800' : '500',
+                color: gender === g ? roleConfig.gradient[0] : textSecondary,
+              }}>{g}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        {errors.gender && <Text style={{ fontSize: 12, color: errorColor, marginTop: 6 }}>⚠ {errors.gender}</Text>}
+      </View>
+
       {/* District field for all roles */}
       <View style={{ marginBottom: 16 }}>
         <Text style={{ fontSize: 12, fontWeight: '600', color: textSecondary, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>
@@ -746,26 +831,24 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
 
       <View style={{ backgroundColor: isDark ? '#1E293B' : '#F8FAFC', borderRadius: 16, padding: 16, marginBottom: 28, width: '100%', borderWidth: 1, borderColor: inputBorder }}>
         <Text style={{ fontSize: 12, color: textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: '600' }}>Account Summary</Text>
-        <View style={{ flexDirection: 'row', marginBottom: 6 }}>
-          <Text style={{ fontSize: 13, color: textSecondary, width: 80 }}>Name</Text>
-          <Text style={{ fontSize: 13, color: textPrimary, fontWeight: '600', flex: 1 }}>{name}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', marginBottom: 6 }}>
-          <Text style={{ fontSize: 13, color: textSecondary, width: 80 }}>Phone</Text>
-          <Text style={{ fontSize: 13, color: textPrimary, fontWeight: '600', flex: 1 }}>{phone}</Text>
-        </View>
+        {[
+          { label: 'Name', value: name },
+          { label: 'Phone', value: phone },
+          { label: 'D.O.B', value: dob },
+          { label: 'Gender', value: gender },
+          district ? { label: 'District', value: district } : null,
+        ].filter(Boolean).map((row: any, i) => (
+          <View key={i} style={{ flexDirection: 'row', marginBottom: 6 }}>
+            <Text style={{ fontSize: 13, color: textSecondary, width: 80 }}>{row.label}</Text>
+            <Text style={{ fontSize: 13, color: textPrimary, fontWeight: '600', flex: 1 }}>{row.value}</Text>
+          </View>
+        ))}
         <View style={{ flexDirection: 'row', marginBottom: 6 }}>
           <Text style={{ fontSize: 13, color: textSecondary, width: 80 }}>Role</Text>
           <LinearGradient colors={roleConfig.gradient} style={{ borderRadius: 20, paddingHorizontal: 10, paddingVertical: 2 }}>
             <Text style={{ fontSize: 11, fontWeight: '700', color: '#fff' }}>{roleConfig.label.toUpperCase()}</Text>
           </LinearGradient>
         </View>
-        {district && (
-          <View style={{ flexDirection: 'row' }}>
-            <Text style={{ fontSize: 13, color: textSecondary, width: 80 }}>District</Text>
-            <Text style={{ fontSize: 13, color: textPrimary, fontWeight: '600', flex: 1 }}>{district}</Text>
-          </View>
-        )}
       </View>
 
       <TouchableOpacity onPress={onRegisterSuccess} activeOpacity={0.88} style={{ width: '100%' }}>

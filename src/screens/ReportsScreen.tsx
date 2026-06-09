@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, ScrollView, Dimensions, FlatList, RefreshControl, useWindowDimensions, TouchableOpacity, Alert, Platform } from 'react-native';
-import { Text, Divider, Icon, Button } from 'react-native-paper';
+import { Text, Divider, Icon, Button, Portal, Dialog } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Print from 'expo-print';
 import { getStats, getAllClaims, ClaimRecord } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import StatusBadge from '../components/StatusBadge';
@@ -13,6 +14,7 @@ import { colors, spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 import { PatternService, MisinfoPattern } from '../services/PatternService';
 import { HeatmapService, MapPoint } from '../services/HeatmapService';
+import { AuthService } from '../services/AuthService';
 
 
 const getRelativeTime = (dateStr: string, t: any): string => {
@@ -30,6 +32,262 @@ const getRelativeTime = (dateStr: string, t: any): string => {
   return date.toLocaleDateString();
 };
 
+const generateReportHTML = (
+  stats: { total: number; accurate: number; misinfo: number },
+  claims: ClaimRecord[],
+  patterns: MisinfoPattern[],
+  heatmapData: MapPoint[],
+  user: any,
+  t: any
+) => {
+  const dateStr = new Date().toLocaleString();
+  const userName = user?.name || 'Health Worker';
+  const userRole = user?.role || 'Surveillance Officer';
+  const userLocation = user?.district ? `${user.district} District` : 'Uganda';
+
+  const accuracyRate = stats.total > 0 ? Math.round((stats.accurate / stats.total) * 100) : 0;
+  const mythRate = stats.total > 0 ? Math.round((stats.misinfo / stats.total) * 100) : 0;
+
+  const claimRows = claims.map(c => `
+    <tr>
+      <td>${c.id}</td>
+      <td>${c.claim_text}</td>
+      <td><span class="badge badge-${c.label.toLowerCase()}">${c.label}</span></td>
+      <td>${Math.round(c.confidence_pct)}%</td>
+      <td>${new Date(c.submitted_at).toLocaleDateString()}</td>
+    </tr>
+  `).join('');
+
+  const patternRows = patterns.map(p => `
+    <div class="pattern-card">
+      <div class="pattern-header">
+        <span class="pattern-title">${p.theme}</span>
+        <span class="pattern-badge">${p.claimsCount} claims</span>
+      </div>
+      <div style="font-size: 13px; margin-bottom: 8px;">Severity: <strong style="color: ${p.severity === 'HIGH' ? '#C62828' : '#F57F17'}">${p.severity}</strong></div>
+      <div class="pattern-examples">
+        ${p.sampleClaims.map(c => `<div>• "${c}"</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  const hotspotRows = heatmapData.map(h => `
+    <tr>
+      <td>${h.label || `Lat: ${h.latitude.toFixed(2)}, Lng: ${h.longitude.toFixed(2)}`}</td>
+      <td>${h.type}</td>
+      <td>${h.weight}</td>
+    </tr>
+  `).join('');
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>HealthGuard Uganda Surveillance Report</title>
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #333;
+          padding: 20px;
+          line-height: 1.4;
+        }
+        .header {
+          border-bottom: 3px solid #1B5E20;
+          padding-bottom: 15px;
+          margin-bottom: 20px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .header-logo {
+          color: #1B5E20;
+          font-size: 26px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .header-meta {
+          text-align: right;
+          font-size: 12px;
+          color: #666;
+        }
+        .section-title {
+          color: #1B5E20;
+          font-size: 18px;
+          font-weight: 700;
+          margin-top: 25px;
+          margin-bottom: 15px;
+          border-bottom: 1px solid #E0E0E0;
+          padding-bottom: 5px;
+        }
+        .grid {
+          display: flex;
+          gap: 15px;
+          margin-bottom: 20px;
+        }
+        .card {
+          flex: 1;
+          border: 1px solid #E0E0E0;
+          border-radius: 8px;
+          padding: 12px 15px;
+          background: #FAFAFA;
+          text-align: center;
+        }
+        .card-title {
+          font-size: 10px;
+          color: #777;
+          text-transform: uppercase;
+          font-weight: 700;
+          margin-bottom: 4px;
+          letter-spacing: 0.5px;
+        }
+        .card-value {
+          font-size: 24px;
+          font-weight: 800;
+          color: #111;
+        }
+        .pattern-card {
+          border: 1px solid #E0E0E0;
+          border-radius: 6px;
+          padding: 12px;
+          margin-bottom: 12px;
+          background: #FFF;
+        }
+        .pattern-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 6px;
+        }
+        .pattern-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: #1B5E20;
+        }
+        .pattern-badge {
+          background: #E8F5E9;
+          color: #1B5E20;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: 700;
+        }
+        .pattern-examples {
+          background: #F9F9F9;
+          padding: 8px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-style: italic;
+          color: #555;
+          margin-top: 5px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+          font-size: 12px;
+        }
+        th, td {
+          border: 1px solid #E0E0E0;
+          padding: 8px;
+          text-align: left;
+        }
+        th {
+          background: #1B5E20;
+          color: #FFF;
+          font-weight: 700;
+        }
+        .badge {
+          display: inline-block;
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+        .badge-accurate {
+          background: #E8F5E9;
+          color: #2E7D32;
+        }
+        .badge-inaccurate {
+          background: #FFEBEE;
+          color: #C62828;
+        }
+        .badge-uncertain {
+          background: #FFF8E1;
+          color: #F57F17;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="header-logo">
+          🛡️ HealthGuard Uganda
+        </div>
+        <div class="header-meta">
+          <div><strong>Report generated by:</strong> ${userName} (${userRole})</div>
+          <div><strong>Location:</strong> ${userLocation}</div>
+          <div><strong>Date:</strong> ${dateStr}</div>
+        </div>
+      </div>
+
+      <div class="section-title">Surveillance Analytics Summary</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-title">Total Checks Logged</div>
+          <div class="card-value">${stats.total}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Verified Accuracy</div>
+          <div class="card-value">${accuracyRate}%</div>
+        </div>
+        <div class="card">
+          <div class="card-title">High-Risk Myths</div>
+          <div class="card-value">${stats.misinfo} (${mythRate}%)</div>
+        </div>
+      </div>
+
+      <div class="section-title">Detected Misinformation Patterns (AI Engine)</div>
+      <div>
+        ${patterns.length > 0 ? patternRows : '<p style="font-size:13px; color:#666;">No active misinformation patterns clustered.</p>'}
+      </div>
+
+      <div class="section-title">Regional Hotspots &amp; Geospatial Risk</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Zone / Location</th>
+            <th>Surveillance Concern</th>
+            <th>Log Weight / Hits</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${heatmapData.length > 0 ? hotspotRows : '<tr><td colspan="3">No regional surveillance hotspots logged.</td></tr>'}
+        </tbody>
+      </table>
+
+      <div class="section-title">Surveillance Encounter Logs</div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Surveillance Text / Claim</th>
+            <th>Label</th>
+            <th>Confidence</th>
+            <th>Submitted At</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${claimRows}
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `;
+};
+
 const ReportsScreen = () => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
@@ -42,6 +300,8 @@ const ReportsScreen = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [patterns, setPatterns] = useState<MisinfoPattern[]>([]);
   const [heatmapData, setHeatmapData] = useState<MapPoint[]>([]);
+  const [exportDialogVisible, setExportDialogVisible] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   const loadData = useCallback(async () => {
     const s = await getStats();
@@ -52,6 +312,10 @@ const ReportsScreen = () => {
     setPatterns(p);
     const h = await HeatmapService.generateHeatmapData();
     setHeatmapData(h);
+    const session = await AuthService.getSession();
+    if (session) {
+      setCurrentUser(session.user);
+    }
   }, []);
 
   useEffect(() => {
@@ -64,12 +328,15 @@ const ReportsScreen = () => {
     setTimeout(() => setRefreshing(false), 500);
   }, [loadData]);
 
-  const handleExport = async () => {
+  const handleExport = () => {
     if (claims.length === 0) {
       Alert.alert(t('reports.no_data_alert'), t('reports.no_records_export'));
       return;
     }
+    setExportDialogVisible(true);
+  };
 
+  const handleExportCSV = async () => {
     setIsExporting(true);
     try {
       const header = 'ID,Claim Text,Label,Confidence,Submitted At\n';
@@ -99,8 +366,44 @@ const ReportsScreen = () => {
         }
       }
     } catch (error) {
-      console.error('Export error:', error);
+      console.error('Export CSV error:', error);
       Alert.alert(t('reports.export_failed'), t('reports.export_error_msg'));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setIsExporting(true);
+    try {
+      const htmlContent = generateReportHTML(stats, claims, patterns, heatmapData, currentUser, t);
+      const fileName = `HealthGuard_Summary_${new Date().toISOString().split('T')[0]}.pdf`;
+
+      if (Platform.OS === 'web') {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(htmlContent);
+          printWindow.document.close();
+          printWindow.onload = () => {
+            printWindow.print();
+          };
+        } else {
+          Alert.alert('Error', 'Pop-up blocked. Please allow pop-ups to print reports.');
+        }
+      } else {
+        const { uri } = await Print.printToFileAsync({ html: htmlContent });
+        const fileUri = FileSystem.cacheDirectory + fileName;
+        await FileSystem.copyAsync({ from: uri, to: fileUri });
+
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri);
+        } else {
+          Alert.alert('Error', 'Sharing is not available on this device');
+        }
+      }
+    } catch (error) {
+      console.error('Export PDF error:', error);
+      Alert.alert(t('reports.export_failed') || 'Export Failed', 'An error occurred while generating the PDF report.');
     } finally {
       setIsExporting(false);
     }
@@ -477,6 +780,77 @@ const ReportsScreen = () => {
           <View style={styles.spacer} />
         </View>
       </ScrollView>
+
+      <Portal>
+        <Dialog 
+          visible={exportDialogVisible} 
+          onDismiss={() => setExportDialogVisible(false)}
+          style={{ backgroundColor: mode === 'light' ? '#FFF' : colors.surface, borderRadius: radii.lg }}
+        >
+          <Dialog.Title style={{ fontWeight: '800', color: colors.neutral[900] }}>
+            {t('reports.export_title') || 'Export Surveillance Report'}
+          </Dialog.Title>
+          <Dialog.Content style={{ paddingBottom: 10 }}>
+            <Text style={{ color: colors.neutral[500], marginBottom: 20 }}>
+              {t('reports.export_subtitle') || 'Select the format to download this report:'}
+            </Text>
+            
+            <TouchableOpacity 
+              style={[
+                styles.exportOption, 
+                { 
+                  borderColor: colors.neutral[200], 
+                  backgroundColor: mode === 'light' ? '#FAFAFA' : 'rgba(255,255,255,0.03)' 
+                }
+              ]}
+              onPress={() => {
+                setExportDialogVisible(false);
+                handleExportCSV();
+              }}
+            >
+              <Icon source="file-table" size={28} color={colors.primary[900]} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.exportOptionTitle, { color: colors.neutral[900] }]}>
+                  {t('reports.export_csv_title') || 'Raw CSV Log'}
+                </Text>
+                <Text style={{ color: colors.neutral[500], fontSize: 12 }}>
+                  {t('reports.export_csv_sub') || 'Detailed tabular data of all recent checks.'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[
+                styles.exportOption, 
+                { 
+                  borderColor: colors.neutral[200], 
+                  backgroundColor: mode === 'light' ? '#FAFAFA' : 'rgba(255,255,255,0.03)',
+                  marginTop: 12 
+                }
+              ]}
+              onPress={() => {
+                setExportDialogVisible(false);
+                handleExportPDF();
+              }}
+            >
+              <Icon source="file-pdf-box" size={28} color={colors.danger[900]} />
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.exportOptionTitle, { color: colors.neutral[900] }]}>
+                  {t('reports.export_pdf_title') || 'PDF Summary Report'}
+                </Text>
+                <Text style={{ color: colors.neutral[500], fontSize: 12 }}>
+                  {t('reports.export_pdf_sub') || 'Executive summary report with charts and patterns.'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setExportDialogVisible(false)} textColor={colors.neutral[500]}>
+              {t('common.cancel') || 'Cancel'}
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 };
@@ -911,6 +1285,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     textTransform: 'uppercase',
+  },
+  exportOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+    padding: 15,
+    borderWidth: 1,
+    borderRadius: 8,
+  },
+  exportOptionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 2,
   },
 });
 

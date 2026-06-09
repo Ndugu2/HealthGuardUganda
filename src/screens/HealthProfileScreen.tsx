@@ -146,8 +146,8 @@ const HealthProfileScreen = () => {
                 {t('profile.personal_info') || 'Personal Information'}
               </Text>
               {[
-                { icon: 'calendar', label: t('profile.dob'), value: '15 March 1990' },
-                { icon: 'human-male-female', label: t('profile.gender'), value: 'Female' },
+                { icon: 'calendar', label: t('profile.dob'), value: user?.dob || '—' },
+                { icon: 'human-male-female', label: t('profile.gender'), value: user?.gender || '—' },
                 { icon: 'phone', label: t('profile.phone'), value: user?.phone || '+256 7XX XXX XXX' },
                 { icon: 'map-marker', label: t('profile.address'), value: (user?.village ? `${user.village}, ` : '') + (user?.district ? `${user.district}` : 'Nakawa Division, Kampala') },
                 { icon: 'account-group', label: t('profile.household'), value: '5 members' },
