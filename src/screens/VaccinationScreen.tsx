@@ -11,6 +11,7 @@ import { Text, Icon } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
 
@@ -323,8 +324,7 @@ type FilterKey = 'all' | 'birth' | 'infant' | 'child' | 'adolescent' | 'maternal
 export default function VaccinationScreen() {
   const { colors, mode } = useAppTheme();
   const { t, i18n } = useTranslation();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const isLg = i18n.language === 'lg';
 
   const [filter, setFilter] = useState<FilterKey>('all');
@@ -572,14 +572,14 @@ const styles = StyleSheet.create({
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.md },
   heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 6 },
   heroBadgeText: { color: '#6EE7B7', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  heroTitle: { color: '#FFF', fontSize: 22, fontWeight: '900' },
+  heroTitle: { color: '#FFF', fontSize: rf(17), fontWeight: '900' },
   heroSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '600', marginTop: 4, maxWidth: 260 },
   heroStats: { flexDirection: 'row', gap: spacing.sm },
   heroStatCell: {
     flex: 1, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: radii.md, paddingVertical: 10,
   },
-  heroStatVal: { color: '#FFF', fontSize: 22, fontWeight: '900' },
+  heroStatVal: { color: '#FFF', fontSize: rf(17), fontWeight: '900' },
   heroStatLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 10, fontWeight: '700', marginTop: 2 },
 
   // Campaigns

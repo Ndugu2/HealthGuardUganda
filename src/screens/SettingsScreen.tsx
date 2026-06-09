@@ -21,6 +21,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../i18n/i18n';
 import { useAppTheme } from '../ThemeContext';
 import { colors as themeColors, spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { saveSetting, getSetting } from '../db/Database';
 import { AuthService } from '../services/AuthService';
 import { DEFAULT_API_BASE, API_BASE_SETTING_KEY } from '../config';
@@ -32,8 +33,7 @@ interface SettingsScreenProps {
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ onLogout }) => {
   const { t } = useTranslation();
   const { colors, mode, toggleTheme } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const [currentLang, setCurrentLang] = useState(i18n.language || 'en');
   
   const [orsKey, setOrsKey] = useState('');
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   header: { padding: spacing.xl, paddingTop: 60, paddingBottom: spacing.sm },
-  title: { fontSize: 28, fontWeight: '900' },
+  title: { fontSize: rf(22), fontWeight: '900' },
   subtitle: { fontSize: 16, marginTop: 4 },
   profileCard: {
     flexDirection: 'row',

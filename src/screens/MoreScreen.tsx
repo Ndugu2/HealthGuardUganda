@@ -4,6 +4,7 @@ import { Text, Icon } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import HealthProfileScreen from './HealthProfileScreen';
 import EmergencyContactsScreen from './EmergencyContactsScreen';
 import { MaternalDashboardScreen } from './MaternalDashboardScreen';
@@ -43,8 +44,7 @@ interface MoreScreenProps {
 const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const [view, setView] = useState<MoreView>('menu');
 
   const role = userRole || 'COMMUNITY';
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   scrollContent: { padding: spacing.lg, paddingBottom: 80 },
   desktopPad: { paddingHorizontal: 48, paddingTop: 32, maxWidth: 1000, alignSelf: 'center', width: '100%' },
-  title: { fontSize: 28, fontWeight: '900', marginBottom: 4 },
+  title: { fontSize: rf(22), fontWeight: '900', marginBottom: 4 },
   sub: { fontSize: 15, marginBottom: spacing.xl },
   gridContainer: {
     gap: spacing.md,

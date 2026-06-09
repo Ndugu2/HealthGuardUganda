@@ -17,6 +17,7 @@ import { AuthService } from '../services/AuthService';
 import { NotificationService } from '../services/NotificationService';
 import { ValidationService } from '../services/ValidationService';
 import { useAppTheme } from '../ThemeContext';
+import { useResponsive, typography } from '../responsive';
 
 // ─── Ugandan Districts ────────────────────────────────────────────────────────
 const UGANDA_DISTRICTS = [
@@ -199,8 +200,7 @@ const RegisterScreen: React.FC<RegisterScreenProps> = ({
   initialRole,
 }) => {
   const { colors: themeColors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 900;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const isDark = mode === 'dark';
 
   // Step state

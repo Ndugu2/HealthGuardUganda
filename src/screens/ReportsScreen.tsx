@@ -11,6 +11,7 @@ import AnimatedCard from '../components/AnimatedCard';
 import StatusBadge from '../components/StatusBadge';
 import EmptyState from '../components/EmptyState';
 import { colors, spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { useAppTheme } from '../ThemeContext';
 import { PatternService, MisinfoPattern } from '../services/PatternService';
 import { HeatmapService, MapPoint } from '../services/HeatmapService';
@@ -291,8 +292,7 @@ const generateReportHTML = (
 const ReportsScreen = () => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
 
   const [stats, setStats] = useState({ total: 0, accurate: 0, misinfo: 0 });
   const [claims, setClaims] = useState<ClaimRecord[]>([]);
@@ -869,7 +869,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
   },
   headerRight: {
@@ -906,7 +906,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxl,
   },
   desktopTitle: {
-    fontSize: 32,
+    fontSize: rf(26),
     fontWeight: '900',
     marginBottom: 4,
   },
@@ -927,7 +927,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statNum: {
-    fontSize: 32,
+    fontSize: rf(26),
     fontWeight: '800',
   },
   statLabel: {
@@ -1001,7 +1001,7 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.lg,
   },
   confidenceVal: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
   },
   confidenceLabel: {
@@ -1277,7 +1277,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryMetricVal: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '900',
     marginBottom: 2,
   },

@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows, gradients } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import AnimatedCard from '../components/AnimatedCard';
 
 interface Alert {
@@ -65,8 +66,7 @@ const ALERTS: Alert[] = [
 const AlertCenterScreen = ({ userRole }: { userRole?: string }) => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
 
   const [activeTab, setActiveTab] = useState<'all' | 'outbreak' | 'moh'>('all');
 
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: { fontSize: 24, fontWeight: '900', color: '#FFF', letterSpacing: -0.5 },
+  headerTitle: { fontSize: rf(18), fontWeight: '900', color: '#FFF', letterSpacing: -0.5 },
   headerSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', fontWeight: '500', marginTop: 2 },
   // Tabs
   tabBar: {

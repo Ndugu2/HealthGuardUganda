@@ -14,6 +14,7 @@ import { spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
+import { useResponsive, typography , rf } from '../responsive';
 
 interface VaccineDose {
   name: string;
@@ -377,7 +378,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   title: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '900',
   },
   cardForm: {

@@ -20,6 +20,7 @@ import { getResponseForKeyword, saveEncounter, updateEncounterFeedback, getSetti
 import { ClassificationResult } from '../ai/RuleEngine';
 import AnimatedCard from '../components/AnimatedCard';
 import { colors, spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { useAppTheme } from '../ThemeContext';
 import { AIService, ExpertAnalysis } from '../services/AIService';
 
@@ -39,8 +40,7 @@ interface AnalyzeScreenProps {
 const AnalyzeScreen: React.FC<AnalyzeScreenProps> = ({ navigateToTab, userRole, onLogout }) => {
   const { t, i18n } = useTranslation();
   const { colors, mode, topicColors } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const isCommunity = userRole === 'COMMUNITY';
 
   const [claim, setClaim] = useState('');
@@ -1887,7 +1887,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     flex: 1,
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
     color: colors.primary[900],
   },
@@ -1916,7 +1916,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   mainTitle: {
-    fontSize: 28,
+    fontSize: rf(22),
     fontWeight: '800',
     color: colors.neutral[900],
     marginBottom: 8,
@@ -2151,7 +2151,7 @@ const styles = StyleSheet.create({
   },
   graphicTitle: {
     color: '#FFF',
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
   },
   // Side Panel Cards
@@ -2349,7 +2349,7 @@ const styles = StyleSheet.create({
   },
   modalHeaderTitle: {
     flex: 1,
-    fontSize: 22,
+    fontSize: rf(17),
     fontWeight: '800',
     color: colors.primary[900],
     marginLeft: spacing.sm,
@@ -2496,7 +2496,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   loaderTitle: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
     color: colors.neutral[900],
   },

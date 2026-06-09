@@ -19,6 +19,7 @@ import { getStats, markBroadcastAsRead, saveSetting } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import StatusBadge from '../components/StatusBadge';
 import { colors, spacing, radii, shadows, topicColors, gradients } from '../theme';
+import { useResponsive, typography } from '../responsive';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppTheme } from '../ThemeContext';
 import { RiskService, RiskAlert } from '../services/RiskService';
@@ -49,8 +50,8 @@ const RECENT_ALERTS = [
 const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp } = useResponsive();
   const { width } = useWindowDimensions();
-  const isDesktop = width > 900;
   const isCommunity = userRole === 'COMMUNITY';
 
   const [stats, setStats] = useState({ total: 0, accurate: 0, misinfo: 0 });
@@ -152,8 +153,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
         <View style={isDesktop ? styles.desktopMain : null}>
           <View style={styles.welcomeSection}>
             <Text style={[styles.dashboardLabel, { color: colors.neutral[400] }]}>{isCommunity ? t('home.community_label') : t('home.dashboard_overview')}</Text>
-            <Text style={[styles.welcomeText, { color: colors.neutral[900] }]}>{isCommunity ? t('home.community_welcome') : t('home.welcome')}</Text>
-            <Text style={[styles.locationText, { color: colors.neutral[500] }]}>{isCommunity ? t('home.community_subtitle') : t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
+            <Text style={[styles.welcomeText, { color: colors.neutral[900], fontSize: isPhone ? 22 : 30 }]}>{isCommunity ? t('home.community_welcome') : t('home.welcome')}</Text>
+            <Text style={[styles.locationText, { color: colors.neutral[500], fontSize: isPhone ? 13 : 18 }]}>{isCommunity ? t('home.community_subtitle') : t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
           </View>
 
           <View style={isDesktop ? styles.desktopLayout : null}>
@@ -193,14 +194,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
               )}
 
               {/* ── HERO IMAGE CARD ── */}
-              <AnimatedCard delay={200} style={styles.heroCard}>
+              <AnimatedCard delay={200} style={[styles.heroCard, { height: isPhone ? 200 : 380 }]}>
                 <ImageBackground
                   source={require('../../assets/hero_dashboard.png')}
                   style={styles.heroImage}
                   imageStyle={{ borderRadius: radii.lg }}
                 >
-                  <View style={styles.heroOverlay}>
-                    <Text style={styles.heroText}>{isCommunity ? t('home.community_hero_text') : t('home.hero_text')}</Text>
+                  <View style={[styles.heroOverlay, { padding: isPhone ? 20 : 40 }]}>
+                    <Text style={[styles.heroText, { fontSize: isPhone ? 18 : 28 }]}>{isCommunity ? t('home.community_hero_text') : t('home.hero_text')}</Text>
                   </View>
                 </ImageBackground>
               </AnimatedCard>
@@ -339,16 +340,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole }) => {
                   colors={gradients.primary}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
-                  style={styles.actionGradient}
+                  style={[styles.actionGradient, { padding: isPhone ? 16 : 24 }]}
                 >
-                  <View style={styles.actionIconCircle}>
-                    <Icon source={isCommunity ? "help-circle-outline" : "magnify"} size={28} color="#FFF" />
+                  <View style={[styles.actionIconCircle, { width: isPhone ? 48 : 64, height: isPhone ? 48 : 64, borderRadius: isPhone ? 24 : 32, marginRight: isPhone ? 12 : 16 }]}>
+                    <Icon source={isCommunity ? "help-circle-outline" : "magnify"} size={isPhone ? 22 : 28} color="#FFF" />
                   </View>
                   <View style={styles.actionTextContent}>
-                    <Text style={styles.actionTitle}>{isCommunity ? t('home.ask_health_question') : t('home.analyze_card_title')}</Text>
-                    <Text style={styles.actionSub}>{isCommunity ? t('home.ask_health_sub') : t('home.analyze_card_sub')}</Text>
+                    <Text style={[styles.actionTitle, { fontSize: isPhone ? 16 : 24 }]}>{isCommunity ? t('home.ask_health_question') : t('home.analyze_card_title')}</Text>
+                    <Text style={[styles.actionSub, { fontSize: isPhone ? 12 : 15 }]}>{isCommunity ? t('home.ask_health_sub') : t('home.analyze_card_sub')}</Text>
                   </View>
-                  <Icon source="arrow-right" size={28} color="#FFF" />
+                  <Icon source="arrow-right" size={isPhone ? 22 : 28} color="#FFF" />
                 </LinearGradient>
               </TouchableOpacity>
 
@@ -568,16 +569,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '800',
     color: colors.primary[900],
-    lineHeight: 22,
+    lineHeight: 20,
   },
   headerSubtitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '600',
     color: colors.primary[900],
-    lineHeight: 20,
+    lineHeight: 16,
   },
   offlinePill: {
     flexDirection: 'row',
@@ -594,7 +595,9 @@ const styles = StyleSheet.create({
     color: colors.primary[900],
   },
   scrollContent: {
-    padding: spacing.lg,
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: spacing.lg,
   },
   desktopMain: {
     width: '100%',
@@ -615,11 +618,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   dashboardLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
     color: colors.neutral[400],
     letterSpacing: 1.5,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   welcomeText: {
     fontSize: 30,
@@ -635,7 +638,7 @@ const styles = StyleSheet.create({
   statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.xl,
+    padding: spacing.lg,
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
     marginBottom: spacing.lg,
@@ -645,13 +648,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
     color: colors.neutral[400],
     marginBottom: 4,
   },
   statValue: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: '900',
     color: colors.primary[900],
   },
@@ -748,13 +751,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   riskTopic: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '800',
   },
   riskRegion: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   riskMessage: {
     fontSize: 14,
@@ -781,7 +784,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: '800',
     color: colors.neutral[900],
   },
@@ -923,12 +926,12 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   secondaryTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '800',
     color: colors.neutral[900],
   },
   secondarySub: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.neutral[500],
   },
   tipsSection: {

@@ -5,14 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ACADEMY_CONTENT, AcademyService, LessonModule, QuizQuestion } from '../services/AcademyService';
 import { colors, spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { useAppTheme } from '../ThemeContext';
 import AnimatedCard from '../components/AnimatedCard';
 
 const AcademyScreen = () => {
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   
   const [progress, setProgress] = useState<Record<string, boolean>>({});
   const [selectedModule, setSelectedModule] = useState<LessonModule | null>(null);
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   headerTitle: {
-    fontSize: 28,
+    fontSize: rf(22),
     fontWeight: '900',
     color: '#FFF',
   },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
     marginBottom: 20,
   },
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: rf(17),
     fontWeight: '900',
     flex: 1,
   },
@@ -436,7 +436,7 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
   },
   resultTitle: {
-    fontSize: 24,
+    fontSize: rf(18),
     fontWeight: '900',
     marginTop: 20,
   },

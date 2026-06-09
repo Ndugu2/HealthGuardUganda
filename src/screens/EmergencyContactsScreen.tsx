@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows, gradients } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import AnimatedCard from '../components/AnimatedCard';
 
 const EMERGENCY_CONTACTS = [
@@ -94,8 +95,7 @@ const QUICK_TIPS = [
 const EmergencyContactsScreen = () => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const [expandedTip, setExpandedTip] = useState<number | null>(null);
 
   const handleCall = (phone: string) => {
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: rf(20),
     fontWeight: '900',
     color: '#FFF',
     letterSpacing: -0.5,

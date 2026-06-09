@@ -13,6 +13,7 @@ import { spacing, radii, shadows, gradients } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
+import { useResponsive, typography , rf } from '../responsive';
 
 interface TriageQuestion {
   id: string;
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   title: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '900',
     marginBottom: 4,
   },
@@ -322,7 +323,7 @@ const styles = StyleSheet.create({
   },
   resultTitle: {
     color: '#FFF',
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '900',
     marginTop: spacing.md,
     textAlign: 'center',

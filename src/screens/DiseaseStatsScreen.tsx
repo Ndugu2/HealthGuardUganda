@@ -12,6 +12,7 @@ import { Text, Icon, ActivityIndicator } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
 import { getDiseaseStats, saveDiseaseStats, DiseaseStat } from '../db/diseaseStats';
@@ -112,8 +113,7 @@ function timeAgo(iso: string): string {
 const DiseaseStatsScreen: React.FC = () => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
 
   const [stats, setStats] = useState<DiseaseStat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.md },
   headerBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 6 },
   headerBadgeText: { color: '#FCA5A5', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  headerTitle: { color: '#FFF', fontSize: 20, fontWeight: '900' },
+  headerTitle: { color: '#FFF', fontSize: rf(16), fontWeight: '900' },
   headerSub: { color: 'rgba(255,255,255,0.65)', fontSize: 12, fontWeight: '600', marginTop: 2 },
   headerIcon: { opacity: 0.5 },
   summaryRow: { flexDirection: 'row', gap: spacing.sm },
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     flex: 1, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: radii.md, paddingVertical: 8,
   },
-  summaryCount: { color: '#FFF', fontSize: 20, fontWeight: '900' },
+  summaryCount: { color: '#FFF', fontSize: rf(16), fontWeight: '900' },
   summaryLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 9, fontWeight: '800', letterSpacing: 0.5 },
 
   // Filters

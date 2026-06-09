@@ -12,6 +12,7 @@ import { Text, Icon } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
 
@@ -581,8 +582,7 @@ const CATEGORY_LABELS: Record<string, { en: string; lg: string; icon: string }> 
 export default function GuidelinesScreen() {
   const { colors, mode } = useAppTheme();
   const { t, i18n } = useTranslation();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const isLg = i18n.language === 'lg';
 
   const [category, setCategory] = useState('all');
@@ -803,11 +803,11 @@ const styles = StyleSheet.create({
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.md },
   heroBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 6 },
   heroBadgeText: { color: '#BFDBFE', fontSize: 9, fontWeight: '900', letterSpacing: 1 },
-  heroTitle: { color: '#FFF', fontSize: 22, fontWeight: '900' },
+  heroTitle: { color: '#FFF', fontSize: rf(17), fontWeight: '900' },
   heroSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '600', marginTop: 4, maxWidth: 260 },
   heroStats: { flexDirection: 'row', gap: spacing.sm },
   heroStatCell: { flex: 1, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: radii.md, paddingVertical: 10 },
-  heroStatVal: { color: '#FFF', fontSize: 20, fontWeight: '900' },
+  heroStatVal: { color: '#FFF', fontSize: rf(16), fontWeight: '900' },
   heroStatLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 10, fontWeight: '700', marginTop: 2 },
 
   catScroll: { marginBottom: spacing.md },
@@ -836,7 +836,7 @@ const styles = StyleSheet.create({
   detailHeaderGradient: { padding: spacing.lg },
   detailHeaderTop: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: spacing.md },
   detailIconBox: { width: 56, height: 56, borderRadius: radii.md, alignItems: 'center', justifyContent: 'center' },
-  detailTitle: { color: '#FFF', fontSize: 20, fontWeight: '900' },
+  detailTitle: { color: '#FFF', fontSize: rf(16), fontWeight: '900' },
   detailSubtitle: { color: 'rgba(255,255,255,0.75)', fontSize: 12, fontWeight: '600', marginTop: 3, lineHeight: 17 },
   detailMeta: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   metaChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.full },

@@ -20,6 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AuthService, User } from '../services/AuthService';
 import { NotificationService } from '../services/NotificationService';
 import { colors, spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { useAppTheme } from '../ThemeContext';
 import { ValidationService } from '../services/ValidationService';
 import AnimatedCard from '../components/AnimatedCard';
@@ -36,11 +37,8 @@ interface LoginScreenProps {
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess, onBack, roleHint, onRegisterPress }) => {
   const { t } = useTranslation();
   const { colors: themeColors, mode } = useAppTheme();
-  const { width, height } = useWindowDimensions();
-  
-  const isDesktop = width > 900;
-  const isMobile = width < 768;
-  const isSmall = width < 400 || height < 700;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
+  const isSmall = isPhone;
 
   // Active role state, pre-seeded from roleHint or defaulting to COMMUNITY
   const [activeRole, setActiveRole] = useState<'COMMUNITY' | 'HW' | 'ADMIN'>(roleHint ?? 'COMMUNITY');
@@ -1585,7 +1583,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   metricValue: {
-    fontSize: 26,
+    fontSize: rf(20),
     fontWeight: '900',
     color: '#FFFFFF',
     marginBottom: 4,
@@ -1650,7 +1648,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   mobileTitle: {
-    fontSize: 24,
+    fontSize: rf(18),
     fontWeight: '900',
   },
   loginCard: {
@@ -1767,7 +1765,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   title: {
-    fontSize: 22,
+    fontSize: rf(17),
     fontWeight: '900',
     marginBottom: 8,
     textAlign: 'center',
@@ -1933,7 +1931,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   successTitle: {
-    fontSize: 32,
+    fontSize: rf(26),
     fontWeight: '900',
     letterSpacing: -1,
     marginBottom: 8,

@@ -16,6 +16,7 @@ import { getAllFacilities, Facility } from '../db/Database';
 import { LocationService } from '../services/LocationService';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows, gradients } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import AnimatedCard from '../components/AnimatedCard';
 import GoogleMapView from '../components/GoogleMapView';
 
@@ -38,8 +39,7 @@ const getFacilityIcon = (type: string): string => {
 const FacilitiesScreen = () => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
 
   const [facilities, setFacilities] = useState<Facility[]>([]);
   const [filtered, setFiltered] = useState<Facility[]>([]);
@@ -328,7 +328,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   headerTitle: {
-    fontSize: 26,
+    fontSize: rf(20),
     fontWeight: '900',
     color: '#FFF',
     letterSpacing: -0.5,

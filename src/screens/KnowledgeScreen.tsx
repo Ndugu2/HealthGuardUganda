@@ -6,6 +6,7 @@ import { searchKnowledge, KnowledgeItem } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import EmptyState from '../components/EmptyState';
 import { colors, spacing, radii, shadows, topicColors, darkTopicColors } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { useAppTheme } from '../ThemeContext';
 
 const TOPIC_FILTERS = [
@@ -28,8 +29,7 @@ interface KnowledgeScreenProps {
 const KnowledgeScreen: React.FC<KnowledgeScreenProps> = ({ userRole }) => {
   const { t, i18n } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const isCommunity = userRole === 'COMMUNITY';
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -580,7 +580,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.neutral[100],
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
     color: colors.primary[900],
   },
@@ -809,7 +809,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   questionText: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
     lineHeight: 28,
     marginBottom: spacing.xl,

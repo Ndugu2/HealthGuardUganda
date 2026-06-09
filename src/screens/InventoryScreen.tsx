@@ -6,6 +6,7 @@ import { getInventory, deductInventory, addInventoryItem, addInventoryStock } fr
 import { InventoryItem } from '../db/types';
 import { colors, spacing, radii, shadows } from '../theme';
 import { useAppTheme } from '../ThemeContext';
+import { useResponsive, typography , rf } from '../responsive';
 
 const InventoryScreen: React.FC = () => {
   const { t } = useTranslation();
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: rf(18),
     fontWeight: '800',
   },
   addItemBtn: {
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   quantityValue: {
-    fontSize: 28,
+    fontSize: rf(22),
     fontWeight: '900',
   },
   actionGroup: {

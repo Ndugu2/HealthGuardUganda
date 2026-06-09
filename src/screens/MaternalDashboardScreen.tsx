@@ -14,6 +14,7 @@ import { colors, spacing, radii, shadows, gradients } from '../theme';
 import { useAppTheme } from '../ThemeContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
+import { useResponsive, typography , rf } from '../responsive';
 
 const BABY_SIZES: { [key: number]: { size: string; size_lg: string; icon: string; desc: string; desc_lg: string } } = {
   4: { size: 'Poppy Seed', size_lg: 'Kasigo ka Poppy', icon: 'sprout', desc: 'The blastocyst is implanting into the uterine wall.', desc_lg: 'Akasoloboozi katandise okwekwata ku kisenge ky’omu kisawo ky’omwana.' },
@@ -463,7 +464,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   introTitle: {
-    fontSize: 22,
+    fontSize: rf(17),
     fontWeight: '900',
     color: '#9B2C2C',
     marginTop: spacing.md,
@@ -537,7 +538,7 @@ const styles = StyleSheet.create({
   },
   bannerMotherName: {
     color: '#FFF',
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '900',
   },
   bannerAge: {
@@ -561,7 +562,7 @@ const styles = StyleSheet.create({
   },
   progressWeekNumber: {
     color: '#FFF',
-    fontSize: 28,
+    fontSize: rf(22),
     fontWeight: '900',
   },
   progressSubtext: {

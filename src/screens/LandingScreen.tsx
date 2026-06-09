@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, useWindowDimensions, Im
 import { Text, Icon } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { useAppTheme } from '../ThemeContext';
 
 interface LandingScreenProps {
@@ -12,9 +13,8 @@ interface LandingScreenProps {
 const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
   const { t } = useTranslation();
   const { mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 900;
-  const isMobile = width < 600;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
+  const isMobile = isPhone;
   const [selectedRole, setSelectedRole] = useState<'COMMUNITY' | 'HW' | undefined>(undefined);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoText: {
-    fontSize: 22,
+    fontSize: rf(17),
     fontWeight: '800',
     letterSpacing: -0.5,
   },
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   missionQuote: {
-    fontSize: 20,
+    fontSize: rf(16),
     lineHeight: 32,
     textAlign: 'center',
     maxWidth: 800,
@@ -567,7 +567,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   featureTitle: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
     marginBottom: 12,
   },
@@ -604,7 +604,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   footerLogoText: {
-    fontSize: 20,
+    fontSize: rf(16),
     fontWeight: '800',
   },
   footerDesc: {
@@ -666,7 +666,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   statNumber: {
-    fontSize: 48,
+    fontSize: rf(36),
     fontWeight: '900',
     marginBottom: 8,
   },

@@ -12,6 +12,7 @@ import { Text, Icon, ActivityIndicator } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import { LinearGradient } from 'expo-linear-gradient';
 import AnimatedCard from '../components/AnimatedCard';
 import { saveDrugInfo, getAllDrugs, DrugInfo } from '../db/drugCache';
@@ -227,8 +228,7 @@ const AVAILABILITY_CONFIG = {
 export default function DrugInfoScreen() {
   const { colors, mode } = useAppTheme();
   const { t, i18n } = useTranslation();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const isLg = i18n.language === 'lg';
 
   const [drugs, setDrugs] = useState<DrugEntry[]>([]);
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 6 },
   headerBadgeText: { color: '#BFDBFE', fontSize: 10, fontWeight: '900', letterSpacing: 1 },
-  headerTitle: { color: '#FFF', fontSize: 20, fontWeight: '900' },
+  headerTitle: { color: '#FFF', fontSize: rf(16), fontWeight: '900' },
   headerSub: { color: 'rgba(255,255,255,0.7)', fontSize: 12, fontWeight: '600', marginTop: 2 },
 
   searchCard: {

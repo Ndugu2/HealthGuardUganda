@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows, gradients } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import AnimatedCard from '../components/AnimatedCard';
 import { getPatients } from '../db/Database';
 
@@ -59,8 +60,7 @@ const PRIORITY_COLORS: Record<string, { color: string; bg: string }> = {
 const PatientQueueScreen = () => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [search, setSearch] = useState('');
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: spacing.lg,
   },
-  headerTitle: { fontSize: 26, fontWeight: '900', color: '#FFF', letterSpacing: -0.5 },
+  headerTitle: { fontSize: rf(20), fontWeight: '900', color: '#FFF', letterSpacing: -0.5 },
   headerSub: { fontSize: 14, color: 'rgba(255,255,255,0.8)', fontWeight: '500', marginTop: 2 },
   todayBadge: {
     flexDirection: 'row',
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   statItem: { flex: 1, alignItems: 'center' },
-  statCount: { fontSize: 20, fontWeight: '900' },
+  statCount: { fontSize: rf(16), fontWeight: '900' },
   statLabel: { fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: '700', marginTop: 2 },
   // Filter
   filterBar: {

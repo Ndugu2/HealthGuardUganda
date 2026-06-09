@@ -11,6 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { useAppTheme } from '../ThemeContext';
 import { spacing, radii, shadows } from '../theme';
+import { useResponsive, typography , rf } from '../responsive';
 import AnimatedCard from '../components/AnimatedCard';
 
 const VACCINATIONS = [
@@ -32,8 +33,7 @@ const VISIT_HISTORY = [
 const HealthProfileScreen = () => {
   const { t } = useTranslation();
   const { colors, mode } = useAppTheme();
-  const { width } = useWindowDimensions();
-  const isDesktop = width > 800;
+  const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp, width, height } = useResponsive();
   const [activeTab, setActiveTab] = useState<'overview' | 'vaccines' | 'visits'>('overview');
   const [user, setUser] = useState<any>(null);
 
@@ -297,12 +297,12 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#FFF',
-    fontSize: 26,
+    fontSize: rf(20),
     fontWeight: '900',
   },
   profileInfo: { flex: 1 },
   profileName: {
-    fontSize: 22,
+    fontSize: rf(17),
     fontWeight: '900',
     color: '#FFF',
   },
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   },
   statNum: {
     color: '#FFF',
-    fontSize: 22,
+    fontSize: rf(17),
     fontWeight: '900',
   },
   statLabel: {
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.md,
   },
-  progressPercent: { fontSize: 22, fontWeight: '900' },
+  progressPercent: { fontSize: rf(17), fontWeight: '900' },
   progressTrack: {
     height: 8,
     borderRadius: 4,
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   visitDateCol: { alignItems: 'center', minWidth: 40 },
-  visitDay: { fontSize: 22, fontWeight: '900' },
+  visitDay: { fontSize: rf(17), fontWeight: '900' },
   visitMonth: { fontSize: 11, fontWeight: '700' },
   visitDivider: { width: 2, height: 40, borderRadius: 1 },
   visitInfo: { flex: 1 },
