@@ -178,7 +178,7 @@ const LandingScreen: React.FC<LandingScreenProps> = ({ onLoginPress }) => {
           </View>
 
           <Animated.View style={[styles.heroRight, isMobile && styles.heroRightMobile, { transform: [{ translateY }] }]}>
-            <View style={[styles.heroImageCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.xl }]}>
+            <View style={[styles.heroImageCard, { backgroundColor: mode === 'light' ? '#FFFFFF' : colors.surface, ...shadows.lg }]}>
               <Image 
                 source={require('../../assets/landing_hero.png')} 
                 style={styles.heroImage as any} 

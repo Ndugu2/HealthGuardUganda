@@ -1,4 +1,4 @@
-import { getAllClaims, saveKnowledge } from '../db/Database';
+import { getAllClaims, saveKnowledge, saveKnowledgeDelta, getSetting, saveSetting } from '../db/Database';
 import { getApiBaseUrl } from '../db/apiConfig';
 import { AuthService } from './AuthService';
 import { ConnectivityService } from './ConnectivityService';
@@ -56,23 +56,41 @@ export class SyncService {
 
   /**
    * Pulls latest knowledge base items from the backend.
-   * In the Hybrid Architecture, we offload persistence to the native engine.
+   * Uses delta sync with last sync timestamp query parameter.
    */
   public static async pullKnowledge(): Promise<{ success: boolean; count?: number; error?: string }> {
     try {
       const API_URL = await getApiBaseUrl();
-      const response = await fetch(`${API_URL}/sync/knowledge`);
+      const lastSync = await getSetting('last_knowledge_sync');
+      
+      const url = lastSync 
+        ? `${API_URL}/sync/knowledge?since=${encodeURIComponent(lastSync)}`
+        : `${API_URL}/sync/knowledge`;
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+
       const items = await response.json();
 
       if (Array.isArray(items)) {
-        await saveKnowledge(items);
+        if (items.length > 0) {
+          if (lastSync) {
+            await saveKnowledgeDelta(items);
+          } else {
+            await saveKnowledge(items);
+          }
+        }
+        await saveSetting('last_knowledge_sync', new Date().toISOString());
         console.log('Knowledge base synced from server:', items.length, 'items');
         return { success: true, count: items.length };
       } else {
         return { success: false, error: 'Invalid data format from server' };
       }
     } catch (error: any) {
-      return { success: false, error: 'Connection error' };
+      console.error('[SyncService] pullKnowledge error:', error);
+      return { success: false, error: error.message || 'Connection error' };
     }
   }
 

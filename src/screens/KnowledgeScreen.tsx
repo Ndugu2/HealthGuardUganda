@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, FlatList, TouchableOpacity, useWindowDimensions, ScrollView } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, ScrollView } from 'react-native';
 import { Text, Searchbar, Chip, Icon, Modal, Portal } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { searchKnowledge, KnowledgeItem } from '../db/Database';
@@ -214,7 +214,12 @@ const KnowledgeScreen: React.FC<KnowledgeScreenProps> = ({ userRole }) => {
       </View>
 
       {viewMode === 'browse' && (
-        <>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.browseScroll, isDesktop && styles.desktopBrowseScroll]}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* SEARCH + CHIP FILTERS */}
           <View style={[styles.searchSection, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[200] }]}>
             <View style={isDesktop ? styles.desktopSearchWrap : null}>
               <Searchbar
@@ -228,75 +233,78 @@ const KnowledgeScreen: React.FC<KnowledgeScreenProps> = ({ userRole }) => {
                 placeholderTextColor={colors.neutral[400]}
                 elevation={0}
               />
-              
-              <FlatList
+
+              {/* Chip row — horizontal ScrollView is reliable on web */}
+              <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                data={TOPIC_FILTERS}
-                keyExtractor={(item) => item.key}
                 style={styles.chipList}
                 contentContainerStyle={styles.chipListContent}
-                renderItem={({ item: filter }) => {
+              >
+                {TOPIC_FILTERS.map((filter) => {
                   const isSelected = topic === filter.key;
                   return (
                     <Chip
+                      key={filter.key}
                       selected={isSelected}
                       onPress={() => handleTopicChange(filter.key)}
                       style={[
-                        styles.chip, 
+                        styles.chip,
                         { backgroundColor: colors.neutral[100] },
-                        isSelected && { backgroundColor: colors.primary[900] }
+                        isSelected && { backgroundColor: colors.primary[900] },
                       ]}
                       textStyle={[
-                        styles.chipText, 
+                        styles.chipText,
                         { color: colors.neutral[600] },
-                        isSelected && { color: '#FFF' }
+                        isSelected && { color: '#FFF' },
                       ]}
                       showSelectedCheck={false}
                     >
                       {t(filter.i18nKey)}
                     </Chip>
                   );
-                }}
-              />
+                })}
+              </ScrollView>
             </View>
           </View>
 
+          {/* RECENT SEARCHES */}
           {searchQuery.length === 0 && (
-             <View style={styles.historySection}>
-                <View style={styles.historyHeader}>
-                   <Text style={[styles.historyTitle, { color: colors.neutral[500] }]}>{t('knowledge.recent_searches')}</Text>
-                   <TouchableOpacity onPress={() => setRecentSearches([])}>
-                      <Text style={[styles.clearText, { color: colors.primary[900] }]}>{t('knowledge.clear_all')}</Text>
-                   </TouchableOpacity>
-                </View>
-                <View style={styles.historyList}>
-                   {recentSearches.map((s, i) => (
-                      <TouchableOpacity key={i} style={[styles.historyItem, { backgroundColor: colors.neutral[50] }]} onPress={() => setSearchQuery(s)}>
-                         <Icon source="history" size={16} color={colors.neutral[400]} />
-                         <Text style={[styles.historyItemText, { color: colors.neutral[700] }]}>{s}</Text>
-                      </TouchableOpacity>
-                   ))}
-                </View>
-             </View>
+            <View style={styles.historySection}>
+              <View style={styles.historyHeader}>
+                <Text style={[styles.historyTitle, { color: colors.neutral[500] }]}>{t('knowledge.recent_searches')}</Text>
+                <TouchableOpacity onPress={() => setRecentSearches([])}>
+                  <Text style={[styles.clearText, { color: colors.primary[900] }]}>{t('knowledge.clear_all')}</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.historyList}>
+                {recentSearches.map((s, i) => (
+                  <TouchableOpacity key={i} style={[styles.historyItem, { backgroundColor: colors.neutral[50] }]} onPress={() => setSearchQuery(s)}>
+                    <Icon source="history" size={16} color={colors.neutral[400]} />
+                    <Text style={[styles.historyItemText, { color: colors.neutral[700] }]}>{s}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
           )}
 
-          <FlatList
-            data={filteredItems}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id.toString()}
-            numColumns={isDesktop ? 2 : 1}
-            key={isDesktop ? 'desktop' : 'mobile'}
-            contentContainerStyle={[styles.listContent, isDesktop && styles.desktopListContent]}
-            ListEmptyComponent={
-              <EmptyState
-                icon="text-search"
-                title={t('knowledge.empty')}
-                subtitle={t('knowledge.empty_subtitle')}
-              />
-            }
-          />
-        </>
+          {/* KNOWLEDGE ITEMS — mapped directly (no nested FlatList) */}
+          {filteredItems.length === 0 ? (
+            <EmptyState
+              icon="text-search"
+              title={t('knowledge.empty')}
+              subtitle={t('knowledge.empty_subtitle')}
+            />
+          ) : (
+            <View style={[styles.listContent, isDesktop && styles.desktopGrid]}>
+              {filteredItems.map((item, index) => (
+                <View key={item.id.toString()} style={isDesktop && styles.desktopItemWrapper}>
+                  {renderItem({ item, index })}
+                </View>
+              ))}
+            </View>
+          )}
+        </ScrollView>
       )}
 
       {viewMode === 'guidelines' && (
@@ -641,13 +649,24 @@ const styles = StyleSheet.create({
   chipTextActive: {
     color: '#FFF',
   },
-  listContent: {
-    padding: spacing.md,
+  browseScroll: {
     paddingBottom: spacing.xxl,
   },
-  desktopListContent: {
-    width: '100%',
-    paddingHorizontal: '5%',
+  desktopBrowseScroll: {
+    paddingHorizontal: '3%',
+  },
+  listContent: {
+    padding: spacing.md,
+    paddingBottom: spacing.lg,
+  },
+  desktopGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: '2%',
+  },
+  desktopItemWrapper: {
+    width: '50%',
+    paddingHorizontal: spacing.sm,
   },
   itemCard: {
     backgroundColor: '#FFF',

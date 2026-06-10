@@ -38,7 +38,8 @@ const WebStore = {
       try {
         const localData = require('./knowledge_base.json');
         if (Array.isArray(localData)) {
-          localStorage.setItem('healthguard_knowledge', JSON.stringify(localData));
+          const normalized = localData.map(normalizeKnowledgeInput);
+          localStorage.setItem('healthguard_knowledge', JSON.stringify(normalized));
           localStorage.setItem('knowledge_seeded_v76', 'true');
         }
       } catch (e) {
@@ -133,21 +134,40 @@ const WebStore = {
 
   async searchKnowledge(query: string): Promise<KnowledgeItem[]> {
     const knowledge = JSON.parse(localStorage.getItem('healthguard_knowledge') || '[]');
+    const normalized = knowledge.map(normalizeKnowledgeInput);
     const q = query.trim().toLowerCase();
     if (!q) {
-      return knowledge;
+      return normalized;
     }
-    return knowledge.filter((k: any) => {
+    return normalized.filter((k: any) => {
       const topicMatch = k.topic && String(k.topic).toLowerCase().includes(q);
       const mythMatch = k.myth_text_en && String(k.myth_text_en).toLowerCase().includes(q);
       const correctMatch = k.correct_text_en && String(k.correct_text_en).toLowerCase().includes(q);
       const keywordMatch = k.keyword && String(k.keyword).toLowerCase().includes(q);
       return topicMatch || mythMatch || correctMatch || keywordMatch;
-    }).map(normalizeKnowledgeInput);
+    });
   },
 
   async saveKnowledge(items: Record<string, unknown>[]): Promise<boolean> {
-    localStorage.setItem('healthguard_knowledge', JSON.stringify(items));
+    const normalized = items.map(normalizeKnowledgeInput);
+    localStorage.setItem('healthguard_knowledge', JSON.stringify(normalized));
+    return true;
+  },
+
+  async saveKnowledgeDelta(items: Record<string, unknown>[]): Promise<boolean> {
+    const existing = JSON.parse(localStorage.getItem('healthguard_knowledge') || '[]');
+    const normalizedExisting = existing.map(normalizeKnowledgeInput);
+    const updated = [...normalizedExisting];
+    for (const item of items) {
+      const normalized = normalizeKnowledgeInput(item);
+      const idx = updated.findIndex((k: any) => k.id === normalized.id);
+      if (idx >= 0) {
+        updated[idx] = normalized;
+      } else {
+        updated.push(normalized);
+      }
+    }
+    localStorage.setItem('healthguard_knowledge', JSON.stringify(updated));
     return true;
   },
 
@@ -619,6 +639,10 @@ CREATE TABLE IF NOT EXISTS community_shelf (
   minimumThreshold INTEGER NOT NULL,
   lastUpdated TEXT NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_claims_label ON claims(label);
+CREATE INDEX IF NOT EXISTS idx_claims_submitted ON claims(submitted_at DESC);
+CREATE INDEX IF NOT EXISTS idx_knowledge_keyword ON knowledge(keyword);
+CREATE INDEX IF NOT EXISTS idx_patients_status ON patients(status);
 `;
 
 function mapKnowledgeRow(row: Record<string, unknown>): KnowledgeItem {
@@ -639,8 +663,19 @@ function mapKnowledgeRow(row: Record<string, unknown>): KnowledgeItem {
 }
 
 function normalizeKnowledgeInput(item: Record<string, unknown>): KnowledgeItem {
+  let id = Number(item.id) || 0;
+  if (!id) {
+    const str = String(item.topic || '') + String(item.keyword || '') + String(item.correctTextEn ?? item.correct_text_en ?? '');
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash |= 0; // Convert to 32bit integer
+    }
+    id = Math.abs(hash) || Math.floor(Math.random() * 1000000) + 1;
+  }
   return {
-    id: Number(item.id) || 0,
+    id,
     topic: String(item.topic),
     keyword: String(item.keyword || ''),
     myth_text_en: (item.mythTextEn ?? item.myth_text_en ?? null) as string | null,
@@ -917,6 +952,34 @@ export async function saveKnowledge(items: Record<string, unknown>[]): Promise<b
   await db.runAsync('DELETE FROM knowledge');
   for (const item of items) {
     await insertKnowledgeRow(db, normalizeKnowledgeInput(item));
+  }
+  return true;
+}
+
+export async function saveKnowledgeDelta(items: Record<string, unknown>[]): Promise<boolean> {
+  if (Platform.OS === 'web') return WebStore.saveKnowledgeDelta(items);
+  const db = await getDb();
+  for (const item of items) {
+    const k = normalizeKnowledgeInput(item);
+    await db.runAsync(
+      `INSERT OR REPLACE INTO knowledge (id, topic, keyword, myth_text_en, correct_text_en, correct_text_lg,
+        detailed_guidance_en, detailed_guidance_lg, symptoms, prevention, treatment, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        k.id || null,
+        k.topic,
+        k.keyword,
+        k.myth_text_en,
+        k.correct_text_en,
+        k.correct_text_lg,
+        k.detailed_guidance_en ?? null,
+        k.detailed_guidance_lg ?? null,
+        k.symptoms ?? null,
+        k.prevention ?? null,
+        k.treatment ?? null,
+        k.source,
+      ]
+    );
   }
   return true;
 }

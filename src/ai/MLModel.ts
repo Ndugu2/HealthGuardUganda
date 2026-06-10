@@ -10,6 +10,7 @@ export class MLModel {
     private vocabulary: Record<string, number> = {};
     private idf: number[] = [];
     private classWeights: any[] = [];
+    private trainingSteps: number = 0;
 
     constructor() {
         this.loadWeights();
@@ -154,12 +155,25 @@ export class MLModel {
       const targetIndex = this.classWeights.findIndex(cw => cw.label === label);
       if (targetIndex === -1) return;
 
-      // Simple Gradient Step for Logistic Regression
+      // Decay learning rate over successive training steps
+      const decayedLr = learningRate / (1 + 0.05 * this.trainingSteps);
+      this.trainingSteps++;
+
+      const lambda = 0.01; // L2 regularization coefficient
+      const regularizationMultiplier = 1 - decayedLr * lambda;
+
       const cw = this.classWeights[targetIndex];
+      const currentConf = this.predict(text).confidence;
+
       for (let i = 0; i < features.length; i++) {
-        if (features[i] !== 0) {
-          // Adjust coefficient based on local observation
-          cw.coefficients[i] += learningRate * (1 - this.predict(text).confidence) * features[i];
+        if (cw.coefficients[i] !== undefined) {
+          // Apply weight decay (L2 Regularization)
+          cw.coefficients[i] *= regularizationMultiplier;
+
+          if (features[i] !== 0) {
+            // Apply Stochastic Gradient Step
+            cw.coefficients[i] += decayedLr * (1 - currentConf) * features[i];
+          }
         }
       }
     }

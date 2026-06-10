@@ -5,13 +5,19 @@
  *  Tier 1: OpenRouter API (direct, free Llama-3 model) — online
  *  Tier 2: National Backend server — fallback
  *  Tier 3: Local Hybrid AI simulation — always-on offline fallback
+ *
+ * Includes in-memory response cache (TTL: 10 minutes) to avoid
+ * redundant network calls for repeated identical queries.
  */
 
 import { getSetting } from '../db/Database';
 import { getApiBaseUrl } from '../db/apiConfig';
+import { HybridClassifier } from '../ai/HybridClassifier';
+import { getResponseForKeyword } from '../db/Database';
 
 const OPENROUTER_URL   = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODEL = 'meta-llama/llama-3-8b-instruct:free';
+const CACHE_TTL_MS     = 10 * 60 * 1000; // 10 minutes
 
 export interface ExpertAnalysis {
   label: 'ACCURATE' | 'INACCURATE' | 'UNCERTAIN';
@@ -20,49 +26,91 @@ export interface ExpertAnalysis {
   source?: 'online' | 'backend' | 'offline';
 }
 
+interface CacheEntry {
+  result: ExpertAnalysis;
+  timestamp: number;
+}
+
 export class AIService {
+
+  // In-memory LRU-style cache (keyed by "claim:language")
+  private static cache = new Map<string, CacheEntry>();
 
   /**
    * Main entry point — tries 3 strategies in order.
+   * Results are cached for CACHE_TTL_MS to prevent redundant API calls.
    */
   public static async consultExpert(
     claim: string,
     language: string = 'en'
   ): Promise<ExpertAnalysis | null> {
 
-    // ── TIER 1: Direct Online Call (OpenRouter or Pollinations) ───────────────
+    const cacheKey = `${claim.trim().toLowerCase()}:${language}`;
+
+    // ── Cache hit ────────────────────────────────────────────────────────────
+    const cached = AIService.cache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      return cached.result;
+    }
+
+    // ── TIER 1: Direct Online Call (OpenRouter or Pollinations) ──────────────
     const apiKey = await getSetting('openrouter_api_key');
+    let result: ExpertAnalysis | null = null;
+
     if (apiKey) {
       const online = await AIService.callOpenRouter(claim, language, apiKey);
-      if (online) return { ...online, source: 'online' };
+      if (online) result = { ...online, source: 'online' };
     } else {
       const online = await AIService.callPollinations(claim, language);
-      if (online) return { ...online, source: 'online' };
+      if (online) result = { ...online, source: 'online' };
     }
 
-    // ── TIER 2: National Backend Server ──────────────────────────────────────
-    try {
-      const backendUrl = await getApiBaseUrl();
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 5000);
-      const res = await fetch(`${backendUrl}/ai/consult`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ claim, language }),
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) return { ...json.data, source: 'backend' };
+    // ── TIER 2: National Backend Server ─────────────────────────────────────
+    if (!result) {
+      try {
+        const backendUrl = await getApiBaseUrl();
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 5000);
+        const res = await fetch(`${backendUrl}/ai/consult`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ claim, language }),
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success) result = { ...json.data, source: 'backend' as const };
+        }
+      } catch {
+        console.warn('AIService: Backend unreachable, using offline fallback.');
       }
-    } catch {
-      console.warn('AIService: Backend unreachable, using offline fallback.');
     }
 
-    // ── TIER 3: Local Offline Simulation ─────────────────────────────────────
-    const offline = await AIService.simulateLocalExpert(claim, language);
-    return offline ? { ...offline, source: 'offline' } : null;
+    // ── TIER 3: Local Offline Simulation ────────────────────────────────────
+    if (!result) {
+      const offline = await AIService.simulateLocalExpert(claim, language);
+      if (offline) result = { ...offline, source: 'offline' as const };
+    }
+
+    // Store in cache if we got a result
+    if (result) {
+      AIService.cache.set(cacheKey, { result, timestamp: Date.now() });
+      // Prune cache if it grows too large (keep 50 entries max)
+      if (AIService.cache.size > 50) {
+        const oldestKey = AIService.cache.keys().next().value;
+        if (oldestKey) AIService.cache.delete(oldestKey);
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Clears the in-memory cache. Useful when the user switches language.
+   */
+  public static clearCache(): void {
+    AIService.cache.clear();
   }
 
   /**
@@ -115,7 +163,6 @@ Base answers on WHO and Uganda MOH guidelines.`;
       const data = await response.json();
       const raw = data?.choices?.[0]?.message?.content ?? '';
 
-      // Extract JSON from the response (strip any surrounding markdown)
       const match = raw.match(/\{[\s\S]*\}/);
       if (!match) return null;
 
@@ -135,8 +182,8 @@ Base answers on WHO and Uganda MOH guidelines.`;
   }
 
   /**
-   * Direct call to Pollinations API (free, no API key).
-   * Uses POST with JSON mode which is extremely reliable for structured outputs.
+   * Direct call to Pollinations API (free, no API key required).
+   * Uses POST with JSON mode for reliable structured output.
    */
   private static async callPollinations(
     claim: string,
@@ -157,9 +204,7 @@ Base answers on WHO and Uganda MOH guidelines.`;
 
       const response = await fetch('https://text.pollinations.ai/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: [
             { role: 'system', content: systemPrompt },
@@ -198,17 +243,15 @@ Base answers on WHO and Uganda MOH guidelines.`;
 
   /**
    * Always-on local expert using the on-device HybridClassifier + knowledge base.
+   * Uses top-level imports to avoid dynamic require() inside hot paths.
    */
   private static async simulateLocalExpert(
     claim: string,
     language: string
   ): Promise<ExpertAnalysis | null> {
-    const { HybridClassifier } = require('../ai/HybridClassifier');
-    const { getResponseForKeyword } = require('../db/Database');
-
     const classifier = new HybridClassifier();
-    const result     = await classifier.classify(claim);
-    const evidence   = await getResponseForKeyword(result.triggerKeyword);
+    const result = await classifier.classify(claim);
+    const evidence = await getResponseForKeyword(result.triggerKeyword);
 
     if (evidence) {
       const text = language === 'lg'
@@ -216,8 +259,8 @@ Base answers on WHO and Uganda MOH guidelines.`;
         : evidence.correct_text_en;
 
       const parts: string[] = [text];
-      if (evidence.symptoms)   parts.push(`Symptoms: ${evidence.symptoms}`);
-      if (evidence.treatment)  parts.push(`Treatment: ${evidence.treatment}`);
+      if (evidence.symptoms)  parts.push(`Symptoms: ${evidence.symptoms}`);
+      if (evidence.treatment) parts.push(`Treatment: ${evidence.treatment}`);
 
       return {
         label: result.label === 'INACCURATE' ? 'INACCURATE' : result.label as any,

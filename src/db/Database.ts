@@ -25,6 +25,7 @@ export const searchKnowledge = store.searchKnowledge;
 export const getAllKnowledge = async () => store.searchKnowledge('');
 export const flagClaim = store.flagClaim;
 export const saveKnowledge = store.saveKnowledge;
+export const saveKnowledgeDelta = store.saveKnowledgeDelta;
 export const loadLocalWeights = async () => {
   const raw = await store.loadLocalWeights();
   return raw ? JSON.parse(raw) : null;
