@@ -40,6 +40,7 @@ import LandingScreen from './src/screens/LandingScreen';
 import PatientQueueScreen from './src/screens/PatientQueueScreen';
 import AlertCenterScreen from './src/screens/AlertCenterScreen';
 import MoreScreen from './src/screens/MoreScreen';
+import { SymptomTriageScreen } from './src/screens/SymptomTriageScreen';
 import { isOfflineToken } from './src/config';
 
 // Services
@@ -74,6 +75,7 @@ function MainApp() {
         return [
           { key: 'home', title: t('nav.home'), fallback: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
           { key: 'analyze', title: t('nav.analyze'), fallback: 'Analyze', focusedIcon: 'magnify-scan', unfocusedIcon: 'magnify' },
+          { key: 'triage', title: t('nav.triage'), fallback: 'Triage', focusedIcon: 'shield-check', unfocusedIcon: 'shield-check-outline' },
           { key: 'knowledge', title: t('nav.knowledge'), fallback: 'Knowledge', focusedIcon: 'book-open-variant', unfocusedIcon: 'book-outline' },
           { key: 'facilities', title: t('nav.facilities'), fallback: 'Facilities', focusedIcon: 'hospital-marker', unfocusedIcon: 'hospital-building' },
           { key: 'more', title: t('nav.more'), fallback: 'More', focusedIcon: 'dots-grid', unfocusedIcon: 'dots-horizontal' },
@@ -83,6 +85,7 @@ function MainApp() {
         return [
           { key: 'home', title: t('nav.home'), fallback: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
           { key: 'analyze', title: t('nav.analyze'), fallback: 'Analyze', focusedIcon: 'magnify-scan', unfocusedIcon: 'magnify' },
+          { key: 'triage', title: t('nav.triage'), fallback: 'Triage', focusedIcon: 'shield-check', unfocusedIcon: 'shield-check-outline' },
           { key: 'knowledge', title: t('nav.knowledge'), fallback: 'Knowledge', focusedIcon: 'book-open-variant', unfocusedIcon: 'book-outline' },
           { key: 'reports', title: t('nav.reports'), fallback: 'Reports', focusedIcon: 'chart-bar', unfocusedIcon: 'chart-bar-stacked' },
           { key: 'facilities', title: t('nav.facilities'), fallback: 'Facilities', focusedIcon: 'hospital-marker', unfocusedIcon: 'hospital-building' },
@@ -93,6 +96,7 @@ function MainApp() {
       return [
         { key: 'home', title: t('nav.home'), fallback: 'Home', focusedIcon: 'home', unfocusedIcon: 'home-outline' },
         { key: 'analyze', title: t('nav.analyze'), fallback: 'Analyze', focusedIcon: 'magnify-scan', unfocusedIcon: 'magnify' },
+        { key: 'triage', title: t('nav.triage'), fallback: 'Triage', focusedIcon: 'shield-check', unfocusedIcon: 'shield-check-outline' },
         { key: 'knowledge', title: t('nav.knowledge'), fallback: 'Knowledge', focusedIcon: 'book-open-variant', unfocusedIcon: 'book-outline' },
         { key: 'reports', title: t('nav.reports'), fallback: 'Reports', focusedIcon: 'chart-bar', unfocusedIcon: 'chart-bar-stacked' },
         { key: 'facilities', title: t('nav.facilities'), fallback: 'Facilities', focusedIcon: 'hospital-marker', unfocusedIcon: 'hospital-building' },
@@ -306,6 +310,7 @@ function MainApp() {
     switch (route.key) {
       case 'home': return <HomeScreen navigateToTab={navigateToTab} userRole={user?.role} onLogout={handleLogout} />;
       case 'analyze': return <AnalyzeScreen navigateToTab={navigateToTab} userRole={user?.role} onLogout={handleLogout} />;
+      case 'triage': return <SymptomTriageScreen />;
       case 'knowledge': return <KnowledgeScreen userRole={user?.role} onLogout={handleLogout} />;
       case 'reports': return <ReportsScreen />;
       case 'facilities': return <FacilitiesScreen />;

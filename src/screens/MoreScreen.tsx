@@ -18,6 +18,7 @@ import AlertCenterScreen from './AlertCenterScreen';
 import PatientQueueScreen from './PatientQueueScreen';
 import AcademyScreen from './AcademyScreen';
 import InventoryScreen from './InventoryScreen';
+import { ReferralPortalScreen } from './ReferralPortalScreen';
 
 type MoreView = 
   | 'menu' 
@@ -33,7 +34,8 @@ type MoreView =
   | 'alerts'
   | 'queue'
   | 'academy'
-  | 'inventory';
+  | 'inventory'
+  | 'referral';
 
 interface MoreScreenProps {
   navigateToTab?: (key: string) => void;
@@ -205,6 +207,18 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
     );
   }
 
+  if (view === 'referral') {
+    return (
+      <View style={styles.flex}>
+        <TouchableOpacity style={[styles.backBar, { backgroundColor: colors.surface }]} onPress={() => setView('menu')}>
+          <Icon source="arrow-left" size={22} color="#6B46C1" />
+          <Text style={[styles.backText, { color: '#6B46C1' }]}>Referral Portal</Text>
+        </TouchableOpacity>
+        <ReferralPortalScreen />
+      </View>
+    );
+  }
+
   // Generate dynamic items based on user role
   const getMenuItems = () => {
     const baseItems = [
@@ -218,6 +232,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
       { key: 'alerts' as const, icon: 'bell-outline', title: t('more.alerts_title') || 'Alerts Center', sub: t('more.alerts_sub') || 'MoH public safety announcements & bulletins' },
       { key: 'settings' as const, icon: 'cog-outline', title: t('nav.settings') || 'System Settings', sub: t('settings.subtitle') || 'Configure interface theme and network settings' },
       { key: 'emergency' as const, icon: 'phone-alert', title: t('nav.emergency') || 'Emergency Contacts', sub: t('more.emergency_sub') || 'Hotlines and nearest emergency services' },
+      { key: 'referral' as const, icon: 'transfer', title: 'Referral Portal', sub: 'Track and manage patient referrals to higher-level facilities' },
     ];
 
     if (role === 'COMMUNITY') {
@@ -228,6 +243,7 @@ const MoreScreen: React.FC<MoreScreenProps> = ({ userRole, onLogout }) => {
     return [
       { key: 'profile' as const, icon: 'account-circle', title: t('nav.profile') || 'Health Profile', sub: t('more.profile_sub') || 'Your health information and preferences' },
       { key: 'queue' as const, icon: 'account-multiple', title: t('more.queue_title') || 'Patient Queue', sub: t('more.queue_sub') || 'Manage local clinical visits & triaged patients' },
+      { key: 'referral' as const, icon: 'transfer', title: 'Referral Portal', sub: 'Track and manage patient referrals to higher-level facilities' },
       { key: 'inventory' as const, icon: 'medical-bag', title: t('more.inventory_title') || 'Drug Inventory', sub: t('more.inventory_sub') || 'Manage clinic supplies and deduct stock' },
       { key: 'academy' as const, icon: 'school', title: t('more.academy_title') || 'CHW Academy', sub: t('more.academy_sub') || 'Interactive lessons & training simulation quizzes' },
       ...baseItems.filter(i => i.key !== 'profile'),

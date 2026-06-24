@@ -12,11 +12,12 @@ import {
   Alert,
   Linking,
   Modal,
+  TextInput,
 } from 'react-native';
 import { Text, Icon, Avatar, Divider } from 'react-native-paper';
 import { AuthService } from '../services/AuthService';
 import { useTranslation } from 'react-i18next';
-import { getStats, markBroadcastAsRead, saveSetting } from '../db/Database';
+import { getStats, markBroadcastAsRead, saveSetting, saveBroadcast, getAllRegisteredUsersFromDb, updateRegisteredUserApproval } from '../db/Database';
 import AnimatedCard from '../components/AnimatedCard';
 import StatusBadge from '../components/StatusBadge';
 import { colors, spacing, radii, shadows, topicColors, gradients } from '../theme';
@@ -55,12 +56,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
   const { isPhone, isTablet, isDesktop, hPad, heroHeight, rf, bp } = useResponsive();
   const { width } = useWindowDimensions();
   const isCommunity = userRole === 'COMMUNITY';
+  const isAdmin = userRole === 'ADMIN';
 
   const [stats, setStats] = useState({ total: 0, accurate: 0, misinfo: 0 });
   const [refreshing, setRefreshing] = useState(false);
   const [risks, setRisks] = useState<RiskAlert[]>([]);
   const [broadcasts, setBroadcasts] = useState<Broadcast[]>([]);
   const [selectedAdvisoryAlert, setSelectedAdvisoryAlert] = useState<Broadcast | null>(null);
+
+  // Admin Specific State
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertTitleLg, setAlertTitleLg] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessageLg, setAlertMessageLg] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState<'INFO' | 'URGENT'>('INFO');
+  const [isDispatching, setIsDispatching] = useState(false);
+  const [dispatchMessage, setDispatchMessage] = useState('');
 
   const loadStats = useCallback(async () => {
     const s = await getStats();
@@ -72,11 +84,65 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
     await BroadcastService.syncAlerts();
     const b = await BroadcastService.fetchOfflineBroadcasts();
     setBroadcasts(b);
-  }, []);
+
+    if (userRole === 'ADMIN') {
+      const allUsers = await AuthService.getAllRegisteredUsers();
+      const pending = allUsers.filter((u: any) => u.role !== 'ADMIN' && !u.approved);
+      setPendingUsers(pending);
+    }
+  }, [userRole]);
 
   useEffect(() => {
     loadStats();
   }, [loadStats]);
+
+  const handleApproveUser = async (phone: string) => {
+    try {
+      const success = await AuthService.approveUser(phone);
+      if (success) {
+        Alert.alert('Success', 'Health Worker activated successfully');
+        loadStats();
+      } else {
+        Alert.alert('Error', 'Failed to activate Health Worker');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'An error occurred during activation');
+    }
+  };
+
+  const handleDispatchAlert = async () => {
+    if (!alertTitle.trim() || !alertMessage.trim()) {
+      setDispatchMessage(t('home.dispatch_error') || 'Please fill in the title and message');
+      setTimeout(() => setDispatchMessage(''), 3000);
+      return;
+    }
+    setIsDispatching(true);
+    try {
+      await saveBroadcast({
+        title: alertTitle,
+        title_lg: alertTitleLg || alertTitle,
+        message: alertMessage,
+        message_lg: alertMessageLg || alertMessage,
+        severity: alertSeverity,
+        timestamp: new Date().toISOString(),
+        isRead: false
+      });
+      setDispatchMessage(t('home.dispatch_success') || 'Alert dispatched to all health workers');
+      setAlertTitle('');
+      setAlertTitleLg('');
+      setAlertMessage('');
+      setAlertMessageLg('');
+      setAlertSeverity('INFO');
+      loadStats();
+      setTimeout(() => setDispatchMessage(''), 3000);
+    } catch (error) {
+      setDispatchMessage('Failed to dispatch alert');
+      setTimeout(() => setDispatchMessage(''), 3000);
+    } finally {
+      setIsDispatching(false);
+    }
+  };
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -95,18 +161,18 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
       {!isDesktop && (
         <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.neutral[100] }]}>
           <View style={styles.headerLeft}>
-            <View style={[styles.logoCircle, { backgroundColor: colors.primary[50] }]}>
-              <Icon source="shield-plus" size={24} color={colors.primary[900]} />
+            <View style={[styles.logoCircle, { backgroundColor: isAdmin ? '#F3E8FF' : colors.primary[50] }]}>
+              <Icon source={isAdmin ? "shield-crown-outline" : "shield-plus"} size={24} color={isAdmin ? "#6B46C1" : colors.primary[900]} />
             </View>
             <View>
-              <Text style={[styles.headerTitle, { color: colors.primary[900] }]}>HealthGuard</Text>
-              <Text style={[styles.headerSubtitle, { color: colors.primary[900] }]}>Uganda</Text>
+              <Text style={[styles.headerTitle, { color: isAdmin ? "#6B46C1" : colors.primary[900] }]}>HealthGuard</Text>
+              <Text style={[styles.headerSubtitle, { color: isAdmin ? "#805AD5" : colors.primary[900] }]}>Uganda</Text>
             </View>
           </View>
           <View style={styles.headerRight}>
-            <View style={[styles.offlinePill, { backgroundColor: mode === 'light' ? '#E2F0D9' : colors.neutral[100] }]}>
-              <Icon source="cloud-check-outline" size={14} color={colors.primary[800]} />
-              <Text style={[styles.offlineText, { color: colors.primary[900] }]}>{t('home.offline_ready')}</Text>
+            <View style={[styles.offlinePill, { backgroundColor: mode === 'light' ? (isAdmin ? '#F3E8FF' : '#E2F0D9') : colors.neutral[100] }]}>
+              <Icon source="cloud-check-outline" size={14} color={isAdmin ? "#6B46C1" : colors.primary[800]} />
+              <Text style={[styles.offlineText, { color: isAdmin ? "#5B21B6" : colors.primary[900] }]}>{t('home.offline_ready')}</Text>
             </View>
             <TouchableOpacity
               style={styles.logoutIconBtn}
@@ -129,7 +195,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
               }}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Icon source="logout" size={22} color={colors.primary[900]} />
+              <Icon source="logout" size={22} color={isAdmin ? "#6B46C1" : colors.primary[900]} />
             </TouchableOpacity>
           </View>
         </View>
@@ -179,9 +245,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
 
         <View style={isDesktop ? styles.desktopMain : null}>
           <View style={styles.welcomeSection}>
-            <Text style={[styles.dashboardLabel, { color: colors.neutral[400] }]}>{isCommunity ? t('home.community_label') : t('home.dashboard_overview')}</Text>
-            <Text style={[styles.welcomeText, { color: colors.neutral[900], fontSize: isPhone ? 22 : 30 }]}>{isCommunity ? t('home.community_welcome') : t('home.welcome')}</Text>
-            <Text style={[styles.locationText, { color: colors.neutral[500], fontSize: isPhone ? 13 : 18 }]}>{isCommunity ? t('home.community_subtitle') : t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
+            <Text style={[styles.dashboardLabel, { color: colors.neutral[400] }]}>{isCommunity ? t('home.community_label') : isAdmin ? t('home.admin_panel') : t('home.dashboard_overview')}</Text>
+            <Text style={[styles.welcomeText, { color: colors.neutral[900], fontSize: isPhone ? 22 : 30 }]}>{isCommunity ? t('home.community_welcome') : isAdmin ? t('home.welcome_admin') : t('home.welcome')}</Text>
+            <Text style={[styles.locationText, { color: colors.neutral[500], fontSize: isPhone ? 13 : 18 }]}>{isCommunity ? t('home.community_subtitle') : isAdmin ? t('home.admin_subtitle') : t('home.reporting_from', { location: 'Kampala Central Health Office' })}</Text>
           </View>
 
           <View style={isDesktop ? styles.desktopLayout : null}>
@@ -190,7 +256,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
               {isCommunity && <EmergencyFirstAid />}
 
               {/* ── UNIFIED STATS CARD ── */}
-              {isCommunity ? (
+              {isAdmin ? (
+                <AnimatedCard delay={100} style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: '#D6BCFA', borderLeftWidth: 4, borderLeftColor: '#6B46C1' }]}>
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.admin_stats_users')}</Text>
+                    <Text style={[styles.statValue, { color: '#6B46C1' }]}>{pendingUsers.length}</Text>
+                  </View>
+                  <View style={[styles.statDivider, { backgroundColor: colors.neutral[100] }]} />
+                  <View style={styles.statItem}>
+                    <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.admin_stats_synced')}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                      <Icon source="check-circle" size={16} color="#38A169" />
+                      <Text style={{ marginLeft: 4, fontWeight: 'bold', color: '#38A169', fontSize: 16 }}>{t('home.admin_synced_ok')}</Text>
+                    </View>
+                  </View>
+                </AnimatedCard>
+              ) : isCommunity ? (
                 <AnimatedCard delay={100} style={[styles.statsCard, { backgroundColor: colors.surface, borderColor: colors.neutral[100] }]}>
                   <View style={styles.statItem}>
                     <Text style={[styles.statLabel, { color: colors.neutral[400] }]}>{t('home.rumors_checked')}</Text>
@@ -233,7 +314,121 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
                 </ImageBackground>
               </AnimatedCard>
 
-              {isCommunity ? (
+              {isAdmin ? (
+                <>
+                  {/* ── BROADCAST DISPATCHER FORM ── */}
+                  <View style={[styles.riskSection, { backgroundColor: colors.surface, borderColor: '#D6BCFA', borderTopWidth: 4, borderTopColor: '#6B46C1', marginBottom: spacing.lg }]}>
+                    <View style={styles.activityHeader}>
+                      <Text style={[styles.sectionTitle, { color: colors.neutral[900] }]}>{t('home.dispatch_section')}</Text>
+                    </View>
+                    <Text style={[styles.sectionSub, { color: colors.neutral[500], marginBottom: spacing.md }]}>{t('home.dispatch_sub')}</Text>
+
+                    <View style={{ gap: spacing.sm }}>
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.neutral[700] }}>{t('home.alert_title_lbl')}</Text>
+                      <TextInput
+                        value={alertTitle}
+                        onChangeText={setAlertTitle}
+                        style={{ borderWidth: 1, borderColor: colors.neutral[300], borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.background, color: colors.neutral[900] }}
+                        placeholder="E.g. Ebola Risk Warning"
+                        placeholderTextColor={colors.neutral[400]}
+                      />
+
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.neutral[700] }}>{t('home.alert_title_lg_lbl')}</Text>
+                      <TextInput
+                        value={alertTitleLg}
+                        onChangeText={setAlertTitleLg}
+                        style={{ borderWidth: 1, borderColor: colors.neutral[300], borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.background, color: colors.neutral[900] }}
+                        placeholder="E.g. Okulabula ku bulwadde bwa Ebola"
+                        placeholderTextColor={colors.neutral[400]}
+                      />
+
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.neutral[700] }}>{t('home.alert_msg_lbl')}</Text>
+                      <TextInput
+                        value={alertMessage}
+                        onChangeText={setAlertMessage}
+                        multiline
+                        numberOfLines={3}
+                        style={{ borderWidth: 1, borderColor: colors.neutral[300], borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.background, color: colors.neutral[900], minHeight: 80, textAlignVertical: 'top' }}
+                        placeholder="Enter English message..."
+                        placeholderTextColor={colors.neutral[400]}
+                      />
+
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.neutral[700] }}>{t('home.alert_msg_lg_lbl')}</Text>
+                      <TextInput
+                        value={alertMessageLg}
+                        onChangeText={setAlertMessageLg}
+                        multiline
+                        numberOfLines={3}
+                        style={{ borderWidth: 1, borderColor: colors.neutral[300], borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: colors.background, color: colors.neutral[900], minHeight: 80, textAlignVertical: 'top' }}
+                        placeholder="Wandiika obubaka mu Luganda..."
+                        placeholderTextColor={colors.neutral[400]}
+                      />
+
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: colors.neutral[700] }}>{t('home.severity_lbl')}</Text>
+                      <View style={{ flexDirection: 'row', gap: 10, marginVertical: 4 }}>
+                        <TouchableOpacity
+                          style={{ flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: alertSeverity === 'INFO' ? '#6B46C1' : colors.neutral[300], backgroundColor: alertSeverity === 'INFO' ? '#F3E8FF' : colors.surface, alignItems: 'center' }}
+                          onPress={() => setAlertSeverity('INFO')}
+                        >
+                          <Text style={{ fontWeight: 'bold', color: alertSeverity === 'INFO' ? '#6B46C1' : colors.neutral[600] }}>INFO</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{ flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1, borderColor: alertSeverity === 'URGENT' ? '#E53E3E' : colors.neutral[300], backgroundColor: alertSeverity === 'URGENT' ? '#FFF5F5' : colors.surface, alignItems: 'center' }}
+                          onPress={() => setAlertSeverity('URGENT')}
+                        >
+                          <Text style={{ fontWeight: 'bold', color: alertSeverity === 'URGENT' ? '#E53E3E' : colors.neutral[600] }}>URGENT</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      {dispatchMessage ? (
+                        <Text style={{ color: dispatchMessage.includes('dispatched') || dispatchMessage.includes('activated') ? '#38A169' : '#E53E3E', fontWeight: 'bold', textAlign: 'center', marginVertical: 4 }}>{dispatchMessage}</Text>
+                      ) : null}
+
+                      <TouchableOpacity
+                        disabled={isDispatching}
+                        style={{ backgroundColor: '#6B46C1', paddingVertical: 14, borderRadius: 8, alignItems: 'center', marginTop: 8 }}
+                        onPress={handleDispatchAlert}
+                      >
+                        <Text style={{ color: '#FFF', fontWeight: 'bold', fontSize: 16 }}>{isDispatching ? t('home.dispatching') : t('home.btn_dispatch')}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* ── PENDING REGISTRATIONS LIST ── */}
+                  <View style={[styles.activitySection, { backgroundColor: colors.surface, borderColor: '#D6BCFA', borderTopWidth: 4, borderTopColor: '#6B46C1' }]}>
+                    <View style={styles.activityHeader}>
+                      <Text style={[styles.sectionTitle, { color: colors.neutral[900] }]}>{t('home.pending_activations')}</Text>
+                    </View>
+
+                    {pendingUsers.length === 0 ? (
+                      <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                        <Icon source="checkbox-marked-circle-outline" size={36} color="#38A169" />
+                        <Text style={{ marginTop: 8, color: colors.neutral[500], fontWeight: '600' }}>{t('home.no_pending_users')}</Text>
+                      </View>
+                    ) : (
+                      <View style={{ gap: spacing.md }}>
+                        {pendingUsers.map((user) => (
+                          <View key={user.phone} style={{ padding: spacing.md, backgroundColor: colors.neutral[50], borderRadius: 8, borderWidth: 1, borderColor: colors.neutral[200] }}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <View style={{ flex: 1 }}>
+                                <Text style={{ fontSize: 16, fontWeight: 'bold', color: colors.neutral[900] }}>{user.name}</Text>
+                                <Text style={{ fontSize: 12, color: colors.neutral[500] }}>{user.phone} • {user.role}</Text>
+                                <Text style={{ fontSize: 13, color: colors.neutral[700], marginTop: 2 }}>{user.district || 'No District'} / {user.village || 'No Village'}</Text>
+                              </View>
+                              <TouchableOpacity
+                                style={{ backgroundColor: '#6B46C1', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 6 }}
+                                onPress={() => handleApproveUser(user.phone)}
+                              >
+                                <Text style={{ color: '#FFF', fontSize: 12, fontWeight: 'bold' }}>{t('home.activate_account')}</Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                </>
+              ) : isCommunity ? (
                 <>
                   {/* ── MY VILLAGE MEDICINE SHELF ── */}
                   <VillageMedicineShelf />
@@ -364,7 +559,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
                 style={styles.actionCard}
               >
                 <LinearGradient
-                  colors={gradients.primary}
+                  colors={isAdmin ? ['#7C3AED', '#5B21B6'] : gradients.primary}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={[styles.actionGradient, { padding: isPhone ? 16 : 24 }]}
@@ -386,7 +581,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
                   style={[styles.secondaryCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
                   onPress={() => navigateToTab('knowledge')}
                 >
-                  <Icon source="book-open-outline" size={24} color={colors.primary[900]} />
+                  <Icon source="book-open-outline" size={24} color={isAdmin ? "#6B46C1" : colors.primary[900]} />
                   <View>
                     <Text style={[styles.secondaryTitle, { color: colors.neutral[900] }]}>{t('home.kb_card_title')}</Text>
                     <Text style={[styles.secondarySub, { color: colors.neutral[500] }]}>{t('home.kb_card_sub')}</Text>
@@ -398,7 +593,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigateToTab, userRole, onLogo
                     style={[styles.secondaryCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }]}
                     onPress={() => navigateToTab('reports')}
                   >
-                    <Icon source="chart-box-outline" size={24} color={colors.primary[900]} />
+                    <Icon source="chart-box-outline" size={24} color={isAdmin ? "#6B46C1" : colors.primary[900]} />
                     <View>
                       <Text style={[styles.secondaryTitle, { color: colors.neutral[900] }]}>{t('home.reports_card_title')}</Text>
                       <Text style={[styles.secondarySub, { color: colors.neutral[500] }]}>{t('home.reports_card_sub')}</Text>

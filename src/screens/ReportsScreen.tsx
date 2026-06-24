@@ -699,33 +699,67 @@ const ReportsScreen = () => {
                 {/* Bar Chart Card */}
                 <AnimatedCard delay={100} style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }, isDesktop ? { flex: 1, marginBottom: 0 } : ({} as any)]}>
                   <Text style={[styles.chartTitleText, { color: colors.neutral[900] }]}>{t('reports.weekly_trends')}</Text>
-                  <BarChart
-                    data={barData}
-                    width={isDesktop ? (width > 1200 ? 350 : width * 0.21) : width - 64}
-                    height={200}
-                    chartConfig={chartConfig}
-                    style={styles.chart}
-                    fromZero
-                    showBarTops={false}
-                    yAxisLabel=""
-                    yAxisSuffix=""
-                  />
+                  {Platform.OS === 'web' ? (
+                    <View style={{ height: 200, justifyContent: 'space-around', flexDirection: 'row', alignItems: 'flex-end', gap: 20, paddingHorizontal: 20, paddingBottom: 10 }}>
+                      {barData.datasets[0].data.map((val, idx) => {
+                        const maxVal = Math.max(...barData.datasets[0].data, 1);
+                        const pct = (val / maxVal) * 100;
+                        return (
+                          <View key={idx} style={{ flex: 1, alignItems: 'center' }}>
+                            <View style={{ width: '100%', height: `${Math.max(10, pct)}%`, backgroundColor: colors.primary[900], borderRadius: 4 }} />
+                            <Text style={{ fontSize: 11, color: colors.neutral[600], marginTop: 8, fontWeight: '700' }}>{barData.labels[idx]}</Text>
+                            <Text style={{ fontSize: 10, color: colors.neutral[400], marginTop: 2 }}>{val}</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  ) : (
+                    <BarChart
+                      data={barData}
+                      width={isDesktop ? (width > 1200 ? 350 : width * 0.21) : width - 64}
+                      height={200}
+                      chartConfig={chartConfig}
+                      style={styles.chart}
+                      fromZero
+                      showBarTops={false}
+                      yAxisLabel=""
+                      yAxisSuffix=""
+                    />
+                  )}
                 </AnimatedCard>
 
                 {/* Pie Chart Card */}
                 <AnimatedCard delay={120} style={[styles.chartCard, { backgroundColor: colors.surface, borderColor: colors.neutral[200] }, isDesktop ? { flex: 1, marginBottom: 0 } : ({} as any)]}>
                   <Text style={[styles.chartTitleText, { color: colors.neutral[900] }]}>{t('reports.chart_title') || 'Status Distribution'}</Text>
-                  <PieChart
-                    data={pieData}
-                    width={isDesktop ? (width > 1200 ? 350 : width * 0.21) : width - 64}
-                    height={200}
-                    chartConfig={chartConfig}
-                    accessor={"population"}
-                    backgroundColor={"transparent"}
-                    paddingLeft={"10"}
-                    center={[0, 0]}
-                    absolute
-                  />
+                  {Platform.OS === 'web' ? (
+                    <View style={{ height: 200, justifyContent: 'center', gap: 10, paddingHorizontal: 20 }}>
+                      {pieData.map((item, idx) => {
+                        const total = pieData.reduce((acc, curr) => acc + curr.population, 0) || 1;
+                        const pct = Math.round((item.population / total) * 100);
+                        return (
+                          <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                              <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: item.color }} />
+                              <Text style={{ fontSize: 13, color: colors.neutral[700], fontWeight: '600' }}>{item.name}</Text>
+                            </View>
+                            <Text style={{ fontSize: 13, color: colors.neutral[900], fontWeight: '800' }}>{item.population} ({pct}%)</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  ) : (
+                    <PieChart
+                      data={pieData}
+                      width={isDesktop ? (width > 1200 ? 350 : width * 0.21) : width - 64}
+                      height={200}
+                      chartConfig={chartConfig}
+                      accessor={"population"}
+                      backgroundColor={"transparent"}
+                      paddingLeft={"10"}
+                      center={[0, 0]}
+                      absolute
+                    />
+                  )}
                 </AnimatedCard>
               </View>
 
