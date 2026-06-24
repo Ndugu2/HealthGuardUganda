@@ -273,7 +273,7 @@ export const ReferralPortalScreen: React.FC = () => {
         style={[
           styles.referralCard,
           { backgroundColor: colors.surface },
-          item.urgency === 'emergency' && { borderLeftWidth: 4, borderLeftColor: '#E53E3E' },
+          ...(item.urgency === 'emergency' ? [{ borderLeftWidth: 4, borderLeftColor: '#E53E3E' }] : []),
         ]}
       >
         <TouchableOpacity onPress={() => setSelectedReferral(item)} activeOpacity={0.85}>
@@ -840,10 +840,10 @@ const styles = StyleSheet.create({
 
   // Modals
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
-  detailModal: { borderTopLeftRadius: radii.xxl || 28, borderTopRightRadius: radii.xxl || 28, maxHeight: '92%' },
-  newModal: { borderTopLeftRadius: radii.xxl || 28, borderTopRightRadius: radii.xxl || 28, maxHeight: '95%', flex: 1 },
+  detailModal: { borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '92%' },
+  newModal: { borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '95%', flex: 1 },
 
-  detailHeader: { padding: spacing.xl, paddingTop: spacing.xxl || 32 },
+  detailHeader: { padding: spacing.xl, paddingTop: 32 },
   detailId: { fontSize: 11, color: 'rgba(255,255,255,0.65)', fontWeight: '700', letterSpacing: 1 },
   detailPatient: { fontSize: rf(20), fontWeight: '900', color: '#FFF', marginTop: 4 },
   detailMeta: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
@@ -866,7 +866,7 @@ const styles = StyleSheet.create({
   closeDetailText: { fontSize: 15, fontWeight: '700' },
 
   // New Modal Form
-  modalHeader: { padding: spacing.lg, paddingTop: 28, borderTopLeftRadius: radii.xxl || 28, borderTopRightRadius: radii.xxl || 28 },
+  modalHeader: { padding: spacing.lg, paddingTop: 28, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
   modalTitle: { fontSize: rf(18), fontWeight: '900', color: '#FFF' },
   modalSub: { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
   closeModal: { position: 'absolute', top: spacing.lg, right: spacing.lg, padding: 4 },
